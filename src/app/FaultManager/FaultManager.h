@@ -44,9 +44,8 @@ void FaultManager_init(void);
  * Record a fault as active, and transmit a CAN alert that contains the fault
  * code and associated data.
  * code [in] - type of fault to set to active
- * data [in] - points to relevant data for fault to be sent over CAN
  */
-void FaultManager_set_fault_active(FaultCode_e code, void* data);
+void FaultManager_set_fault_active(FaultCode_e code);
 
 /**
  * Record a fault as not active in the fault vector.

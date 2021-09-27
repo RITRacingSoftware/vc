@@ -24,41 +24,13 @@ void FaultManager_init(void)
 }
 
 // TODO- use mutex around faultvector
-void FaultManager_set_fault_active(FaultCode_e code, void* data)
+void FaultManager_set_fault_active(FaultCode_e code)
 {
     // dont do anything if fault is already sent. Don't need an alert spam.
     if (((fault_vector & BIT(code)) == 0) && ((BIT(code) & DISABLE_FAULT_MASK) == 0))
     {
         // set the fault
         fault_vector |= BIT(code);
-
-        // set the CAN alert data field accordingly
-        switch(code)
-        {
-            case FaultCode_BRAKE_SENSOR_IRRATIONAL:
-                // can_bus.vc_fault_alert..vc_fault_alert_brake_pressure = f29bms_dbc_bms_fault_alert_bms_fault_alert_current_encode(*((float*)data));
-                // TODO
-                break;
-            
-            case FaultCode_ACCELERATOR_SENSOR_IRRATIONAL:
-                //can_bus.bms_fault_alert.bms_fault_alert_cell_comm_slave_board_num = f29bms_dbc_bms_fault_alert_bms_fault_alert_cell_comm_slave_board_num_encode(*((uint8_t*)data));
-                // TODO
-                break;
-            
-            case FaultCode_APPS_SENSOR_DISAGREEMENT:
-                // can_bus.bms_fault_alert.bms_fault_alert_temp_comm_slave_board_num = f29bms_dbc_bms_fault_alert_bms_fault_alert_temp_comm_slave_board_num_encode(*((uint8_t*)data));
-                // TODO
-                break;
-
-            case FaultCode_APPS_DOUBLE_PEDAL:
-                // can_bus.bms_fault_alert.bms_fault_alert_drain_comm_slave_board_num = f29bms_dbc_bms_fault_alert_bms_fault_alert_drain_comm_slave_board_num_encode(*((uint8_t*)data));
-                // TODO
-                break;
-                
-            default:
-                // send garbage data
-                break;
-        }
 
         // set the mux of the alert message to the fault code
         can_bus.vc_fault_alert.vc_fault_alert_code = main_bus_vc_fault_alert_vc_fault_alert_code_encode((uint8_t) code);

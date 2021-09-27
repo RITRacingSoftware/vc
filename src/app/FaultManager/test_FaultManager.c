@@ -44,7 +44,7 @@ void test_FaultManager_fault_and_clear(void)
     {
         // make sure each fault sets correctly
         CAN_send_message_Ignore();
-        FaultManager_set_fault_active(code, &unused_fault_data);
+        FaultManager_set_fault_active(code);
         sprintf(err_msg, "Fault code %d failed to set.", code);
         TEST_ASSERT_MESSAGE(FaultManager_is_fault_active(code) == true || !FaultManager_is_fault_enabled(code),  err_msg);
 
