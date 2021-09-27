@@ -5,6 +5,7 @@
 
 static bool can_tx_error;
 //static QueueHandle_t tx_msg_queue;
+CAN_BUS can_bus;
 
 void CAN_init(void)
 {
