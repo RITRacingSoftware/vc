@@ -67,7 +67,8 @@ linux_c_env = Environment(
     CC='gcc',
     CPPPATH=include_paths,
     CCFLAGS=[],
-    LIBS=['m']
+    LIBS=['m'],
+    SHELL='bash'
 )
 
 """
@@ -160,25 +161,26 @@ mock_modules = []
 cmock_generated_headers = []
 cmock_objs = {}
 for module_name, module_dir in (app_modules + driver_modules):
-    build_dir = BUILD_DIR.Dir(SRC_DIR.rel_path(module_dir))
-    mocks_dir = module_dir.Dir('mocks')
-    
-    # later source in this file will need these directories
-    mock_modules.append(mocks_dir)
-    linux_c_env['CPPPATH'] += [mocks_dir]
-    cmock_c = mocks_dir.File('Mock{}.c'.format(module_name))
-    cmock_header = mocks_dir.File('Mock{}.h'.format(module_name))
-    cmock_src = cmock_env.GenerateMocks(
-           # only input is the module's header file
-           source=module_dir.File(module_name + '.h'),
-           target=[cmock_c, cmock_header]
-    )
-    cmock_objs[module_name] = linux_c_env.Object(
-        source=cmock_c,
-        target=build_dir.File(f'Mock{module_name}.o')
+    if module_name != 'main_bus': # this module is huge and has no dependencies so can be used without mocking
+        build_dir = BUILD_DIR.Dir(SRC_DIR.rel_path(module_dir))
+        mocks_dir = module_dir.Dir('mocks')
+        
+        # later source in this file will need these directories
+        mock_modules.append(mocks_dir)
+        linux_c_env['CPPPATH'] += [mocks_dir]
+        cmock_c = mocks_dir.File('Mock{}.c'.format(module_name))
+        cmock_header = mocks_dir.File('Mock{}.h'.format(module_name))
+        cmock_src = cmock_env.GenerateMocks(
+            # only input is the module's header file
+            source=module_dir.File(module_name + '.h'),
+            target=[cmock_c, cmock_header]
         )
-    cmock_generated_headers += [cmock_header]
-    Clean(cmock_header, mocks_dir) # tell scons to clean these up when --clean is specified
+        cmock_objs[module_name] = linux_c_env.Object(
+            source=cmock_c,
+            target=build_dir.File(f'Mock{module_name}.o')
+            )
+        cmock_generated_headers += [cmock_header]
+        Clean(cmock_header, mocks_dir) # tell scons to clean these up when --clean is specified
 
 Alias('cmock-headers', cmock_generated_headers)
 Alias('cmock-objs', cmock_objs.values())
@@ -254,6 +256,10 @@ for name, obj in cmock_testrunner_src.items():
     for n, o in cmock_objs.items():
         if n != name:
             objs += [o]
+
+    # every test uses the authentic main_bus module, except the main_bus test
+    if name != 'main_bus':
+        objs += [linux_objs['main_bus']]
         
     unit_test_execs += [
         linux_c_env.Program(
@@ -261,5 +267,67 @@ for name, obj in cmock_testrunner_src.items():
             target=BUILD_DIR.Dir(SRC_DIR.rel_path(obj.dir)).File(f'{name}_tests')
             )
     ]
+
+"""
+Now run those unit tests.
+Also provide an option to run Valgrind, a runtime memory checker, on each unit test.
+This checks for invalid memory accesses, stack overflows, memory leaks, etc.
+"""
+
+def TOOL_VALGRIND(env):
+    """
+    Runs a valgrind memory check on a linux program.
+    """
+
+    """
+    SOURCE = binary node
+    TARGET = text results file
+    """
+    env['SHELL'] = 'bash'
+
+
+    valgrind_memcheck_builder = SCons.Builder.Builder(action=[
+        'valgrind --tool=memcheck --leak-check=yes --track-origins=yes ${SOURCE.abspath} 2>&1'
+    ])
+
+    env.Append(BUILDERS = {
+        'MemCheck' : valgrind_memcheck_builder
+    })
+
+valgrind_env = Environment(
+    tools=[TOOL_VALGRIND]
+)
+
+valgrind_env = Environment(
+    tools=[TOOL_VALGRIND]
+)
+
+# contains scons nodes signifying unit test runs
+unit_test_results = []
+valgrind_test_results = []
+for testrunner in unit_test_execs:
+    # executable to run
+    #testrunner = .File('testrunner_' + module_name)
+    # results file to print to
+    testrunner = testrunner[0]
+    test_result_file = testrunner.dir.File('unit_test_results.txt')
+    unit_test_results += linux_c_env.Command(
+        source=testrunner,
+        target=test_result_file,
+        # TODO remove janky bash workaround and get Command() to use bash (sh test dont work)
+        # Run the executable, tee (split) the output between stdout and the results file,
+        # then check the status of the testrunner executable to fail the build if needed.
+        # This is necessary if we want result files for unit tests (since the executables dont write to files)
+        action='{} | tee {} && test $$PIPESTATUS -eq 0'.format(testrunner.abspath, test_result_file.abspath)
+    )
+
+    valgrind_test_results += valgrind_env.MemCheck(
+        source=testrunner,
+        target=testrunner.dir.File('memcheck_results.txt')
+    )
+
+Alias('memchecks', valgrind_test_results)
+Alias('unit_tests', unit_test_results)
+Default(unit_test_results)
 
 Alias('testrunners', unit_test_execs)
