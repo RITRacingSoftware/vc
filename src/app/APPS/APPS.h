@@ -15,6 +15,11 @@ typedef struct {
 } AccelPos_s;
 
 /**
+ * Reset state machine.
+ */
+void APPS_init(void);
+
+/**
  * Perform and/or continue to perform accelerator sensor agreement check and double pedal checks.
  * accel_pos [in] - accelerator per-sensor position + associated data
  * brake_pos [in] - brake position

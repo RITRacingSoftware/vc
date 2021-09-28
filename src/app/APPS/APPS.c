@@ -18,8 +18,8 @@ typedef enum {
     AppsState_SENSORS_DISAGREE_FAULTED,
 } AppsState_e;
 
-static AppsState_e state = AppsState_SENSORS_AGREE;
-static unsigned int state_counter_ms = 0;
+static AppsState_e state;
+static unsigned int state_counter_ms;
 
 static void new_state(AppsState_e new)
 {
@@ -32,6 +32,7 @@ static void state_machine(SmInputs_s* inputs, SmOutputs_s* outputs)
     switch (state)
     {
         case AppsState_SENSORS_AGREE:
+            printf("APPS_STATE: AGREE\r\n");
             if (!inputs->accel_sensors_agree)
             {
                 new_state(AppsState_SENSORS_DISAGREE);
@@ -39,6 +40,7 @@ static void state_machine(SmInputs_s* inputs, SmOutputs_s* outputs)
             break;
 
         case AppsState_SENSORS_DISAGREE:
+            printf("APPS_STATE: DISAGREE\r\n");
             if (inputs->accel_sensors_agree)
             {
                 new_state(AppsState_SENSORS_AGREE);
@@ -50,6 +52,7 @@ static void state_machine(SmInputs_s* inputs, SmOutputs_s* outputs)
             break;
         
         case AppsState_SENSORS_DISAGREE_FAULTED:
+            printf("APPS_STATE: DISAGREE_FAULTED\r\n");
             if (inputs->accel_sensors_agree)
             {
                 new_state(AppsState_SENSORS_AGREE_FAULTED);
@@ -57,6 +60,7 @@ static void state_machine(SmInputs_s* inputs, SmOutputs_s* outputs)
             break;
         
         case AppsState_SENSORS_AGREE_FAULTED:
+            printf("APPS_STATE: AGREE_FAULTED\r\n");
             if (!inputs->accel_sensors_agree)
             {
                 new_state(AppsState_SENSORS_DISAGREE_FAULTED);
@@ -69,13 +73,17 @@ static void state_machine(SmInputs_s* inputs, SmOutputs_s* outputs)
     }
 }
 
+void APPS_init(void)
+{
+    state = AppsState_SENSORS_AGREE;
+    state_counter_ms = 0;
+}
+
 // Check if the pedals are within a certain percentage of each other
 // Return true if they are, false otherwise
 bool accel_pos_agree(AccelPos_s pos)
 {
-    float diff = pos.a - pos.b;
-
-    return fabs(pos.a - diff)*100.0 < APPS_PEDAL_DISAGREEMENT_PERCENTAGE;
+    return fabs(pos.a - pos.b) < APPS_PEDAL_DISAGREEMENT_PERCENTAGE;
 }
 
 void pedal_disagreement_check(AccelPos_s accel_pos)
@@ -104,7 +112,11 @@ void pedal_disagreement_check(AccelPos_s accel_pos)
     // apply outputs
     if (outputs.pedal_disagreement_fault)
     {
-        FaultManager_set_fault_active(FaultCode_APPS_SENSOR_DISAGREEMENT);
+        if (!FaultManager_is_fault_active(FaultCode_APPS_SENSOR_DISAGREEMENT))
+        {
+            // we should not continuously set faults to avoid spamming alert messages on the CAN bus
+            FaultManager_set_fault_active(FaultCode_APPS_SENSOR_DISAGREEMENT);
+        }
     }
     else
     {
