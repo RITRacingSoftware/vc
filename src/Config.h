@@ -22,9 +22,12 @@
 #define APPS_PEDAL_DISAGREEMENT_RECOVERY_MS 100
 
 // How far the brake must be pressed while also pressing the accelerator to trigger a double pedal fault
-#define DOUBLE_PEDAL_BRAKE_POS_THRESHOLD 25
+#define DOUBLE_PEDAL_APS_THRESHOLD 25
 // How far the brake must be released to to clear a double pedal fault
-#define DOUBLE_PEDAL_BRAKE_POS_RECOVERY_THRESHOLD 5
+#define DOUBLE_PEDAL_APS_RECOVERY_THRESHOLD 5
+
+// Pressure indicating the driver has intentional force applied to the brake pedal.
+#define BRAKE_ON_PSI 1000
 
 /**
  * ADC

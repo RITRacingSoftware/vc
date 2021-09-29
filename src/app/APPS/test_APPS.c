@@ -18,13 +18,13 @@ void setUp(void)
 void test_APPS_no_faults_idle(void)
 {
     AccelPos_s accel_pos = {0,0};
-    float brake_pos = 0;
+    float brake_pres_psi = 0;
 
     for (int i = 0; i < 1000; i++)
     {
         FaultManager_clear_fault_Ignore();
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
-        APPS_100Hz(accel_pos, brake_pos);
+        APPS_100Hz(accel_pos, brake_pres_psi);
     }
 }
 
@@ -34,7 +34,7 @@ void test_APPS_no_faults_idle(void)
 void test_APPS_sensor_disagreement(void)
 {
     AccelPos_s accel_pos = {0,0};
-    float brake_pos = 0;
+    float brake_pres_psi = 0;
 
     // make sure we start out not faulted
     // If a fault is set, a cmock function that has not been expected will be called and the test will fail.
@@ -42,7 +42,7 @@ void test_APPS_sensor_disagreement(void)
     {
         FaultManager_clear_fault_Ignore();
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
-        APPS_100Hz(accel_pos, brake_pos);
+        APPS_100Hz(accel_pos, brake_pres_psi);
     }
 
     // now set the pedal sensors too far apart and make sure a fault occurs at the right time
@@ -52,20 +52,20 @@ void test_APPS_sensor_disagreement(void)
     {
         FaultManager_clear_fault_Ignore();
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
-        APPS_100Hz(accel_pos, brake_pos);
+        APPS_100Hz(accel_pos, brake_pres_psi);
     }
 
     FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_SENSOR_DISAGREEMENT, false);
     FaultManager_set_fault_active_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
     FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
-    APPS_100Hz(accel_pos, brake_pos);
+    APPS_100Hz(accel_pos, brake_pres_psi);
 
     for (int i = 0; i < 10; i++)
     {
         // make sure the fault stays active
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_SENSOR_DISAGREEMENT, true); // pedal disagreement
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false); // double pedal
-        APPS_100Hz(accel_pos, brake_pos);
+        APPS_100Hz(accel_pos, brake_pres_psi);
     }
 
     // now get rid of the error condition and make sure the fault clears accordingly
@@ -77,12 +77,12 @@ void test_APPS_sensor_disagreement(void)
     {
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_SENSOR_DISAGREEMENT, true); // pedal disagreement
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false); // double pedal
-        APPS_100Hz(accel_pos, brake_pos);
+        APPS_100Hz(accel_pos, brake_pres_psi);
     }
 
     FaultManager_clear_fault_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
     FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false); // double pedal
-    APPS_100Hz(accel_pos, brake_pos);
+    APPS_100Hz(accel_pos, brake_pres_psi);
 
 }
 
@@ -93,7 +93,7 @@ void test_APPS_sensor_disagreement(void)
 void test_APPS_double_pedal(void)
 {   
     AccelPos_s accel_pos = {0,0};
-    float brake_pos = 0;
+    float brake_pres_psi = 0;
 
     // make sure we start out not faulted
     // If a fault is set, a cmock function that has not been expected will be called and the test will fail.
@@ -101,42 +101,42 @@ void test_APPS_double_pedal(void)
     {
         FaultManager_clear_fault_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
-        APPS_100Hz(accel_pos, brake_pos);
+        APPS_100Hz(accel_pos, brake_pres_psi);
     }
 
-    // press the throttle, make sure there's still no faults
-    accel_pos.a = 5;
-    accel_pos.b = 5;
-    accel_pos.average = 5;
-    brake_pos = 0;
+    // press the brake, make sure there's still no faults
+    accel_pos.a = 0;
+    accel_pos.b = 0;
+    accel_pos.average = 0;
+    brake_pres_psi = 2000;
 
     for (int i = 0; i < 10; i++)
     {
         FaultManager_clear_fault_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
-        APPS_100Hz(accel_pos, brake_pos);
+        APPS_100Hz(accel_pos, brake_pres_psi);
     }
 
-    // now press the brake, there should be a fault here
-    brake_pos = 26;
+    // now press the accelerator, there should be a fault here
+    accel_pos.average = 26;
     FaultManager_clear_fault_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
     FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
     FaultManager_set_fault_active_Expect(FaultCode_APPS_DOUBLE_PEDAL);
-    APPS_100Hz(accel_pos, brake_pos);
+    APPS_100Hz(accel_pos, brake_pres_psi);
 
     // release the brake part of the way, the fault should hold
-    brake_pos = 6;
+    accel_pos.average = 6;
     for (int i = 0; i < 100; i++)
     {
         FaultManager_clear_fault_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, true);
-        APPS_100Hz(accel_pos, brake_pos);
+        APPS_100Hz(accel_pos, brake_pres_psi);
     }
 
     // now release the brake all the way, the fault should clear
-    brake_pos = 4;
+    accel_pos.average = 4;
     FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, true);
     FaultManager_clear_fault_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
     FaultManager_clear_fault_Expect(FaultCode_APPS_DOUBLE_PEDAL);
-    APPS_100Hz(accel_pos, brake_pos);
+    APPS_100Hz(accel_pos, brake_pres_psi);
 }
