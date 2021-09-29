@@ -1,0 +1,32 @@
+#ifndef MOTOR_CONTROLLER_H
+#define MOTOR_CONTROLLER_H
+
+#include <stdbool.h>
+
+/**
+ * Abstraction of the CAN interface with the motor controller.
+ */
+
+/**
+ * Initialize the state machine.
+ */
+void MotorController_init(void);
+
+/**
+ * Run the state machine.
+ * Waits until the motor controller powers on, then sends the command message each iteration.
+ */
+void MotorController_100Hz(void);
+
+/**
+ * Set the torque to be commanded to the motor controller.
+ */
+void MotorController_set_torque(float torque);
+
+/**
+ * Get if the motor controller has indicated it is ready to receive torque commands.
+ * true=ready, false=not ready
+ */
+bool MotorController_is_ready(void);
+
+#endif // MOTOR_CONTROLLER_H

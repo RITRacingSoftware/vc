@@ -10,7 +10,7 @@ typedef struct
     int id;
     int dlc;
     uint64_t data;
-} can_message_s;
+} CanMessage_s;
 
 // Storage structure for current state of CAN bus.
 // Can be updated by the VC or by reading CAN messages from other systems.
@@ -50,6 +50,24 @@ void CAN_send_message(unsigned long int id);
  */
 bool CAN_get_tx_error(void);
 
+/**
+ * If we care about this message, unpack its values and update our internal structure of them.
+ */
+void CAN_receive_message(CanMessage_s* msg);
+
+/**
+ * Begin counting how many messages have been received of a certain id.
+ * id [in] - id of CAN message to count. Invalid ids wont increase in count.
+ */
+void CAN_begin_counting_id(unsigned int id);
+
+/**
+ * Get the count for a CAN id that counting has begun for.
+ * Must have called CAN_begin_counting_id with this id first.
+ * id [in] - CAN id
+ * return the number of messages received since counting began
+ */
+int CAN_get_count_for_id(unsigned int id);
 
 /**
  * Periodic CAN functions. Build and send periodic CAN messages.

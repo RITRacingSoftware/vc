@@ -11,6 +11,18 @@
 #define DISABLE_FAULT_MASK 0
 
 /**
+ * Motor Controller Interface
+ */
+
+// This value is what the motor controller is configured with.
+// Should be the maximum possible legal torque the vehicle is capable of producing.
+#define ABSOLUTE_MAX_TORQUE_N 60
+
+// How long the VC must go without receiving a MC status message before declaring the motor controller MIA
+#define MC_CAN_TIMEOUT_MS 300 
+
+
+/**
  * APPS
  */
 
@@ -28,6 +40,13 @@
 
 // Pressure indicating the driver has intentional force applied to the brake pedal.
 #define BRAKE_ON_PSI 1000
+
+/**
+ * CAN
+ */
+
+// How many message ids can be counted at once.
+#define NUM_ID_COUNTERS 5
 
 /**
  * ADC
