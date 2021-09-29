@@ -3,7 +3,7 @@
 #include "common_macros.h"
 #include "CAN.h"
 #include "FaultManager.h"
-#include "config.h"
+#include "Config.h"
 
 /**
  * Each bit represents fault status.

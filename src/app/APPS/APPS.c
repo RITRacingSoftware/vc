@@ -1,5 +1,7 @@
+#include <math.h>
+
 #include "APPS.h"
-#include "config.h"
+#include "Config.h"
 #include "FaultManager.h"
 
 
@@ -32,7 +34,7 @@ static void state_machine(SmInputs_s* inputs, SmOutputs_s* outputs)
     switch (state)
     {
         case AppsState_SENSORS_AGREE:
-            printf("APPS_STATE: AGREE\r\n");
+            // printf("APPS_STATE: AGREE\r\n");
             if (!inputs->accel_sensors_agree)
             {
                 new_state(AppsState_SENSORS_DISAGREE);
@@ -40,7 +42,7 @@ static void state_machine(SmInputs_s* inputs, SmOutputs_s* outputs)
             break;
 
         case AppsState_SENSORS_DISAGREE:
-            printf("APPS_STATE: DISAGREE\r\n");
+            // printf("APPS_STATE: DISAGREE\r\n");
             if (inputs->accel_sensors_agree)
             {
                 new_state(AppsState_SENSORS_AGREE);
@@ -52,7 +54,7 @@ static void state_machine(SmInputs_s* inputs, SmOutputs_s* outputs)
             break;
         
         case AppsState_SENSORS_DISAGREE_FAULTED:
-            printf("APPS_STATE: DISAGREE_FAULTED\r\n");
+            // printf("APPS_STATE: DISAGREE_FAULTED\r\n");
             if (inputs->accel_sensors_agree)
             {
                 new_state(AppsState_SENSORS_AGREE_FAULTED);
@@ -60,7 +62,7 @@ static void state_machine(SmInputs_s* inputs, SmOutputs_s* outputs)
             break;
         
         case AppsState_SENSORS_AGREE_FAULTED:
-            printf("APPS_STATE: AGREE_FAULTED\r\n");
+            // printf("APPS_STATE: AGREE_FAULTED\r\n");
             if (!inputs->accel_sensors_agree)
             {
                 new_state(AppsState_SENSORS_DISAGREE_FAULTED);

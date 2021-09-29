@@ -3,7 +3,7 @@
 #include "unity.h"
 
 #include "APPS.h"
-#include "config.h"
+#include "Config.h"
 
 #include "MockFaultManager.h"
 

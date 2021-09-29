@@ -26,5 +26,23 @@
 // How far the brake must be released to to clear a double pedal fault
 #define DOUBLE_PEDAL_BRAKE_POS_RECOVERY_THRESHOLD 5
 
+/**
+ * ADC
+ */
+
+#define ADC_MAX_VAL 4095 // 12 bit adc
+#define ADC_MAX_V 3.3
+
+/**
+ * Brake Pressure Sensor
+ */
+
+#define BPS_MIN_V 0.5
+#define BPS_RANGE_V 4.0
+#define BPS_MAX_V 5.0 // the sensor still only goes to 4.5v, if it reads up here itll be irrational
+
+#define BPS_MIN_PSI 50
+#define BPS_RANGE_PSI 7950
+
 
 #endif // VC_CONFIG_H
