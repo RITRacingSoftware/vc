@@ -1,18 +1,13 @@
 #ifndef APPS_H
 #define APPS_H
 
+#include "Accelerator.h"
+
 /**
  * According to Formula SAE rules, specific plausibility checks must be applied to the
  * brake/accelerator inputs to assure the safety of the driver.
  * This module performs these checks and triggers faults if they fail.
  */
-
-// TODO - redefine these structures in their respective modules once they exist
-typedef struct {
-    float a;
-    float b;
-    float average;
-} AccelPos_s;
 
 /**
  * Reset state machine.

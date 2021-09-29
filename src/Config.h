@@ -30,8 +30,23 @@
  * ADC
  */
 
-#define ADC_MAX_VAL 4095 // 12 bit adc
+#define ADC_MAX_VAL 4095.0 // 12 bit adc
 #define ADC_MAX_V 3.3
+
+/**
+ * Accelerator Position Sensors
+ */
+
+#define APS_A_SENSOR_V 3.3
+#define APS_A_MIN_RATIONAL_V 0.1
+#define APS_A_MAX_RATIONAL_V 3.2
+#define APS_A_RANGE_V ((APS_A_MAX_RATIONAL_V) - (APS_A_MIN_RATIONAL_V))
+
+#define APS_B_SENSOR_V 1.8
+#define APS_B_MIN_RATIONAL_V 0.1
+#define APS_B_MAX_RATIONAL_V 1.7
+#define APS_B_RANGE_V ((APS_B_MAX_RATIONAL_V) - (APS_B_MIN_RATIONAL_V))
+
 
 /**
  * Brake Pressure Sensor

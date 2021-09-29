@@ -55,6 +55,4 @@ void test_Brake_irrational(void)
     FaultManager_set_fault_active_Expect(FaultCode_BRAKE_SENSOR_IRRATIONAL);
     HAL_Aio_read_ExpectAndReturn(AIOpin_BRAKE_PRESSURE, adc_reading);
     Brake_read_pressure(&converted_psi);
-
-    
 }
