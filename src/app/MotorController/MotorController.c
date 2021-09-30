@@ -3,13 +3,6 @@
 #include "CAN.h"
 #include "Config.h"
 
-typedef enum {
-    MCstate_DISCONNECTED,
-    MCstate_DISABLED,
-    MCstate_ENABLED,
-    MCstate_READY
-} MCstate_e;
-
 typedef struct {
     bool mc_messages_seen;
     bool mc_enabled;
@@ -24,7 +17,7 @@ typedef struct {
 static MCstate_e state;
 static SMinputs_s inputs;
 static SMoutputs_s outputs;
-static unsigned int state_counter;
+static unsigned int state_counter_ms;
 static float commanded_torque;
 static int last_checkin_ms;
 static int last_mc_msg_count;
@@ -32,7 +25,7 @@ static int last_mc_msg_count;
 void MotorController_init(void)
 {
     state = MCstate_DISCONNECTED;
-    state_counter = 0;
+    state_counter_ms = 0;
     commanded_torque = 0;
     CAN_begin_counting_id(MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID);
     last_checkin_ms = MC_CAN_TIMEOUT_MS + 1;
@@ -54,7 +47,7 @@ void MotorController_100Hz(void)
 {
     // calculate the time since last receiving a motor control message
     int new_count = CAN_get_count_for_id(MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID);
-    if (new_count = last_mc_msg_count)
+    if (new_count == last_mc_msg_count)
     {
         last_checkin_ms += 10;
     }
@@ -83,13 +76,30 @@ void MotorController_100Hz(void)
     switch (state)
     {
         case MCstate_DISCONNECTED:
+            printf("MC state: DISCONNECTED\r\n");
             if (inputs.mc_messages_seen)
             {
+                state = MCstate_DISABLED_UNLOCKING;
+            }
+            break;
+
+        
+        
+        case MCstate_DISABLED_UNLOCKING:
+            printf("MC state: DISABLED_UNLOCKING\r\n");
+            if (!inputs.mc_messages_seen)
+            {
+                state = MCstate_DISCONNECTED;
+            }
+            else
+            {
+                // we only stay in DISABLED_UNLOCKING for one iteration to flip the enabled bit low for one command message
                 state = MCstate_DISABLED;
             }
             break;
 
         case MCstate_DISABLED:
+            printf("MC state: DISABLED\r\n");
             if (!inputs.mc_messages_seen)
             {
                 state = MCstate_DISCONNECTED;
@@ -98,9 +108,14 @@ void MotorController_100Hz(void)
             {
                 state = MCstate_ENABLED;
             }
+            else if (state_counter_ms > UNLOCK_ATTEMPT_TIMEOUT_MS)
+            {
+                state = MCstate_DISABLED_UNLOCKING;
+            }
             break;
 
         case MCstate_ENABLED:
+        printf("MC state: ENABLED\r\n");
             if (!inputs.mc_messages_seen)
             {
                 state = MCstate_DISCONNECTED;
@@ -116,6 +131,7 @@ void MotorController_100Hz(void)
             break;
 
         case MCstate_READY:
+        printf("MC state: READY\r\n");
             if (!inputs.mc_messages_seen)
             {
                 state = MCstate_DISCONNECTED;
@@ -129,16 +145,33 @@ void MotorController_100Hz(void)
 
     // now determine outputs
     outputs.mc_ready = state == MCstate_READY;
-    outputs.attempt_unlock = state == MCstate_DISABLED;
+    outputs.attempt_unlock = state == MCstate_DISABLED_UNLOCKING;
 
     // now apply outputs
     if (outputs.attempt_unlock)
     {
-        // toggle this back and forth until it unlocks
-        can_bus.mc_command.inverter_enable ^= 1;
+        // attempt to unlock the motor controller
+        
+        can_bus.mc_command.inverter_enable = 0;
+    }
+    else
+    {
+        // otherwise hold it enabled
+        can_bus.mc_command.inverter_enable = 1;
     }
 
-    // outputs.mc_ready is a getter value
+    // increment state counter
+    state_counter_ms += 10;
+
+    // only apply commanded torque if the mc is in the ready state
+    if (outputs.mc_ready)
+    {
+        can_bus.mc_command.torque_command = main_bus_m192_command_message_torque_command_encode(commanded_torque);
+    }
+    else
+    {
+        can_bus.mc_command.torque_command = 0;
+    }
 
     // send command message
     CAN_send_message(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
@@ -146,13 +179,19 @@ void MotorController_100Hz(void)
 
 /**
  * Set the torque to be commanded to the motor controller.
+ * This will not be commanded if the motor controller is not ready.
  */
 void MotorController_set_torque(float torque)
 {
-    can_bus.mc_command.torque_command = main_bus_m192_command_message_torque_command_encode(torque);
+    commanded_torque = torque;
 }
 
 bool MotorController_is_ready(void)
 {
     return outputs.mc_ready;
+}
+
+MCstate_e MotorController_get_state(void)
+{
+    return state;
 }

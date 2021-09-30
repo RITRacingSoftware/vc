@@ -21,6 +21,8 @@
 // How long the VC must go without receiving a MC status message before declaring the motor controller MIA
 #define MC_CAN_TIMEOUT_MS 300 
 
+// If the motor controller isn't unlocked on the first attempt, this is how long to wait before trying again.
+#define UNLOCK_ATTEMPT_TIMEOUT_MS 4000
 
 /**
  * APPS
