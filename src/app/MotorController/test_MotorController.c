@@ -1,4 +1,8 @@
+#include <string.h>
 #include "unity.h"
+#include "Config.h"
+
+#include "common_macros.h"
 
 #include "MotorController.h"
 
@@ -10,21 +14,23 @@ void setUp(void)
 {
     CAN_begin_counting_id_Ignore();
     MotorController_init();
+    memset(&can_bus, 0, sizeof(CAN_BUS));
 }
 
 // helper to avoid using this long function name each time
 float get_commanded_torque(void)
 {
-    main_bus_m192_command_message_torque_command_decode(can_bus.mc_command.torque_command);
+    return main_bus_m192_command_message_torque_command_decode(can_bus.mc_command.torque_command);
 }
 
 void test_MotorController_ready_sequence(void)
 {
     // simulate a pedal press that is looking to apply torque too early
-    MotorController_set_torque(100);
+    float commanded_torque = 100;
+    MotorController_set_torque(commanded_torque);
 
     // motor controller begins not ready
-    can_bus.mc_state.d1_vsm_state = 2;
+    can_bus.mc_state.d1_vsm_state = main_bus_m170_internal_states_d1_vsm_state_encode(2.0);
 
     // vc shouldnt command torque before MC status messages are seen.
     // Enable bit should be low to unlock MC once it starts up.
@@ -66,4 +72,63 @@ void test_MotorController_ready_sequence(void)
 
     TEST_ASSERT_MESSAGE(get_commanded_torque() == 0, "vc should not request torque before MC is ready");
     TEST_ASSERT_MESSAGE(can_bus.mc_command.inverter_enable == 1, "Enabled bit should be held high now");
+
+    // run for a bit while MC is enabled but not in the ready state and ensure no torque is requested yet
+    int can_count = 2;
+    for (int i = 0; i < 100; i++)
+    {
+        if (i % 10)
+        {
+            // send a CAN message so the VC knows the MC is still powered on
+            can_count++;       
+        }
+
+        CAN_get_count_for_id_ExpectAnyArgsAndReturn(can_count);
+        CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+        MotorController_100Hz();
+
+        TEST_ASSERT_MESSAGE(get_commanded_torque() == 0, "vc should not request torque before MC is ready");
+    }
+
+    // indicate the motor controller is ready. Make sure the vc starts requesting torque afterwards.
+    can_bus.mc_state.d1_vsm_state = main_bus_m170_internal_states_d1_vsm_state_encode(5); // 5 is VSM_READY
+    CAN_get_count_for_id_ExpectAnyArgsAndReturn(can_count);
+    CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+    MotorController_100Hz();
+
+    char err_msg[100];
+    sprintf(err_msg, "Commanded Torque: %f not seen. Instead, %f was transmitted to the MC.", commanded_torque, get_commanded_torque());
+    TEST_ASSERT_MESSAGE(FLOAT_EQ(get_commanded_torque(), commanded_torque, 0.001), err_msg);
+}
+
+/**
+ * The VC should stop commanding torque if the motor controller goes mia.
+ */
+void test_MotorController_disconnect(void)
+{
+    // setup the motor controller ready condition
+    can_bus.mc_state.d1_vsm_state = main_bus_m170_internal_states_d1_vsm_state_encode(5); // 5 is VSM_READY
+    can_bus.mc_state.d6_inverter_enable_state = 1; // inverter enabled
+
+    int can_count = 0;
+    float commanded_torque = 100;
+    MotorController_set_torque(commanded_torque);
+    for (int i = 0; i < 10; i++)
+    {
+        CAN_get_count_for_id_ExpectAnyArgsAndReturn(can_count++);
+        CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+        MotorController_100Hz();
+    }
+
+    TEST_ASSERT_MESSAGE(get_commanded_torque() == commanded_torque, "Torque was never commanded");
+
+    // now stop sending MC status CAN messages (keep can_count steady)
+    for (int i = 0; i < MC_CAN_TIMEOUT_MS/10 + 10; i++)
+    {
+        CAN_get_count_for_id_ExpectAnyArgsAndReturn(can_count);
+        CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+        MotorController_100Hz();
+    }
+
+    TEST_ASSERT_MESSAGE(get_commanded_torque() == 0, "VC kept commanding torque after MC CAN timeout.");
 }

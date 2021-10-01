@@ -63,7 +63,9 @@ void MotorController_100Hz(void)
         inputs.mc_messages_seen = true;
         inputs.mc_enabled = can_bus.mc_state.d6_inverter_enable_state;
         // states 5 and 6 are ready and running, respectively
-        inputs.mc_state_ready = can_bus.mc_state.d1_vsm_state == 5 || can_bus.mc_state.d1_vsm_state == 6;
+        int mc_state = main_bus_m170_internal_states_d1_vsm_state_decode(can_bus.mc_state.d1_vsm_state);
+        printf("VSM STATE: %d\r\n", mc_state);
+        inputs.mc_state_ready = mc_state == 5 || mc_state == 6;
     }
     else
     {
