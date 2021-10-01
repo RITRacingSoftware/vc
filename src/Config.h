@@ -25,6 +25,11 @@
 #define UNLOCK_ATTEMPT_TIMEOUT_MS 4000
 
 /**
+ * Torque Conversion (pedal position -> torque transfer function)
+ */
+#define MAX_TORQUE_NM 100 // TODO - get this value from filip
+
+/**
  * APPS
  */
 
