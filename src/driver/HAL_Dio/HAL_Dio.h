@@ -11,6 +11,10 @@ typedef enum {
     DIOpin_SOUND_4,
     DIOpin_SOUND_5,
     DIOpin_SOUND_6,
+    DIOpin_SWITCH_0,
+    DIOpin_SWITCH_1,
+    DIOpin_SWITCH_2,
+    DIOpin_SWITCH_3,
     DIOpin_STATUS_LED,
 } DIOpin_e;
 

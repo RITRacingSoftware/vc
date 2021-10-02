@@ -11,8 +11,14 @@ unsigned int pin_durations_ms[Sounds_NUM];
 
 void SoundController_init(void)
 {
+    // set up pin mapping
     pin_map[Sounds_READY_TO_DRIVE] = DIOpin_SOUND_0;
-    memset(pin_durations_ms, sizeof(int), 0);
+
+    // zero out pin low time timers
+    for (int i = 0; i < Sounds_NUM; i++)
+    {
+        pin_durations_ms[i] = 0;
+    }
 }
 
 void SoundController_play_sound(Sounds_e sound)
