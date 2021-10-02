@@ -49,6 +49,13 @@
 #define BRAKE_ON_PSI 1000
 
 /**
+ * Sound Control
+ */
+
+// How long a sound trigger is held.
+#define SOUND_TRIGGER_HOLD_MS 200
+
+/**
  * CAN
  */
 
