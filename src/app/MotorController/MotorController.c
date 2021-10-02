@@ -39,6 +39,12 @@ void MotorController_init(void)
     can_bus.mc_command.speed_mode_enable = 0; // no speed mode
 }
 
+static void new_state(MCstate_e new)
+{
+    state = new;
+    state_counter_ms = 0;
+}
+
 /**
  * Run the state machine.
  * Waits until the motor controller powers on, then sends the command message each iteration.
@@ -165,15 +171,7 @@ void MotorController_100Hz(void)
     // increment state counter
     state_counter_ms += 10;
 
-    // only apply commanded torque if the mc is in the ready state
-    if (outputs.mc_ready)
-    {
-        can_bus.mc_command.torque_command = main_bus_m192_command_message_torque_command_encode(commanded_torque);
-    }
-    else
-    {
-        can_bus.mc_command.torque_command = 0;
-    }
+    // outputs.mc_ready is used by other modules
 
     // send command message
     CAN_send_message(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);

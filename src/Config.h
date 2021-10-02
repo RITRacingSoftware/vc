@@ -27,7 +27,7 @@
 /**
  * Torque Conversion (pedal position -> torque transfer function)
  */
-#define MAX_TORQUE_NM 100 // TODO - get this value from filip
+#define MAX_TORQUE_NM 240.0
 
 /**
  * APPS

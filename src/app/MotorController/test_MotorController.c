@@ -25,10 +25,6 @@ float get_commanded_torque(void)
 
 void test_MotorController_ready_sequence(void)
 {
-    // simulate a pedal press that is looking to apply torque too early
-    float commanded_torque = 100;
-    MotorController_set_torque(commanded_torque);
-
     // motor controller begins not ready
     can_bus.mc_state.d1_vsm_state = main_bus_m170_internal_states_d1_vsm_state_encode(2.0);
 
@@ -41,15 +37,15 @@ void test_MotorController_ready_sequence(void)
         // should start out sending command messages so that the MC doesn't immediately time out on power on
         CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
         MotorController_100Hz();
-        TEST_ASSERT_MESSAGE(get_commanded_torque() == 0, "vc should start with no torque commanded");   
+        TEST_ASSERT_MESSAGE(!MotorController_is_ready(), "MC is not ready at startup");   
     }
 
     // a transition should be seen into the DISABLED state upon receiving a MC status message
     CAN_get_count_for_id_ExpectAnyArgsAndReturn(1);
     CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
     MotorController_100Hz();
-    // torque should still be 0
-    TEST_ASSERT_MESSAGE(get_commanded_torque() == 0, "vc should start with no torque commanded");   
+    // mc still not ready yet
+    TEST_ASSERT(!MotorController_is_ready());   
     // enable bit should flip low to unlock MC
     TEST_ASSERT_MESSAGE(can_bus.mc_command.inverter_enable == 0, "VC should flip enable bit low upon receiving a message from the MC.");
 
@@ -58,8 +54,8 @@ void test_MotorController_ready_sequence(void)
     CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
     MotorController_100Hz();
 
-    // torque should still be 0
-    TEST_ASSERT_MESSAGE(get_commanded_torque() == 0, "vc should start with no torque commanded");   
+    // mc should still not be deemed ready
+    TEST_ASSERT(!MotorController_is_ready());   
     // enable bit should flip low to unlock MC
     TEST_ASSERT_MESSAGE(can_bus.mc_command.inverter_enable == 1, "VC should flip enable bit high to enable MC after unlocking it.");
 
@@ -70,7 +66,7 @@ void test_MotorController_ready_sequence(void)
     CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
     MotorController_100Hz();
 
-    TEST_ASSERT_MESSAGE(get_commanded_torque() == 0, "vc should not request torque before MC is ready");
+    TEST_ASSERT(!MotorController_is_ready());
     TEST_ASSERT_MESSAGE(can_bus.mc_command.inverter_enable == 1, "Enabled bit should be held high now");
 
     // run for a bit while MC is enabled but not in the ready state and ensure no torque is requested yet
@@ -87,7 +83,7 @@ void test_MotorController_ready_sequence(void)
         CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
         MotorController_100Hz();
 
-        TEST_ASSERT_MESSAGE(get_commanded_torque() == 0, "vc should not request torque before MC is ready");
+        TEST_ASSERT(!MotorController_is_ready());
     }
 
     // indicate the motor controller is ready. Make sure the vc starts requesting torque afterwards.
@@ -96,9 +92,7 @@ void test_MotorController_ready_sequence(void)
     CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
     MotorController_100Hz();
 
-    char err_msg[100];
-    sprintf(err_msg, "Commanded Torque: %f not seen. Instead, %f was transmitted to the MC.", commanded_torque, get_commanded_torque());
-    TEST_ASSERT_MESSAGE(FLOAT_EQ(get_commanded_torque(), commanded_torque, 0.001), err_msg);
+    TEST_ASSERT(MotorController_is_ready());
 }
 
 /**
@@ -120,7 +114,7 @@ void test_MotorController_disconnect(void)
         MotorController_100Hz();
     }
 
-    TEST_ASSERT_MESSAGE(get_commanded_torque() == commanded_torque, "Torque was never commanded");
+    TEST_ASSERT_MESSAGE(MotorController_is_ready(), "Motor Controller was never ready");
 
     // now stop sending MC status CAN messages (keep can_count steady)
     for (int i = 0; i < MC_CAN_TIMEOUT_MS/10 + 10; i++)
@@ -130,5 +124,5 @@ void test_MotorController_disconnect(void)
         MotorController_100Hz();
     }
 
-    TEST_ASSERT_MESSAGE(get_commanded_torque() == 0, "VC kept commanding torque after MC CAN timeout.");
+    TEST_ASSERT_MESSAGE(!MotorController_is_ready(), "VC kept MC status as ready after MC CAN timeout.");
 }
