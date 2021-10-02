@@ -3,8 +3,11 @@
 #include "VehicleState.h"
 
 #include "MockFaultManager.h"
+#include "MockCAN.h"
 #include "MockMotorController.h"
 #include "MockSoundController.h"
+
+CAN_BUS can_bus;
 
 void setUp(void)
 {

@@ -175,6 +175,9 @@ void MotorController_100Hz(void)
 
     // send command message
     CAN_send_message(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+
+    // update status CAN message
+    can_bus.vc_status.vc_status_mc_ready = main_bus_vc_status_vc_status_mc_ready_encode(MotorController_is_ready());
 }
 
 /**

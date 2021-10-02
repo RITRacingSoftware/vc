@@ -45,9 +45,6 @@ static int pack_message(int id, uint8_t* msg_data)
 
         case MAIN_BUS_VC_DASH_INPUTS_FRAME_ID:
             return main_bus_vc_dash_inputs_pack(msg_data, &can_bus.vc_dash_inputs, 8);
-
-        case MAIN_BUS_VC_SWITCH_CONFIG_FRAME_ID:
-            return main_bus_vc_switch_config_pack(msg_data, &can_bus.vc_switch_config, 8);
         
         case MAIN_BUS_VC_SHUTDOWN_STATUS_FRAME_ID:
             return main_bus_vc_shutdown_status_pack(msg_data, &can_bus.vc_shutdown_status, 8);
@@ -105,20 +102,6 @@ bool CAN_get_tx_error(void)
 bool CAN_get_rx_error(void)
 {
     return can_rx_error;
-}
-
-
-/**
- * Periodic CAN functions. Build and send periodic CAN messages.
- */
-void CAN_100Hz(void)
-{
-    // TODO
-}
-
-void CAN_1Hz(void)
-{
-    // TODO
 }
 
 /**

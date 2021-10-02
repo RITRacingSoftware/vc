@@ -21,7 +21,6 @@ typedef struct
     struct main_bus_vc_status_t vc_status;
     struct main_bus_vc_pedal_inputs_t vc_pedal_inputs;
     struct main_bus_vc_dash_inputs_t vc_dash_inputs;
-    struct main_bus_vc_switch_config_t vc_switch_config;
     struct main_bus_vc_shutdown_status_t vc_shutdown_status;
     struct main_bus_vc_fault_vector_t vc_fault_vector;
     struct main_bus_vc_fault_alert_t vc_fault_alert;

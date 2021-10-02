@@ -2,6 +2,9 @@
 #include "Accelerator.h"
 #include "MockHAL_Aio.h"
 #include "MockFaultManager.h"
+#include "MockCAN.h"
+
+CAN_BUS can_bus;
 
 void setUp(void){ }
 

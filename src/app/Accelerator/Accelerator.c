@@ -1,4 +1,5 @@
 #include "Accelerator.h"
+#include "CAN.h"
 #include "Config.h"
 #include "FaultManager.h"
 #include "HAL_Aio.h"
@@ -24,4 +25,9 @@ bool Accelerator_read_positions(AccelPos_s* accel_pos)
     {
         FaultManager_clear_fault(FaultCode_ACCELERATOR_SENSOR_IRRATIONAL);
     }
+
+    // update CAN message
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_accel_position_a = main_bus_vc_pedal_inputs_vc_pedal_inputs_accel_position_a_encode(accel_pos->a);
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_accel_position_b = main_bus_vc_pedal_inputs_vc_pedal_inputs_accel_position_b_encode(accel_pos->b);
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_accel_position_avg = main_bus_vc_pedal_inputs_vc_pedal_inputs_accel_position_avg_encode(accel_pos->average);
 }

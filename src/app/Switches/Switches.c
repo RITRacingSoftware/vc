@@ -1,5 +1,7 @@
 #include <stdbool.h>
 #include <string.h>
+
+#include "CAN.h"
 #include "Switches.h"
 #include "HAL_Dio.h"
 
@@ -47,8 +49,17 @@ void Switches_100Hz(void)
     {
         if (new_switch_states[i] != switch_states[i])
         {
-            bool rising_edge = new_switch_states == 1;
+            bool rising_edge = new_switch_states[i] == 1;
             edge_action(i, rising_edge);
+            switch_states[i] = new_switch_states[i];
         }
     }
+
+    // update CAN message bits and send them
+    can_bus.vc_dash_inputs.vc_dash_inputs_switch0 = switch_states[0];
+    can_bus.vc_dash_inputs.vc_dash_inputs_switch1 = switch_states[1];
+    can_bus.vc_dash_inputs.vc_dash_inputs_switch2 = switch_states[2];
+    can_bus.vc_dash_inputs.vc_dash_inputs_switch3 = switch_states[3]; 
+
+    CAN_send_message(MAIN_BUS_VC_DASH_INPUTS_FRAME_ID);
 }

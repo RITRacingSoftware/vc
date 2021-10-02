@@ -1,4 +1,6 @@
 #include "Brake.h"
+
+#include "CAN.h"
 #include "Config.h"
 #include "FaultManager.h"
 #include "HAL_Aio.h"
@@ -38,4 +40,7 @@ bool Brake_read_pressure(float* pressure)
         FaultManager_clear_fault(FaultCode_BRAKE_SENSOR_IRRATIONAL);
         return true;
     }
+
+    // update the CAN message
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_brake_pressure = main_bus_vc_pedal_inputs_vc_pedal_inputs_brake_pressure_encode(*pressure);
 }

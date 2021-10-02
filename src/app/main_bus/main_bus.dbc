@@ -192,37 +192,30 @@ BO_ 176 M176_Fast_Info: 8 INV
 
 BO_ 301 VcStatus: 8 VCU
  SG_ VcStatus_VehicleState : 0|4@1+ (1,0) [0|15] "" Vector__XXX
- SG_ VcStatus_RTDbuttonPressed : 5|1@1+ (1,0) [0|1] "" Vector_XXX
- SG_ VcStatus_MCready : 6|1@1+ (1,0) [0|1] "" Vector_XXX
+ SG_ VcStatus_MC_ready : 5|1@1+ (1,0) [0|1] "" Vector_XXX
 
 BO_ 302 VcPedalInputs: 8 VCU
  SG_ VcPedalInputs_BrakePressure : 0|16@1+ (0.1,0) [0|3000] "psi" Vector__XXX
  SG_ VcPedalInputs_AccelPositionA : 16|16@1+ (0.1,0) [0|100] "%" Vector__XXX
  SG_ VcPedalInputs_AccelPositionB : 32|16@1+ (0.1,0) [0|100] "%" Vector__XXX
+ SG_ VcPedalInputs_AccelPositionAvg : 48|16@1+ (0.1,0) [0|100] "%" Vector__XXX
 
 BO_ 303 VcDashInputs: 8 VCU
- SG_ VcDashInputs_RTDbutton : 0|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ VcDashInputs_DRSbutton : 1|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ VcDashInputs_Switch0 : 2|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ VcDashInputs_Switch1 : 3|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ VcDashInputs_Switch2 : 4|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ VcDashInputs_Switch3 : 5|1@1+ (1,0) [0|1] "" Vector__XXX
 
-BO_ 304 VcSwitchConfig: 8 VCU
- SG_ VcSwitchConfig_Switch0 : 0|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcSwitchConfig_Switch1 : 1|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcSwitchConfig_Switch2 : 2|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcSwitchConfig_Switch3 : 3|1@1+ (1,0) [0|1] "" Vector__XXX
-
 BO_ 305 VcShutdownStatus: 8 VCU
- SG_ VcShutdownStatus_BMSline : 0|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcShutdownStatus_BMSlatch : 1|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcShutdownStatus_BSPDline : 2|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcShutdownStatus_BSPDlatch : 3|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcShutdownStatus_IMD1line : 4|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcShutdownStatus_IMD1latch : 5|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcShutdownStatus_IMD2line : 6|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcShutdownStatus_IMD2latch : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ VcShutdownStatus_BMS_input : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ VcShutdownStatus_BMS_latch : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ VcShutdownStatus_BSPD_input : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ VcShutdownStatus_BSPD_latch : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ VcShutdownStatus_IMD1_input : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ VcShutdownStatus_IMD1_latch : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ VcShutdownStatus_IMD2_input : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ VcShutdownStatus_IMD2_latch : 7|1@1+ (1,0) [0|1] "" Vector__XXX
 
 BO_ 311 VcFaultVector: 8 VCU
 SG_ VcFaultVector_BRAKE_SENSOR_IRRATIONAL: 0|1@1+ (1,0) [0|1] "" Vector__XXX
@@ -527,6 +520,8 @@ BO_ 951 BmsRef: 8 Bms
  SG_ BmsRef_ref9 m1: 28|9@1+ (0.01,0) [0|5.12] "V" Vector__XXX
  SG_ BmsRef_ref10 m1: 37|9@1+ (0.01,0) [0|5.12] "V" Vector__XXX
  SG_ BmsRef_ref11 m1: 46|9@1+ (0.01,0) [0|5.12] "V" Vector__XXX
+
+VAL_ 301 VcStatus_VehicleState 0 "VehicleState_NOT_READY" 1 "VehicleState_STARTUP" 2 "VehicleState_READY_TO_DRIVE" 3 "VehicleState_FAULTED";
 
 VAL_ 701 BmsFaultAlert_code 0 "FaultCode_SLAVE_COMM_CELLS" 1 "FaultCode_SLAVE_COMM_TEMPS" 2 "FaultCode_SLAVE_COMM_DRAIN_REQUEST" 3 "FaultCode_CURRENT_SENSOR_COMM" 4 "FaultCode_OVER_CURRENT" 5 "FaultCode_CELL_VOLTAGE_IRRATIONAL" 6 "FaultCode_CELL_VOLTAGE_DIFF" 7 "Faultcode_OUT_OF_JUICE" 8 "FaultCode_TEMPERATURE_IRRATIONAL" 9 "FaultCode_OVER_TEMP" 10 "FaultCode_DRAIN_FAILURE";
 VAL_ 311 VcFaultAlert_code 0 "FaultCode_BRAKE_SENSOR_IRRATIONAL" 1 "FaultCode_ACCELERATOR_SENSOR_IRRATIONAL" 2 "FaultCode_APPS_SENSOR_DISAGREEMENT" 3 "FaultCode_APPS_DOUBLE_PEDAL";
