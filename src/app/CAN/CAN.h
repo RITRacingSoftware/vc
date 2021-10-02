@@ -51,6 +51,11 @@ void CAN_send_message(unsigned long int id);
 bool CAN_get_tx_error(void);
 
 /**
+ * Return true if last CAN message read failed, false otherwise.
+ */
+bool CAN_get_rx_error(void);
+
+/**
  * If we care about this message, unpack its values and update our internal structure of them.
  */
 void CAN_receive_message(CanMessage_s* msg);

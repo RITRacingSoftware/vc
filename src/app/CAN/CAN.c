@@ -8,6 +8,7 @@
 //#include "FreeRTOS.h" TODO
 
 static bool can_tx_error;
+static bool can_rx_error;
 //static QueueHandle_t tx_msg_queue;
 CAN_BUS can_bus;
 
@@ -99,6 +100,11 @@ void CAN_send_message(unsigned long int id)
 bool CAN_get_tx_error(void)
 {
     return can_tx_error;
+}
+
+bool CAN_get_rx_error(void)
+{
+    return can_rx_error;
 }
 
 
