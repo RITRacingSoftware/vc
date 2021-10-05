@@ -23,9 +23,9 @@ typedef enum {
 static AppsState_e state;
 static unsigned int state_counter_ms;
 
-static void new_state(AppsState_e new)
+static void new_state(AppsState_e new_s)
 {
-    state = new;
+    state = new_s;
     state_counter_ms = 0;
 }
 
@@ -83,12 +83,12 @@ void APPS_init(void)
 
 // Check if the pedals are within a certain percentage of each other
 // Return true if they are, false otherwise
-bool accel_pos_agree(AccelPos_s pos)
+bool accel_pos_agree(AccelPos_s* pos)
 {
-    return fabs(pos.a - pos.b) < APPS_PEDAL_DISAGREEMENT_PERCENTAGE;
+    return fabs(pos->a - pos->b) < APPS_PEDAL_DISAGREEMENT_PERCENTAGE;
 }
 
-void pedal_disagreement_check(AccelPos_s accel_pos)
+void pedal_disagreement_check(AccelPos_s* accel_pos)
 {
     SmInputs_s inputs = {accel_pos_agree(accel_pos)};
     SmOutputs_s outputs;
@@ -145,8 +145,8 @@ void double_pedal_check(float average_accel_pos, float brake_pres_psi)
 }
 
 
-void APPS_100Hz(AccelPos_s accel_pos, float brake_pres_psi)
+void APPS_100Hz(AccelPos_s* accel_pos, float brake_pres_psi)
 {
     pedal_disagreement_check(accel_pos);
-    double_pedal_check(accel_pos.average, brake_pres_psi);
+    double_pedal_check(accel_pos->average, brake_pres_psi);
 }

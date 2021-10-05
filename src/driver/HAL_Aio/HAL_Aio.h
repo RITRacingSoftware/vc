@@ -6,7 +6,8 @@
 typedef enum {
     AIOpin_BRAKE_PRESSURE,
     AIOpin_ACCEL_A,
-    AIOpin_ACCEL_B
+    AIOpin_ACCEL_B,
+    AIOpin_NUM
 } AIOpin_e;
 
 void HAL_Aio_init(void);

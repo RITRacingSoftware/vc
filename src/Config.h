@@ -62,6 +62,9 @@
 // How many message ids can be counted at once.
 #define NUM_ID_COUNTERS 5
 
+// How much space is allocated for messages in a CanQueue_s
+#define CAN_QUEUE_NUM_MSGS 15
+
 /**
  * ADC
  */

@@ -16,8 +16,11 @@ SRC_DIR = REPO_ROOT_DIR.Dir('src')
 APP_DIR = SRC_DIR.Dir('app')
 DRIVER_DIR = SRC_DIR.Dir('driver')
 COMMON_DIR = SRC_DIR.Dir('common')
+SIL_DIR = SRC_DIR.Dir('sil')
+SIL_TESTS_DIR = SIL_DIR.Dir('tests')
 BUILD_DIR = REPO_ROOT_DIR.Dir('build', create=True)
 LIBS_DIR = REPO_ROOT_DIR.Dir('libs')
+
 
 """
 Find the modules, accumulate a list of include paths while we're at it.
@@ -27,8 +30,9 @@ include_paths = [
     SRC_DIR, 
     COMMON_DIR, 
     DRIVER_DIR, 
+    SIL_DIR,
     LIBS_DIR.Dir('cmock/src'),
-    LIBS_DIR.Dir('cmock/vendor/unity/src')
+    LIBS_DIR.Dir('cmock/vendor/unity/src'),
 ]
 
 app_modules = []
@@ -69,6 +73,13 @@ linux_c_env = Environment(
     CCFLAGS=[],
     LIBS=['m'],
     SHELL='bash'
+)
+
+linux_cpp_env = Environment(
+    CC='g++',
+    CPPPATH=include_paths,
+    CPPFLAGS=["-ggdb"],
+    LIBS=['m']
 )
 
 """
@@ -331,3 +342,60 @@ Alias('unit_tests', unit_test_results)
 Default(unit_test_results)
 
 Alias('testrunners', unit_test_execs)
+
+"""
+Simulation module compilation instructions.
+"""
+
+# compile all sil modules
+sil_objs = []
+for src_file in Glob(Path(SIL_DIR.abspath) / "*.cpp"):
+    build_dir = BUILD_DIR.Dir('g++').Dir('sil')
+    sil_objs.append(linux_cpp_env.Object(
+        source=src_file,
+        target=build_dir.File(f'{SIL_DIR.rel_path(src_file)}.o')
+    ))    
+
+
+# compile all application modules using g++
+cpp_app_objs = []
+for module_name, module_dir in app_modules:
+    build_dir = BUILD_DIR.Dir('g++').Dir(SRC_DIR.rel_path(module_dir))
+    cpp_app_objs.append(linux_cpp_env.Object(
+        source=module_dir.File(f'{module_name}.c'),
+        target=build_dir.File(f'{module_name}.o')
+    ))
+
+
+# compile all sil driver modules using g++
+cpp_sil_driver_objs = []
+for module_name, module_dir in driver_modules:
+    build_dir = BUILD_DIR.Dir('g++').Dir(SRC_DIR.rel_path(module_dir))
+    cpp_sil_driver_objs.append(linux_cpp_env.Object(
+        source=module_dir.File(f'SIL_{module_name}.c'),
+        target=build_dir.File(f'SIL_{module_name}.o')
+    ))
+
+# compile all common modules using g++
+cpp_common_objs = []
+for module_name, module_dir in common_modules:
+    build_dir = BUILD_DIR.Dir('g++').Dir(SRC_DIR.rel_path(module_dir))
+    cpp_sil_driver_objs.append(linux_cpp_env.Object(
+        source=module_dir.File(f'{module_name}.c'),
+        target=build_dir.File(f'{module_name}.o')
+    ))
+
+# compile ecusim 
+ecusim = SConscript('libs/ecu-sim/sconstruct.py')
+ecusim_objs = ecusim['ecusim_objs']
+ecusim_src_dirs = ecusim['src_dirs']
+
+linux_cpp_env['CPPPATH'] += ecusim_src_dirs
+
+# compile sil main program + link everything together
+smoke_test = linux_cpp_env.Program(
+    source=[SIL_TESTS_DIR.File('smoke_test.cpp')] + sil_objs + ecusim_objs + cpp_sil_driver_objs + cpp_app_objs,
+    target=BUILD_DIR.Dir('g++/sil/tests/').File('smoke_test')
+)
+
+Alias('smoke_test', smoke_test)

@@ -13,9 +13,9 @@ void VehicleState_init(void)
     state = VehicleState_NOT_READY;
 }
 
-static void new_state(VehicleState_e new)
+static void new_state(VehicleState_e new_s)
 {
-    state = new;
+    state = new_s;
 }
 
 void VehicleState_100Hz(void)

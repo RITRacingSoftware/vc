@@ -81,7 +81,7 @@ void CAN_send_message(unsigned long int id)
     {
         CanMessage_s thisMessage = {id, 8, msg_data};
         //xQueueSend(message_queue, &thisMessage, 10);
-        HAL_Can_send_message(thisMessage.id, thisMessage.dlc, thisMessage.data);
+        HAL_Can_send_message(&thisMessage);
     }
     else
     {

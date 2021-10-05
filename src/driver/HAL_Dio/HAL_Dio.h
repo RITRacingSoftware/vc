@@ -16,9 +16,10 @@ typedef enum {
     DIOpin_SWITCH_2,
     DIOpin_SWITCH_3,
     DIOpin_STATUS_LED,
+    DIOpin_NUM
 } DIOpin_e;
 
 bool HAL_Dio_read(DIOpin_e pin);
-bool HAL_Dio_write(DIOpin_e pin, bool val);
+void HAL_Dio_write(DIOpin_e pin, bool val);
 
 #endif // HAL_DIO_H

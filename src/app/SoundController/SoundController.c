@@ -36,14 +36,14 @@ void SoundController_100Hz(void)
     for (int sound = 0; sound < Sounds_NUM; sound++)
     {   
         // only care if output is low
-        if (HAL_Dio_read(pin_map[sound] == false))
+        if (HAL_Dio_read(pin_map[(DIOpin_e) sound]) == false)
         {
             pin_durations_ms[sound] += 10;
 
             // if trigger has been low for long enough, set to high
             if (pin_durations_ms[sound] >= SOUND_TRIGGER_HOLD_MS)
             {
-                HAL_Dio_write(sound, true);
+                HAL_Dio_write((DIOpin_e) sound, true);
                 pin_durations_ms[sound] = 0;
             }
         }

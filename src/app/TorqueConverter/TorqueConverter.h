@@ -11,6 +11,6 @@
  * pos - instantaneous accelerator position
  * return corresponding torque in Nm
  */
-float TorqueConverter_pos_to_torque(AccelPos_s pos);
+float TorqueConverter_pos_to_torque(float pos);
 
 #endif // TORQUE_CONVERTER_H

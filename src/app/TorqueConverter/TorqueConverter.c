@@ -12,7 +12,7 @@ float pos_to_t(float pos)
     (pos / 100.0) * MAX_TORQUE_NM;
 }
 
-float TorqueConverter_pos_to_torque(AccelPos_s pos)
+float TorqueConverter_pos_to_torque(float pos)
 {
-    return pos_to_t(pos.average);
+    return pos_to_t(pos);
 }

@@ -19,6 +19,6 @@ void APPS_init(void);
  * accel_pos [in] - accelerator per-sensor position + associated data
  * brake_pres_psi [in] - brake pressure (psi)
  */
-void APPS_100Hz(AccelPos_s accel_pos, float brake_pres_psi);
+void APPS_100Hz(AccelPos_s* accel_pos, float brake_pres_psi);
 
 #endif // APPS_H

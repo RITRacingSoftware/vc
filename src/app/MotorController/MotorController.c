@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "MotorController.h"
 
 #include "CAN.h"
@@ -39,9 +40,9 @@ void MotorController_init(void)
     can_bus.mc_command.speed_mode_enable = 0; // no speed mode
 }
 
-static void new_state(MCstate_e new)
+static void new_state(MCstate_e new_s)
 {
-    state = new;
+    state = new_s;
     state_counter_ms = 0;
 }
 
