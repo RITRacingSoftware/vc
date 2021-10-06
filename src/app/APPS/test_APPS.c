@@ -24,7 +24,7 @@ void test_APPS_no_faults_idle(void)
     {
         FaultManager_clear_fault_Ignore();
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
-        APPS_100Hz(accel_pos, brake_pres_psi);
+        APPS_100Hz(&accel_pos, brake_pres_psi);
     }
 }
 
@@ -42,7 +42,7 @@ void test_APPS_sensor_disagreement(void)
     {
         FaultManager_clear_fault_Ignore();
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
-        APPS_100Hz(accel_pos, brake_pres_psi);
+        APPS_100Hz(&accel_pos, brake_pres_psi);
     }
 
     // now set the pedal sensors too far apart and make sure a fault occurs at the right time
@@ -52,20 +52,20 @@ void test_APPS_sensor_disagreement(void)
     {
         FaultManager_clear_fault_Ignore();
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
-        APPS_100Hz(accel_pos, brake_pres_psi);
+        APPS_100Hz(&accel_pos, brake_pres_psi);
     }
 
     FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_SENSOR_DISAGREEMENT, false);
     FaultManager_set_fault_active_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
     FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
-    APPS_100Hz(accel_pos, brake_pres_psi);
+    APPS_100Hz(&accel_pos, brake_pres_psi);
 
     for (int i = 0; i < 10; i++)
     {
         // make sure the fault stays active
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_SENSOR_DISAGREEMENT, true); // pedal disagreement
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false); // double pedal
-        APPS_100Hz(accel_pos, brake_pres_psi);
+        APPS_100Hz(&accel_pos, brake_pres_psi);
     }
 
     // now get rid of the error condition and make sure the fault clears accordingly
@@ -77,12 +77,12 @@ void test_APPS_sensor_disagreement(void)
     {
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_SENSOR_DISAGREEMENT, true); // pedal disagreement
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false); // double pedal
-        APPS_100Hz(accel_pos, brake_pres_psi);
+        APPS_100Hz(&accel_pos, brake_pres_psi);
     }
 
     FaultManager_clear_fault_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
     FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false); // double pedal
-    APPS_100Hz(accel_pos, brake_pres_psi);
+    APPS_100Hz(&accel_pos, brake_pres_psi);
 
 }
 
@@ -101,7 +101,7 @@ void test_APPS_double_pedal(void)
     {
         FaultManager_clear_fault_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
-        APPS_100Hz(accel_pos, brake_pres_psi);
+        APPS_100Hz(&accel_pos, brake_pres_psi);
     }
 
     // press the brake, make sure there's still no faults
@@ -114,7 +114,7 @@ void test_APPS_double_pedal(void)
     {
         FaultManager_clear_fault_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
-        APPS_100Hz(accel_pos, brake_pres_psi);
+        APPS_100Hz(&accel_pos, brake_pres_psi);
     }
 
     // now press the accelerator, there should be a fault here
@@ -122,7 +122,7 @@ void test_APPS_double_pedal(void)
     FaultManager_clear_fault_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
     FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, false);
     FaultManager_set_fault_active_Expect(FaultCode_APPS_DOUBLE_PEDAL);
-    APPS_100Hz(accel_pos, brake_pres_psi);
+    APPS_100Hz(&accel_pos, brake_pres_psi);
 
     // release the brake part of the way, the fault should hold
     accel_pos.average = 6;
@@ -130,7 +130,7 @@ void test_APPS_double_pedal(void)
     {
         FaultManager_clear_fault_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
         FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, true);
-        APPS_100Hz(accel_pos, brake_pres_psi);
+        APPS_100Hz(&accel_pos, brake_pres_psi);
     }
 
     // now release the brake all the way, the fault should clear
@@ -138,5 +138,5 @@ void test_APPS_double_pedal(void)
     FaultManager_is_fault_active_ExpectAndReturn(FaultCode_APPS_DOUBLE_PEDAL, true);
     FaultManager_clear_fault_Expect(FaultCode_APPS_SENSOR_DISAGREEMENT);
     FaultManager_clear_fault_Expect(FaultCode_APPS_DOUBLE_PEDAL);
-    APPS_100Hz(accel_pos, brake_pres_psi);
+    APPS_100Hz(&accel_pos, brake_pres_psi);
 }

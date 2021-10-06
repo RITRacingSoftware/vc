@@ -7,3 +7,4 @@ src/app/main_bus/main_bus.h
 build/*
 *mocks*
 .vscode
+*.blf   
