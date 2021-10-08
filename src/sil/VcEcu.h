@@ -12,6 +12,7 @@ class VcEcu: public Ecu {
         void tick(void);
         void injectCan(ecusim::CanMsg);
         void set(std::string, float);
+        float get(std::string);
     private:
         main_bus_vc_shutdown_status_t shutdown_status;
 };

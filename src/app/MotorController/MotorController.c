@@ -4,6 +4,8 @@
 #include "CAN.h"
 #include "Config.h"
 
+//#define MC_DEBUG
+
 typedef struct {
     bool mc_messages_seen;
     bool mc_enabled;
@@ -71,7 +73,6 @@ void MotorController_100Hz(void)
         inputs.mc_enabled = can_bus.mc_state.d6_inverter_enable_state;
         // states 5 and 6 are ready and running, respectively
         int mc_state = main_bus_m170_internal_states_d1_vsm_state_decode(can_bus.mc_state.d1_vsm_state);
-        printf("VSM STATE: %d\r\n", mc_state);
         inputs.mc_state_ready = mc_state == 5 || mc_state == 6;
     }
     else
@@ -85,7 +86,9 @@ void MotorController_100Hz(void)
     switch (state)
     {
         case MCstate_DISCONNECTED:
+        #ifdef MC_DEBUG
             printf("MC state: DISCONNECTED\r\n");
+        #endif 
             if (inputs.mc_messages_seen)
             {
                 state = MCstate_DISABLED_UNLOCKING;
@@ -95,7 +98,9 @@ void MotorController_100Hz(void)
         
         
         case MCstate_DISABLED_UNLOCKING:
+        #ifdef MC_DEBUG
             printf("MC state: DISABLED_UNLOCKING\r\n");
+        #endif 
             if (!inputs.mc_messages_seen)
             {
                 state = MCstate_DISCONNECTED;
@@ -108,7 +113,9 @@ void MotorController_100Hz(void)
             break;
 
         case MCstate_DISABLED:
+        #ifdef MC_DEBUG
             printf("MC state: DISABLED\r\n");
+        #endif 
             if (!inputs.mc_messages_seen)
             {
                 state = MCstate_DISCONNECTED;
@@ -124,7 +131,9 @@ void MotorController_100Hz(void)
             break;
 
         case MCstate_ENABLED:
-        printf("MC state: ENABLED\r\n");
+        #ifdef MC_DEBUG
+            printf("MC state: ENABLED\r\n");
+        #endif 
             if (!inputs.mc_messages_seen)
             {
                 state = MCstate_DISCONNECTED;
@@ -140,7 +149,9 @@ void MotorController_100Hz(void)
             break;
 
         case MCstate_READY:
-        printf("MC state: READY\r\n");
+        #ifdef MC_DEBUG
+            printf("MC state: READY\r\n");
+        #endif
             if (!inputs.mc_messages_seen)
             {
                 state = MCstate_DISCONNECTED;

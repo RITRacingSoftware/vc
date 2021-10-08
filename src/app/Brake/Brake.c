@@ -1,9 +1,14 @@
 #include "Brake.h"
 
+#include <stdio.h>
+
 #include "CAN.h"
+#include "common_macros.h"
 #include "Config.h"
 #include "FaultManager.h"
 #include "HAL_Aio.h"
+
+// #define BRAKE_DEBUG
 
 bool Brake_read_pressure(float* pressure)
 {
@@ -22,12 +27,23 @@ bool Brake_read_pressure(float* pressure)
     
     // convert to PSI
     float psi = BPS_MIN_PSI + pres_prog * BPS_RANGE_PSI;
+
+    // saturate psi to possible range (but not rational range)
+    psi = MAX(psi, 0);
     
     // return psi
     *pressure = psi;
 
     // Now check for irrationality
     // We can do this based on voltage since there's a smaller range than the 
+
+    #ifdef BRAKE_DEBUG
+    printf("Brake Pressure: %f\r\n", *pressure);
+    #endif
+
+    // update the CAN message
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_brake_pressure = main_bus_vc_pedal_inputs_vc_pedal_inputs_brake_pressure_encode(*pressure);
+
 
     // this gon flicker
     if ((voltage < BPS_MIN_V) || (voltage > (BPS_MIN_V + BPS_RANGE_V)))
@@ -41,6 +57,4 @@ bool Brake_read_pressure(float* pressure)
         return true;
     }
 
-    // update the CAN message
-    can_bus.vc_pedal_inputs.vc_pedal_inputs_brake_pressure = main_bus_vc_pedal_inputs_vc_pedal_inputs_brake_pressure_encode(*pressure);
 }

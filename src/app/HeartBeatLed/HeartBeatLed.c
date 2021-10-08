@@ -106,4 +106,7 @@ void HeartBeatLed_100Hz(void)
             pattern_can_error(count_ms);
             break;
     }
+
+    // increment count by 10 ms
+    count_ms += 10;
 }

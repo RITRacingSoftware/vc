@@ -388,22 +388,6 @@ for module_name, module_dir in common_modules:
         target=build_dir.File(f'{module_name}.o')
     ))
 
-
-# build C++ library wrapper (BlfWriter) and c++ library (vector_blf)
-
-blfwriter_obj = linux_cpp_env.Object(SIL_DIR.File('BlfWriter/BlfWriter.cpp'))
-
-vector_blf_so = File('/usr/local/lib/libVector_BLF.so.2')
-
-vector_blf_lib = Command(
-    [vector_blf_so],
-    [],
-    ["cd /vc/libs/vector_blf && mkdir -p build && cd build && cmake .. && make && make install DESTDIR=.. && make install && /usr/sbin/ldconfig"]
-)
-
-# bms_sim_objs['BlfWriter'] = cpp_env.SharedObject(SIM_DIR.File('BlfWriter/BlfWriter.cpp'))
-Depends(blfwriter_obj, vector_blf_so)
-
 # compile ecusim 
 ecusim = SConscript('libs/ecu-sim/sconstruct.py')
 ecusim_objs = ecusim['ecusim_objs']
@@ -411,10 +395,18 @@ ecusim_src_dirs = ecusim['src_dirs']
 
 linux_cpp_env['CPPPATH'] += ecusim_src_dirs
 
+SMOKE_TEST_DIR = BUILD_DIR.Dir('g++/sil/tests/');
+
 # compile sil main program + link everything together
 smoke_test = linux_cpp_env.Program(
-    source=[SIL_TESTS_DIR.File('smoke_test.cpp'), vector_blf_so] + sil_objs + ecusim_objs + cpp_sil_driver_objs + cpp_app_objs,
-    target=BUILD_DIR.Dir('g++/sil/tests/').File('smoke_test')
+    source=[SIL_TESTS_DIR.File('smoke_test.cpp')] + sil_objs + ecusim_objs + cpp_sil_driver_objs + cpp_app_objs,
+    target=SMOKE_TEST_DIR.File('smoke_test')
 )
 
-Alias('smoke_test', smoke_test)
+smoke_test_results = Command(
+    source=smoke_test,
+    target=SMOKE_TEST_DIR.File('smoke_test_results.txt'),
+    action=f"{SMOKE_TEST_DIR.File('smoke_test').abspath}"
+)
+
+Alias('smoke_test', smoke_test_results)

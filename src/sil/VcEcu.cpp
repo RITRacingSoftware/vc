@@ -63,7 +63,7 @@ void VcEcu::set(std::string key, float value)
     {
         hardware.aio[AIOpin_ACCEL_B] = value;
     }
-    else if (key == "brake")
+    else if (key == "brakep")
     {
         hardware.aio[AIOpin_BRAKE_PRESSURE] = value;
     }
@@ -158,5 +158,106 @@ void VcEcu::set(std::string key, float value)
     {
         this->shutdown_status.vc_shutdown_status_bms_input = value == 0.0;
         ShutdownMonitor_update(&this->shutdown_status);
+    }
+}
+
+float VcEcu::get(std::string key)
+{
+    // analog inputs
+    if (key == "accela")
+    {
+        return hardware.aio[AIOpin_ACCEL_A];
+    }
+    else if (key == "accelb")
+    {
+        return hardware.aio[AIOpin_ACCEL_B];
+    }
+    else if (key == "brakep")
+    {
+        return hardware.aio[AIOpin_BRAKE_PRESSURE];
+    }
+
+    // digital inputs (some of these are outputs in practice)
+    else if (key == "sound0") // scons sim
+    {
+        return hardware.dio[DIOpin_SOUND_0];
+    }
+    else if (key == "sound1")
+    {
+        return hardware.dio[DIOpin_SOUND_1];
+    }
+    else if (key == "sound2")
+    {
+        return hardware.dio[DIOpin_SOUND_2];
+    }
+    else if (key == "sound3")
+    {
+        return hardware.dio[DIOpin_SOUND_3];
+    }
+    else if (key == "sound4")
+    {
+        return hardware.dio[DIOpin_SOUND_4];
+    }
+    else if (key == "sound5")
+    {
+        return hardware.dio[DIOpin_SOUND_5];
+    }
+    else if (key == "sound6")
+    {
+        return hardware.dio[DIOpin_SOUND_6];
+    }
+    else if (key == "switch0")
+    {
+        return hardware.dio[DIOpin_SWITCH_0];
+    }
+    else if (key == "switch1")
+    {
+        return hardware.dio[DIOpin_SWITCH_1];
+    }
+    else if (key == "switch2")
+    {
+        return hardware.dio[DIOpin_SWITCH_2];
+    }
+    else if (key == "switch3")
+    {
+        return hardware.dio[DIOpin_SWITCH_3];
+    }
+    else if (key == "led")
+    {
+        return hardware.dio[DIOpin_STATUS_LED];
+    }
+
+    // shutdown inputs (handled by interrupt on hardware)
+    else if (key == "bmsinput")
+    {
+        return this->shutdown_status.vc_shutdown_status_bms_input;
+    }
+    else if (key == "bmslatch")
+    {
+        return this->shutdown_status.vc_shutdown_status_bms_input;
+    }
+    else if (key == "bspdinput")
+    {
+        return this->shutdown_status.vc_shutdown_status_bms_input;
+    }
+    else if (key == "bspdlatch")
+    {
+        return this->shutdown_status.vc_shutdown_status_bms_input;
+    }
+    else if (key == "imd0input")
+    {
+        return this->shutdown_status.vc_shutdown_status_bms_input;
+    }
+    else if (key == "imd0latch")
+    {
+        return this->shutdown_status.vc_shutdown_status_bms_input;
+    }
+    else if (key == "imd1input")
+    {
+        return this->shutdown_status.vc_shutdown_status_bms_input;
+    }
+    else if (key == "imd1latch")
+    {
+        return this->shutdown_status.vc_shutdown_status_bms_input;
     }
 }

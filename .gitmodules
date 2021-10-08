@@ -4,6 +4,3 @@
 [submodule "libs/ecu-sim"]
 	path = libs/ecu-sim
 	url = https://github.com/RITRacingSoftware/ecu-sim.git
-[submodule "libs/vector_blf"]
-	path = libs/vector_blf
-	url = https://bitbucket.org/tobylorenz/vector_blf.git
