@@ -83,8 +83,6 @@ linux_cpp_env = Environment(
     LIBS=['m', 'Vector_BLF']
 )
 
-linux_cpp_env['STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME']=1
-
 """
 CAN unpacking/packing code generation (from DBC).
 """
@@ -395,18 +393,40 @@ ecusim_src_dirs = ecusim['src_dirs']
 
 linux_cpp_env['CPPPATH'] += ecusim_src_dirs
 
-SMOKE_TEST_DIR = BUILD_DIR.Dir('g++/sil/tests/');
+TEST_OUTPUT_DIR = BUILD_DIR.Dir('g++/sil/tests/');
+
+sil_lib = linux_cpp_env.Library(
+    source=sil_objs + ecusim_objs + cpp_sil_driver_objs + cpp_app_objs,
+    target=TEST_OUTPUT_DIR.File('sil_lib.a')
+)
+
+# compile smoke test object
+smoke_test_obj = linux_cpp_env.Object(
+    source=SIL_TESTS_DIR.File('smoke_test.cpp'),
+    target=TEST_OUTPUT_DIR.File('smoke_test.o')
+)
 
 # compile sil main program + link everything together
 smoke_test = linux_cpp_env.Program(
-    source=[SIL_TESTS_DIR.File('smoke_test.cpp')] + sil_objs + ecusim_objs + cpp_sil_driver_objs + cpp_app_objs,
-    target=SMOKE_TEST_DIR.File('smoke_test')
+    source=[smoke_test_obj, sil_lib],
+    target=TEST_OUTPUT_DIR.File('smoke_test')
 )
 
 smoke_test_results = Command(
     source=smoke_test,
-    target=SMOKE_TEST_DIR.File('smoke_test_results.txt'),
-    action=f"{SMOKE_TEST_DIR.File('smoke_test').abspath}"
+    target=TEST_OUTPUT_DIR.File('smoke_test_results.txt'),
+    action=f"{TEST_OUTPUT_DIR.File('smoke_test').abspath}"
 )
 
 Alias('smoke_test', smoke_test_results)
+
+# janky
+linux_cpp_env['STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME']=1
+
+# alternatively, can compile a shared object that can be opened as a python library
+py_lib = linux_cpp_env.SharedLibrary(
+    source=sil_lib,
+    target=TEST_OUTPUT_DIR.File('libVcHandle.so')
+)
+
+Alias('vc_handle', py_lib)

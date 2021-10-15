@@ -8,3 +8,4 @@ build/*
 *mocks*
 .vscode
 *.blf   
+*__pycache__*

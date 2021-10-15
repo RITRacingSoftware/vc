@@ -1,6 +1,3 @@
 [submodule "libs/cmock"]
 	path = libs/cmock
 	url = https://github.com/throwtheswitch/cmock
-[submodule "libs/ecu-sim"]
-	path = libs/ecu-sim
-	url = https://github.com/RITRacingSoftware/ecu-sim.git
