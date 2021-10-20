@@ -79,9 +79,12 @@ linux_c_env = Environment(
 linux_cpp_env = Environment(
     CC='g++',
     CPPPATH=include_paths,
-    CPPFLAGS=["-ggdb"],
+    CPPFLAGS=["-ggdb", "-fPIC"],
     LIBS=['m', 'Vector_BLF']
 )
+
+# janky
+linux_cpp_env['STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME']=1
 
 """
 CAN unpacking/packing code generation (from DBC).
@@ -389,16 +392,12 @@ for module_name, module_dir in common_modules:
 # compile ecusim 
 ecusim = SConscript('libs/ecu-sim/sconstruct.py')
 ecusim_objs = ecusim['ecusim_objs']
+blf_lib = ecusim['blf_lib']
 ecusim_src_dirs = ecusim['src_dirs']
 
 linux_cpp_env['CPPPATH'] += ecusim_src_dirs
 
-TEST_OUTPUT_DIR = BUILD_DIR.Dir('g++/sil/tests/');
-
-sil_lib = linux_cpp_env.Library(
-    source=sil_objs + ecusim_objs + cpp_sil_driver_objs + cpp_app_objs,
-    target=TEST_OUTPUT_DIR.File('sil_lib.a')
-)
+TEST_OUTPUT_DIR = BUILD_DIR.Dir('g++/sil/tests/')
 
 # compile smoke test object
 smoke_test_obj = linux_cpp_env.Object(
@@ -408,7 +407,7 @@ smoke_test_obj = linux_cpp_env.Object(
 
 # compile sil main program + link everything together
 smoke_test = linux_cpp_env.Program(
-    source=[smoke_test_obj, sil_lib],
+    source=[smoke_test_obj] + sil_objs + ecusim_objs + cpp_sil_driver_objs + cpp_app_objs,
     target=TEST_OUTPUT_DIR.File('smoke_test')
 )
 
@@ -420,13 +419,40 @@ smoke_test_results = Command(
 
 Alias('smoke_test', smoke_test_results)
 
-# janky
-linux_cpp_env['STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME']=1
 
-# alternatively, can compile a shared object that can be opened as a python library
+
+
+# # alternatively, can compile a shared object that can be opened as a python library
+
 py_lib = linux_cpp_env.SharedLibrary(
-    source=sil_lib,
+    source=sil_objs + ecusim_objs + cpp_sil_driver_objs + cpp_app_objs,
     target=TEST_OUTPUT_DIR.File('libVcHandle.so')
 )
 
+Depends(py_lib, blf_lib)
 Alias('vc_handle', py_lib)
+
+# Now, instructions for running SIL tests
+sil_tests = Glob(Path(SIL_DIR.Dir('tests').abspath) / "test_*.py")
+
+SIL_BLF_DIR = BUILD_DIR.Dir('sil_test_blfs')
+
+sil_test_results = []
+for test in sil_tests:
+    test_name = test.abspath.split('/')[-1].split('.')
+    
+    blf = SIL_BLF_DIR.File(f"{test_name}.blf")
+
+    sil_test_result = Command(
+        source=test,
+        target=blf,
+        action=f"python3 -m pytest -s {test.abspath}" # -s disables ouput capture so we can see test prints
+    )
+
+    sil_test_results += sil_test_result
+
+
+
+Depends(sil_test_results, py_lib)
+
+Alias('sil', sil_test_results)

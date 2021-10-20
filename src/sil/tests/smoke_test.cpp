@@ -13,7 +13,7 @@ int main(void)
 {
     Simulation sim;
     VcEcu vc;
-    char logFileName[] = "logFile.blf";
+    char logFileName[] = "build/smokeTestLogFile.blf";
     CanLogger canLogger(logFileName);
 
     sim.add_ecu(&vc);
@@ -24,7 +24,6 @@ int main(void)
         vc.set("accela", (((float)i)/100)*3.3);
         vc.set("accelb", (((float)(100-i))/100)*1.8);
         vc.set("brakep", (((float)i)/100)*3.3);
-        // printf("STATUS_LED: %d\r\n", (int)vc.get("led"));
 
         sim.run_ms(1);
     }
