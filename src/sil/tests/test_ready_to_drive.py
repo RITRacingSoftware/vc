@@ -11,6 +11,9 @@ def test_ready_to_drive():
     vc.begin_logging(BLF_OUT_DIR / "test_ready_to_drive.blf")
         
     # run for a bit and make sure we start out with no faults
-    vc.run_ms(10000)
+    vc.run_ms(100000)
 
-    assert vc.signals['VcFaultVector']
+    assert vc.signals['VcFaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
+    assert vc.signals['VcFaultVector_ACCELERATOR_SENSOR_IRRATIONAL'] == 0
+    assert vc.signals['VcFaultVector_APPS_SENSOR_DISAGREEMENT'] == 0
+    assert vc.signals['VcFaultVector_APPS_DOUBLE_PEDAL'] == 0

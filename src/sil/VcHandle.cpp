@@ -2,6 +2,7 @@
 
 #include "VcHandle.h"
 
+#include "CanBucket.h"
 #include "CanLogger.h"
 #include "VcEcu.h"
 #include "Simulation.h"
@@ -10,12 +11,19 @@
 Simulation* sim;
 VcEcu* vc;
 CanLogger* logger;
+CanBucket* bucket;
+
+static std::vector<CanMsg>* emptied;
+    
 extern "C"{
 void init(void)
 {
     sim = new Simulation();
     vc = new VcEcu();
+    bucket = new CanBucket();
     sim->add_ecu(vc);
+    sim->add_ecu(bucket);
+    emptied = new std::vector<CanMsg>;
 }
 
 void begin_logging(char* filename)
@@ -27,6 +35,12 @@ void begin_logging(char* filename)
 void run_ms(int ms)
 {
     sim->run_ms(ms);
+
+    std::vector<CanMsg>* newMsgs = bucket->drain();
+
+    // grab any new CAN messages
+    emptied->reserve(emptied->size() + distance(newMsgs->begin(),newMsgs->end()));
+    emptied->insert(emptied->end(),newMsgs->begin(),newMsgs->end());
 }
 
 void set(char* key, float val)
@@ -50,6 +64,20 @@ void inject_mc_state_msg(int state, bool enabled)
     state_data.d6_inverter_enable_state = enabled;
     main_bus_m170_internal_states_pack((uint8_t*)msg.data, &state_data, 8);
     vc->injectCan(msg);
+}
+
+unsigned long int next_can_msg(int64_t* data)
+{
+    if (!emptied->empty())
+    {
+        CanMsg msg = emptied->back();
+        emptied->pop_back();
+
+        *data = *(uint64_t*)msg.data;
+        return msg.id;
+    }
+
+    return -1;
 }
 
 }

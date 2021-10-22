@@ -4,6 +4,7 @@
 #include "APPS.h"
 #include "Brake.h"
 #include "CAN.h"
+#include "FaultManager.h"
 #include "HeartBeatLed.h"
 #include "MotorController.h"
 #include "SoundController.h"
@@ -12,9 +13,12 @@
 #include "TorqueLimiter.h"
 #include "VehicleState.h"
 
+#include "main_bus.h"
+
 void VC_init(void)
 {
     CAN_init();
+    FaultManager_init();
     HeartBeatLed_init();
     MotorController_init();
     SoundController_init();
@@ -55,6 +59,9 @@ void VC_100Hz(void)
 
     // command the safety-checked torque to the motor controller
     MotorController_set_torque(limited_torque);
+
+    // stage any faults to get sent
+    CAN_send_message(MAIN_BUS_VC_FAULT_VECTOR_FRAME_ID);
 
     // send all queued CAN messages
     CAN_send_queued_messages();

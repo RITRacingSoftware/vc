@@ -17,9 +17,9 @@ class VcHandle:
         self.handle.init()
 
         # now set up inputs that won't cause a fault
-        self['accela'] = 0.1
-        self['accelb'] = 0.1
-        self['brake'] = 0.5
+        self['accela'] = 0.11
+        self['accelb'] = 0.11
+        self['brakep'] = 0.5
 
         self.inject_mc_state_msg(0, 0)
 
@@ -27,6 +27,14 @@ class VcHandle:
     
     def run_ms(self, ms):
         self.handle.run_ms(ms)
+
+        # get all the new CAN messages and update the signal database
+        can_data = ctypes.c_int64()
+        can_id = 0
+        while(can_id != -1):
+            can_id = self.handle.next_can_msg(ctypes.byref(can_data))
+            if (can_id != -1):
+                self.signals.update(self.can_db.decode_message(can_id & 0x1FFFFFFF, can_data.value.to_bytes(8, "little", signed=True)))
 
     def begin_logging(self, filePath):
         filePath.parent.mkdir(exist_ok=True)
