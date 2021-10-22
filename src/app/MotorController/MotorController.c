@@ -4,7 +4,7 @@
 #include "CAN.h"
 #include "Config.h"
 
-//#define MC_DEBUG
+// #define MC_DEBUG
 
 typedef struct {
     bool mc_messages_seen;
@@ -184,6 +184,9 @@ void MotorController_100Hz(void)
     state_counter_ms += 10;
 
     // outputs.mc_ready is used by other modules
+
+    // update command message with any torque
+    can_bus.mc_command.torque_command =  main_bus_m192_command_message_torque_command_encode(commanded_torque);
 
     // send command message
     CAN_send_message(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);

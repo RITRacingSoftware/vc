@@ -9,7 +9,7 @@
 float pos_to_t(float pos)
 {
     // basic linear function for now
-    (pos / 100.0) * MAX_TORQUE_NM;
+    return (pos / 100.0) * MAX_TORQUE_NM;
 }
 
 float TorqueConverter_pos_to_torque(float pos)

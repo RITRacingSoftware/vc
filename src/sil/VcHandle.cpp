@@ -1,4 +1,5 @@
 #include <string>
+#include <deque>
 
 #include "VcHandle.h"
 
@@ -13,7 +14,7 @@ VcEcu* vc;
 CanLogger* logger;
 CanBucket* bucket;
 
-static std::vector<CanMsg>* emptied;
+static std::deque<CanMsg>* emptied;
     
 extern "C"{
 void init(void)
@@ -23,7 +24,7 @@ void init(void)
     bucket = new CanBucket();
     sim->add_ecu(vc);
     sim->add_ecu(bucket);
-    emptied = new std::vector<CanMsg>;
+    emptied = new std::deque<CanMsg>;
 }
 
 void begin_logging(char* filename)
@@ -39,8 +40,13 @@ void run_ms(int ms)
     std::vector<CanMsg>* newMsgs = bucket->drain();
 
     // grab any new CAN messages
-    emptied->reserve(emptied->size() + distance(newMsgs->begin(),newMsgs->end()));
-    emptied->insert(emptied->end(),newMsgs->begin(),newMsgs->end());
+    for (auto iter = newMsgs->begin(); iter < newMsgs->end(); iter++){
+        emptied->push_back(*iter);
+    }
+
+    
+    // emptied->reserve(emptied->size() + distance(newMsgs->begin(),newMsgs->end()));
+    // emptied->insert(emptied->end(),newMsgs->begin(),newMsgs->end());
 }
 
 void set(char* key, float val)
@@ -70,8 +76,8 @@ unsigned long int next_can_msg(int64_t* data)
 {
     if (!emptied->empty())
     {
-        CanMsg msg = emptied->back();
-        emptied->pop_back();
+        CanMsg msg = emptied->front();
+        emptied->pop_front();
 
         *data = *(uint64_t*)msg.data;
         return msg.id;

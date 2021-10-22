@@ -530,7 +530,6 @@ VAL_ 600 BmsStatus_ChargeState 0 "ChargeState_DISCONNECTED" 1 "ChargeState_CONNE
 VAL_ 950 BmsHardFaultIndicator_task 0 "unknown" 1 "task_1Hz" 2 "task_10Hz" 3 "task_1kHz";
 
 
-VAL_ 192 Inverter_Enable 0 "Turn the inverter OFF" 1 "Turn the Inverter ON" ;
 VAL_ 192 Direction_Command 0 "CW" 1 "CCW" ;
 VAL_ 192 Inverter_Discharge 0 "Discharge Disable" 1 "Discharge Enable (if EEPROM parameter is set)" ;
 VAL_ 170 D2_Inverter_State 0 "Power up" 1 "Stop" 2 "Open Loop" 3 "Closed Loop" 4 "Internal State" 5 "Internal State" 6 "Internal State" 7 "Internal State" 8 "Idle Run" 9 "Idle Stop" 10 "Internal State" 11 "Intern State" 12 "Internal State" ;

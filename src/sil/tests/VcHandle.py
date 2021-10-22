@@ -1,6 +1,7 @@
 import ctypes
 import cantools
 import pathlib
+import pytest
 
 """
 Python Wrapping of VcHandle.c functions.
@@ -17,16 +18,25 @@ class VcHandle:
         self.handle.init()
 
         # now set up inputs that won't cause a fault
-        self['accela'] = 0.11
-        self['accelb'] = 0.11
+        self['accela'] = 0.1
+        self['accelb'] = 0.1
         self['brakep'] = 0.5
 
-        self.inject_mc_state_msg(0, 0)
-
+        # dont automatically send mc state messages
+        self.holding_mc_state = False
+        self.ms_since_last_mc_state = 0
 
     
     def run_ms(self, ms):
-        self.handle.run_ms(ms)
+        if self.holding_mc_state:
+            for i in range(0, ms):
+                self.handle.run_ms(1)
+                self.ms_since_last_mc_state += 1
+                if self.ms_since_last_mc_state == 100:
+                    self.inject_mc_state_msg(state=self.mc_state, enabled=self.mc_enabled)
+                    self.ms_since_last_mc_state = 0
+        else:
+            self.handle.run_ms(ms)
 
         # get all the new CAN messages and update the signal database
         can_data = ctypes.c_int64()
@@ -43,7 +53,21 @@ class VcHandle:
         print(str(filePath))
         self.handle.begin_logging(ctypes.c_char_p(str(filePath).encode("utf-8")))
     
+    def hold_mc_state(self, state, enabled):
+        """
+        Automatically send a MC internal states message with these parameters every 100ms
+        """
+        self.holding_mc_state = True
+        self.mc_state = state
+        self.mc_enabled = enabled
+
+    def stop_holding_mc_state(self):
+        self.holding_mc_state = False
+
     def inject_mc_state_msg(self, state, enabled):
+        """
+        Send a single motor controller internal states message to the VC.
+        """
         self.handle.inject_mc_state_msg(state, enabled)
 
     def __getitem__(self, key):
@@ -51,3 +75,16 @@ class VcHandle:
     
     def __setitem__(self, key, value):
         self.handle.set(ctypes.c_char_p(key.encode("utf-8")), ctypes.c_float(value))
+
+    # Helper functions 
+    def acc_press(self, pos):
+        """
+        Press the accelerator. Assume both sensors are working perfectly.
+        pos is accelerator position from 0-100
+        """
+        self['accela'] = (pos/100) * (3.2-.1) + .1
+        self['accelb'] = (pos/100) * (1.7-.1) + .1
+
+@pytest.fixture
+def vc():
+    return VcHandle()

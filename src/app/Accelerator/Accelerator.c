@@ -29,8 +29,9 @@ bool Accelerator_read_positions(AccelPos_s* accel_pos)
     
     // check for irrationality
     // this gon flicker
-    if ((voltage_a < APS_A_MIN_RATIONAL_V) || (voltage_a > APS_A_MAX_RATIONAL_V)
-        || (voltage_b < APS_B_MIN_RATIONAL_V) || (voltage_b > APS_B_MAX_RATIONAL_V))
+    
+    if (FLOAT_LT(voltage_a, APS_A_MIN_RATIONAL_V, VOLTAGE_TOL) || FLOAT_GT(voltage_a, APS_A_MAX_RATIONAL_V, VOLTAGE_TOL)
+        || FLOAT_LT(voltage_b, APS_B_MIN_RATIONAL_V, VOLTAGE_TOL) || FLOAT_GT(voltage_b, APS_B_MAX_RATIONAL_V, VOLTAGE_TOL))
     {
         FaultManager_set_fault_active(FaultCode_ACCELERATOR_SENSOR_IRRATIONAL);
     }

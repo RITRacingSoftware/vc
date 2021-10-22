@@ -46,7 +46,7 @@ bool Brake_read_pressure(float* pressure)
 
 
     // this gon flicker
-    if ((voltage < BPS_MIN_V) || (voltage > (BPS_MIN_V + BPS_RANGE_V)))
+    if (FLOAT_LT(voltage, BPS_MIN_V, VOLTAGE_TOL) || FLOAT_GT(voltage, (BPS_MIN_V + BPS_RANGE_V), VOLTAGE_TOL))
     {
         FaultManager_set_fault_active(FaultCode_BRAKE_SENSOR_IRRATIONAL);
         return false;

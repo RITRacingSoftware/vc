@@ -1,5 +1,7 @@
 #include "VC.h"
 
+#include <stdio.h>
+
 #include "Accelerator.h"
 #include "APPS.h"
 #include "Brake.h"
@@ -14,6 +16,11 @@
 #include "VehicleState.h"
 
 #include "main_bus.h"
+
+// #define VC_DEBUG
+
+static float commanded_torque = 0;
+static float limited_torque = 0;
 
 void VC_init(void)
 {
@@ -49,19 +56,24 @@ void VC_100Hz(void)
     SoundController_100Hz();
 
     // figure out new vehicle state based on changes this iteration
-    VehicleState_100Hz();
+    VehicleState_100Hz(commanded_torque);
 
     // calculate the torque to request based on the accelerator pedal input
-    float commanded_torque = TorqueConverter_pos_to_torque(accel_pos.average);
+    commanded_torque = TorqueConverter_pos_to_torque(accel_pos.average);
 
     // limit torque to max torque, or 0 if the system is not ready or faulted
-    float limited_torque = TorqueLimiter_apply_limit(commanded_torque);
+    limited_torque = TorqueLimiter_apply_limit(commanded_torque);
+
+#ifdef VC_DEBUG
+    printf("Position: %f, Commanded: %f, Limited: %f\r\n", accel_pos.average, commanded_torque, limited_torque);
+#endif
 
     // command the safety-checked torque to the motor controller
     MotorController_set_torque(limited_torque);
 
-    // stage any faults to get sent
+    // send periodic status messages
     CAN_send_message(MAIN_BUS_VC_FAULT_VECTOR_FRAME_ID);
+    CAN_send_message(MAIN_BUS_VC_STATUS_FRAME_ID);
 
     // send all queued CAN messages
     CAN_send_queued_messages();

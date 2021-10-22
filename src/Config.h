@@ -19,7 +19,7 @@
 #define ABSOLUTE_MAX_TORQUE_N 60
 
 // How long the VC must go without receiving a MC status message before declaring the motor controller MIA
-#define MC_CAN_TIMEOUT_MS 300 
+#define MC_CAN_TIMEOUT_MS 300 // message cycle time is 100ms so this means we missed three messages
 
 // If the motor controller isn't unlocked on the first attempt, this is how long to wait before trying again.
 #define UNLOCK_ATTEMPT_TIMEOUT_MS 4000
@@ -75,6 +75,9 @@
 /**
  * Accelerator Position Sensors
  */
+
+// to what discretion voltages must be equal to be considered equal
+#define VOLTAGE_TOL 0.01
 
 #define APS_A_SENSOR_V 3.3
 #define APS_A_MIN_RATIONAL_V 0.1

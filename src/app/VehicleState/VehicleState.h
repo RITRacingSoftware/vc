@@ -23,7 +23,7 @@ void VehicleState_init(void);
 /**
  * Iterate state machine, update outputs.
  */
-void VehicleState_100Hz(void);
+void VehicleState_100Hz(float);
 
 /**
  * Get if torque is allowed based on vehile state or not.
