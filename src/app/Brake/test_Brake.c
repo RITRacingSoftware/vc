@@ -3,9 +3,12 @@
 #include "unity.h"
 
 #include "Brake.h"
+#include "MockCAN.h"
 
 #include "MockFaultManager.h"
 #include "MockHAL_Aio.h"
+
+CAN_BUS can_bus;
 
 void setUp (void)
 {
