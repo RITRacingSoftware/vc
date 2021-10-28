@@ -1,2 +1,2 @@
 #! /bin/bash
-scons unit_tests sil -j4
+scons unit_tests sil
