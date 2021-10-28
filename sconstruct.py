@@ -354,11 +354,18 @@ Simulation module compilation instructions.
 # compile all sil modules
 sil_objs = []
 for src_file in Glob(Path(SIL_DIR.abspath) / "*.cpp"):
-    build_dir = BUILD_DIR.Dir('g++').Dir('sil')
-    sil_objs.append(linux_cpp_env.Object(
+    obj = linux_cpp_env.Object(
         source=src_file,
         target=build_dir.File(f'{SIL_DIR.rel_path(src_file)}.o')
-    ))    
+    )
+
+    build_dir = BUILD_DIR.Dir('g++').Dir('sil')
+    sil_objs.append(obj)    
+
+    # file_name = src_file.abspath.split('/')[-1]
+    # print(file_name)
+    # if file_name == 'BlfWriter.cpp':
+    #     Depends(obj, blf_lib)
 
 
 # compile all application modules using g++
@@ -429,7 +436,6 @@ py_lib = linux_cpp_env.SharedLibrary(
     target=TEST_OUTPUT_DIR.File('libVcHandle.so')
 )
 
-Depends(py_lib, blf_lib)
 Alias('vc_handle', py_lib)
 
 # Now, instructions for running SIL tests
