@@ -5,15 +5,17 @@ import pytest
 
 """
 Python Wrapping of VcHandle.c functions.
+
+** Paths here must be relative to vc for builds to work locally and on jenkins.
 """
 
-BLF_OUT_DIR = pathlib.Path("/vc/build/sil_test_blfs/")
+BLF_OUT_DIR = pathlib.Path("build/sil_test_blfs/")
 
 class VcHandle:
     def __init__(self):
-        self.can_db = cantools.database.load_file('/vc/src/app/main_bus/main_bus.dbc')
+        self.can_db = cantools.database.load_file('src/app/main_bus/main_bus.dbc')
         self.signals = {}
-        self.handle = ctypes.CDLL('/vc/build/g++/sil/tests/libVcHandle.so')
+        self.handle = ctypes.CDLL('build/g++/sil/tests/libVcHandle.so')
         self.handle.get.restype = ctypes.c_float # tell python "get" returns a float
         self.handle.init()
 
