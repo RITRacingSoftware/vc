@@ -2,7 +2,6 @@ pipeline {
     agent { 
         docker { 
             image 'vc'
-            args '-u root:root'
         } 
     }
     stages {
