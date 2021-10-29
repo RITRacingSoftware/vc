@@ -1,7 +1,8 @@
 pipeline {
     agent { 
         docker { 
-            image 'vc' 
+            image 'vc'
+            args '-u root:root'
         } 
     }
     stages {
