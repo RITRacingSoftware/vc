@@ -2,6 +2,7 @@ pipeline {
     agent { 
         docker { 
             image 'vc'
+            args '-u root'
         } 
     }
     stages {
@@ -9,6 +10,11 @@ pipeline {
             steps {
                 sh './build.sh'
             }
+        }
+    }
+    post { 
+        always { 
+            cleanWs()
         }
     }
 }
