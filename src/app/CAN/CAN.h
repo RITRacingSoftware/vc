@@ -23,7 +23,6 @@ typedef struct
     struct main_bus_vc_dash_inputs_t vc_dash_inputs;
     struct main_bus_vc_shutdown_status_t vc_shutdown_status;
     struct main_bus_vc_fault_vector_t vc_fault_vector;
-    struct main_bus_vc_fault_alert_t vc_fault_alert;
     struct main_bus_m192_command_message_t mc_command;
 
     // things read by the vc

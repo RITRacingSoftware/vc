@@ -219,13 +219,7 @@ BO_ 311 VcFaultVector: 8 VCU
  SG_ VcFaultVector_ACCELERATOR_SENSOR_IRRATIONAL: 1|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ VcFaultVector_APPS_SENSOR_DISAGREEMENT: 2|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ VcFaultVector_APPS_DOUBLE_PEDAL: 3|1@1+ (1,0) [0|1] "" Vector__XXX
-
-BO_ 306 VcFaultAlert: 8 VCU
- SG_ VcFaultAlert_code M : 0|6@1+ (1,0) [0|63] "" Vector__XXX 
- SG_ VcFaultAlert_brakePressure m0 : 7|16@1+ (0.1,0) [0|3000] "psi" Vector__XXX
- SG_ VcFaultAlert_accelVoltage m1 : 7|16@1+ (0.01,0) [0|5] "V" Vector__XXX
-
-
+ 
 BO_ 514 BMS_Current_Limit: 8 BMS
  SG_ D1_Max_Discharge_Current : 0|16@1+ (1,0) [0|1000] "A" Vector__XXX
  SG_ D2_Max_Charge_Current : 16|16@1+ (1,0) [0|1000] "A" Vector__XXX

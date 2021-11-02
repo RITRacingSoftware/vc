@@ -32,11 +32,6 @@ void FaultManager_set_fault_active(FaultCode_e code)
         // set the fault
         fault_vector |= BIT(code);
 
-        // set the mux of the alert message to the fault code
-        can_bus.vc_fault_alert.vc_fault_alert_code = main_bus_vc_fault_alert_vc_fault_alert_code_encode((uint8_t) code);
-
-        CAN_send_message(MAIN_BUS_VC_FAULT_ALERT_FRAME_ID);
-
         // update the fault vector CAN message data
         main_bus_vc_fault_vector_unpack(&can_bus.vc_fault_vector, (uint8_t*)&fault_vector, 8);
     }

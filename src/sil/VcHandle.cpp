@@ -27,6 +27,14 @@ void init(void)
     emptied = new std::deque<CanMsg>;
 }
 
+void deinit(void)
+{
+    // delete vc;
+    // delete sim;
+    // delete bucket;
+    // delete emptied;
+}
+
 void begin_logging(char* filename)
 {
     logger = new CanLogger(filename);

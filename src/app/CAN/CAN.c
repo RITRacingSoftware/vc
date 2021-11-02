@@ -52,9 +52,6 @@ static int pack_message(int id, uint8_t* msg_data)
         case MAIN_BUS_VC_FAULT_VECTOR_FRAME_ID:
             return main_bus_vc_fault_vector_pack(msg_data, &can_bus.vc_fault_vector, 8);
 
-        case MAIN_BUS_VC_FAULT_ALERT_FRAME_ID:
-            return main_bus_vc_fault_alert_pack(msg_data, &can_bus.vc_fault_alert, 8);
-
         case MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID:
             return main_bus_m192_command_message_pack(msg_data, &can_bus.mc_command, 8);
 

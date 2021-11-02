@@ -33,6 +33,9 @@ bool Accelerator_read_positions(AccelPos_s* accel_pos)
     if (FLOAT_LT(voltage_a, APS_A_MIN_RATIONAL_V, VOLTAGE_TOL) || FLOAT_GT(voltage_a, APS_A_MAX_RATIONAL_V, VOLTAGE_TOL)
         || FLOAT_LT(voltage_b, APS_B_MIN_RATIONAL_V, VOLTAGE_TOL) || FLOAT_GT(voltage_b, APS_B_MAX_RATIONAL_V, VOLTAGE_TOL))
     {
+        #ifdef ACCEL_DEBUG
+        printf("Setting irrational fault.\r\n");
+        #endif
         FaultManager_set_fault_active(FaultCode_ACCELERATOR_SENSOR_IRRATIONAL);
     }
     else

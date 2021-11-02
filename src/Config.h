@@ -45,7 +45,7 @@
 // How far the brake must be released to to clear a double pedal fault
 #define DOUBLE_PEDAL_APS_RECOVERY_THRESHOLD 5
 
-// Pressure indicating the driver has intentional force applied to the brake pedal.
+// Pressure indicating the driver has intentionally applied force to the brake pedal.
 #define BRAKE_ON_PSI 1000
 
 /**
@@ -77,7 +77,7 @@
  */
 
 // to what discretion voltages must be equal to be considered equal
-#define VOLTAGE_TOL 0.01
+#define VOLTAGE_TOL 0.001
 
 #define APS_A_SENSOR_V 3.3
 #define APS_A_MIN_RATIONAL_V 0.1

@@ -38,6 +38,7 @@ bool Brake_read_pressure(float* pressure)
     // We can do this based on voltage since there's a smaller range than the 
 
     #ifdef BRAKE_DEBUG
+    printf("adc_reading: %d voltage: %f\r\n", adc_val, voltage);
     printf("Brake Pressure: %f\r\n", *pressure);
     #endif
 

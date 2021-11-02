@@ -27,6 +27,9 @@ class VcHandle:
         # dont automatically send mc state messages
         self.holding_mc_state = False
         self.ms_since_last_mc_state = 0
+    
+    def __del__(self):
+        self.handle.deinit()
 
     
     def run_ms(self, ms):
@@ -86,6 +89,15 @@ class VcHandle:
         """
         self['accela'] = (pos/100) * (3.2-.1) + .1
         self['accelb'] = (pos/100) * (1.7-.1) + .1
+
+
+    def brake_set_pressure(self, pressure):
+        """
+        Press the brake with a specific pressure.
+        """
+        voltage_5v = (((pressure - 50.0) / 7950.0) * 4.0) + .5
+        voltage_3v3 = 3.3*(voltage_5v / 5.0)
+        self['brakep'] = voltage_3v3
 
 @pytest.fixture
 def vc():

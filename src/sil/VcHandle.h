@@ -3,6 +3,8 @@
 extern "C"{
 void init(void);
 
+void deinit(void);
+
 void begin_logging(char* filename);
 
 void run_ms(int ms);
