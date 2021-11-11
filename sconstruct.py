@@ -1,10 +1,18 @@
 import SCons
 
+import os
 from pathlib import Path
 
 """
 Instructions for building everything.
 """
+
+# some useful constants
+ARM_CC = 'arm-none-eabi-gcc'
+ARM_OBJCOPY = 'arm-none-eabi-objcopy'
+ARM_AS = 'arm-none-eabi-as'
+ARM_LD = 'arm-none-eabi-ld'
+PYTHON = 'python3.8'
 
 
 """
@@ -20,7 +28,11 @@ SIL_DIR = SRC_DIR.Dir('sil')
 SIL_TESTS_DIR = SIL_DIR.Dir('tests')
 BUILD_DIR = REPO_ROOT_DIR.Dir('build', create=True)
 LIBS_DIR = REPO_ROOT_DIR.Dir('libs')
+STM32_LIB_DIR = LIBS_DIR.Dir('stm32libs/STM32F0xx_StdPeriph_Driver')
+STM32_CMSIS_DIR = LIBS_DIR.Dir('stm32libs/CMSIS')
+FREERTOS_DIR = LIBS_DIR.Dir("FreeRTOS")
 
+LINKER_FILE = REPO_ROOT_DIR.File('stm32f091.ld')
 
 """
 Find the modules, accumulate a list of include paths while we're at it.
@@ -33,7 +45,12 @@ include_paths = [
     SIL_DIR,
     LIBS_DIR.Dir('cmock/src'),
     LIBS_DIR.Dir('cmock/vendor/unity/src'),
-    LIBS_DIR.Dir('vector_blf/src/')
+    LIBS_DIR.Dir('vector_blf/src/'),
+    STM32_LIB_DIR.Dir('inc'),
+    STM32_CMSIS_DIR.Dir('Device/ST/STM32F0xx/Include'),
+    STM32_CMSIS_DIR.Dir('Include'),
+    FREERTOS_DIR.Dir('Source/include'),
+    FREERTOS_DIR.Dir('Source/portable/ThirdParty/GCC/ARM_CM0')
 ]
 
 app_modules = []
@@ -63,6 +80,7 @@ for dir_path in (d for d in Path(str(COMMON_DIR)).iterdir() if d.is_dir()):
     common_modules += [(module_name, module_dir)]
 
 all_modules = app_modules + driver_modules + common_modules
+
 """
 Environment Definitions
 """
@@ -81,6 +99,44 @@ linux_cpp_env = Environment(
     CPPPATH=include_paths,
     CPPFLAGS=["-ggdb", "-fPIC"],
     LIBS=['m', 'Vector_BLF']
+)
+
+# arm hex creation tool
+def TOOL_ARM_ELF_HEX(env):
+    """
+    Uses arm toolchain to generate elf or hex files from compiled code.
+    """
+
+    """
+    Description of command below:
+    -mcpu=cortex-m0: the cortex-m0 is our microprocessor. This tells the compiler to use its instruction set
+    --specs=nosys.specs: this removes a default spec that tries to compile a wrapper layer of sorts for linux debugging 
+    (will get error looking for _exit function if removed)
+    SOURCE must be a list of strings
+    """
+    arm_elf_builder = SCons.Builder.Builder(action=[
+        ARM_CC + ' -lm -T stm32f091.ld -mcpu=cortex-m0 -Wl,-Map=${TARGET.dir.abspath}/map.map,-lm --specs=nosys.specs -mthumb ${SOURCES[:].abspath} -o ${TARGET.abspath} -lm'
+    ])
+
+    arm_hex_builder = SCons.Builder.Builder(action=[
+        ARM_OBJCOPY + ' -O binary ${SOURCE.abspath} ${TARGET.abspath}'
+    ])
+
+    env.Append(BUILDERS = {
+        'BuildElf' : arm_elf_builder,
+        'BuildHex' : arm_hex_builder
+    })
+
+stm32_c_env = Environment(
+    tools=[TOOL_ARM_ELF_HEX, 'gcc', 'as'],
+    CC=ARM_CC,
+    AS=ARM_AS,
+    LD=ARM_LD,
+    CPPPATH=include_paths,
+    CPPDEFINES=['STM32F091', 'USE_STDPERIPH_DRIVER'],
+    CCFLAGS=['-ggdb','-mcpu=cortex-m0', '-mthumb', '-lm'],
+    ASFLAGS=['-mthumb', '-I{}'.format(STM32_LIB_DIR.Dir('inc').abspath), '-I{}'.format(STM32_CMSIS_DIR.Dir('Include').abspath)],
+    LDFLAGS=['-T{}'.format(LINKER_FILE.abspath), '-mcpu=cortex-m0', '-mthumb', '-Wall', '--specs=nosys.specs', '-lm']
 )
 
 # janky
@@ -462,3 +518,71 @@ for test in sil_tests:
 Depends(sil_test_results, py_lib)
 
 Alias('sil', sil_test_results)
+
+"""
+Now onto STM32 compilation stuff.
+
+The following code compiles application, common, and drive modules for the stm32.
+"""
+
+# compile all modules into stm32 objects
+
+# Compile stm32 provided hardware libraries
+stm32_objs = []
+for source in Glob(os.path.join(STM32_LIB_DIR.Dir('src').abspath, '*.c')):
+    stm32_objs += stm32_c_env.Object(source)
+
+for module_name, module_dir in app_modules + common_modules + driver_modules:
+    if (module_name, module_dir) in driver_modules:
+        source_file = module_dir.File(f'STM32_{module_name}.c')
+    else:
+        source_file = module_dir.File(f'{module_name}.c')
+
+    build_dir = BUILD_DIR.Dir('stm32').Dir(SRC_DIR.rel_path(module_dir))
+    stm32_objs.append(stm32_c_env.Object(
+        source=[source_file],
+        target=build_dir.File(f'{module_name}.o')
+    ))
+
+
+
+stm32_freertos_source = []
+stm32_freertos_source += Glob(FREERTOS_DIR.Dir('Source').abspath + '/*.c')
+stm32_freertos_source.append(FREERTOS_DIR.File('Source/portable/MemMang/heap_3.c'))
+stm32_freertos_source.append(FREERTOS_DIR.File('Source/portable/ThirdParty/GCC/ARM_CM0/port.c'))
+
+for source_file in stm32_freertos_source:
+    file_name = source_file.abspath.split('/')[-1]
+    stm32_objs += stm32_c_env.Object(source=source_file, target=BUILD_DIR.Dir('stm32/libs').Dir(LIBS_DIR.rel_path(source_file.dir)).File(f'{file_name}.o'))
+
+stm32_objs += stm32_c_env.Object(source=SRC_DIR.File('stm32_main.c'), target=SRC_DIR.File('main.stm32.o'))
+
+# build the assembly files with the microcontroller startup routines in them
+startup_src = [
+    LIBS_DIR.File('stm32libs/CMSIS/Device/ST/STM32F0xx/Source/Templates/gcc_ride7/startup_stm32f0xx.s'),
+    LIBS_DIR.File('stm32libs/CMSIS/Device/ST/STM32F0xx/Source/Templates/system_stm32f0xx.c')
+]
+for src in startup_src:
+    file_name = src.abspath.split('/')[-1]
+    stm32_objs += stm32_c_env.Object(
+        source=src,
+        target=BUILD_DIR.Dir('stm32/libs').Dir(LIBS_DIR.rel_path(src.dir)).File(f'{file_name}.o')
+    )
+
+Alias('stm32_objs', stm32_objs)
+
+# stm32 elf generation
+stm32_elf = stm32_c_env.BuildElf(
+    source=stm32_objs,
+    target=BUILD_DIR.File('vc.elf')
+)
+
+Clean(stm32_elf, BUILD_DIR.File('vc.map'))
+
+# stm32 hex generation
+vcbin = stm32_c_env.BuildHex(
+    source=stm32_elf,
+    target=BUILD_DIR.File('vc.bin')
+)
+
+Alias('vc.bin', vcbin)

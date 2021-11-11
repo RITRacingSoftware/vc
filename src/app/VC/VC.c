@@ -9,6 +9,7 @@
 #include "FaultManager.h"
 #include "HeartBeatLed.h"
 #include "MotorController.h"
+#include "ShutdownMonitor.h"
 #include "SoundController.h"
 #include "Switches.h"
 #include "TorqueConverter.h"
@@ -24,11 +25,15 @@ static float limited_torque = 0;
 
 void VC_init(void)
 {
-    CAN_init();
+    // initialize all app modules (app modules not initialized here dont have an init)
+    CAN_init(); // should be up front
+    APPS_init();
     FaultManager_init();
     HeartBeatLed_init();
     MotorController_init();
+    ShutdownMonitor_init();
     SoundController_init();
+    Switches_init();
     VehicleState_init();
 }
 
