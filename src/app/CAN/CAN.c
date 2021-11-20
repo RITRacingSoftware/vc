@@ -1,16 +1,22 @@
+#include <math.h>
 #include <stdio.h>
-#include <stdint.h>
 
 #include "CAN.h"
-
 #include "HAL_Can.h"
 #include "Config.h"
-//#include "FreeRTOS.h" TODO
+#include "HAL_Uart.h"
+
+
+#define TICKS_TO_WAIT_QUEUE_CAN_MESSAGE (0) //Will return immediately if queue is full, not sure if this should be different
 
 static bool can_tx_error;
 static bool can_rx_error;
-//static QueueHandle_t tx_msg_queue;
+
+// can_obj_f29bms_dbc_h_t CAN_BUS;
 CAN_BUS can_bus;
+
+static QueueHandle_t tx_can_message_queue;
+static QueueHandle_t rx_can_message_queue;
 
 typedef struct {
     int count;
@@ -22,7 +28,8 @@ static int next_id;
 
 void CAN_init(void)
 {
-    //tx_msg_queue = xQueueCreate(CAN_TX_QUEUE_LEN, sizeof(can_message));
+    tx_can_message_queue = xQueueCreate(CAN_QUEUE_LEN, sizeof(can_message));
+    rx_can_message_queue= xQueueCreate(CAN_QUEUE_LEN, sizeof(can_message));
     can_tx_error = false;
     next_id = 0;
     for (int i = 0; i < NUM_ID_COUNTERS; i++)
@@ -31,7 +38,6 @@ void CAN_init(void)
         id_counts[i].id = -1;
     }
 }
-
 
 static int pack_message(int id, uint8_t* msg_data)
 {
@@ -63,28 +69,22 @@ static int pack_message(int id, uint8_t* msg_data)
     return -1;
 }
 
-/**
- * Attempt to send a CAN message with a given id.
- * Data is automatically retrieved from CAN_BUS.
- * id [in] - 11 bit CAN id- use the generated definitions in can_ids.h
- */
 void CAN_send_message(unsigned long int id)
 {
-    // TODO- actually have this use a queue
     uint64_t msg_data;
 
     // get the message data for the given id
     if (-1 != pack_message(id, (uint8_t*) &msg_data))
     {
-        CanMessage_s thisMessage = {id, 8, msg_data};
-        //xQueueSend(message_queue, &thisMessage, 10);
-        HAL_Can_send_message(thisMessage.id, thisMessage.dlc, thisMessage.data);
+        can_message thisMessage = {id, 8, msg_data};
+        xQueueSend(tx_can_message_queue, &thisMessage, 10);
+        xSemaphoreGive(can_message_transmit_semaphore);
     }
     else
     {
         // CAN id invalid, dont attempt to send the message
-        can_tx_error = true;
-        printf("CAN TX ERROR: %lx\n", id);
+        can_error = true;
+        printf("CAN ERROR: %x\n", id);
     }
 }
 
@@ -101,36 +101,73 @@ bool CAN_get_rx_error(void)
     return can_rx_error;
 }
 
-/**
- * Fills empty transmit mailboxes with CAN messages from the queue
- */
+
+void CAN_process_recieved_messages(void)
+{
+    can_message received_message;
+    //Get all can messages received
+    while (xQueueReceive(rx_can_message_queue, &received_message, TICKS_TO_WAIT_QUEUE_CAN_MESSAGE) == pdTRUE)
+    {
+        uint8_t data[8];
+        for (int i = 0; i < 8; i++)
+        {
+            data[i] = (received_message.data >> (i*8)) & 0xff;
+        }
+        uint8_t print_buffer[50];
+        uint8_t n = sprintf(&print_buffer[0], "ID: %d  Data: %d  %d  %d  %d  %d  %d  %d  %d\n\r", received_message.id, data[0],
+             data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
+        HAL_Uart_send(&print_buffer[0], n);
+        //Unpack message recieved
+        switch(received_message.id)
+        {
+            case MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID:
+                f29bms_dbc_bms_status_unpack(&can_bus.mc_state, (uint8_t*)&received_message.data, 8);
+
+            default:
+                // printf("f29bms: unknown CAN id: %d\n", received_message.id);
+                break;
+        }
+
+    }
+}
+
+
 void CAN_send_queued_messages(void)
 {
-    // TODO
-}
-
-void CAN_receive_message(CanMessage_s* msg)
-{
-    switch (msg->id)
+    //Check how many mailboxes are free, and put a new message in each empty mailbox, if there are any messages
+    uint8_t num_free_mailboxes = HAL_number_of_empty_mailboxes();
+    can_message dequeued_message;
+    while (num_free_mailboxes > 0) //Fill all empty mailboxes with messages
     {
-        case MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID:
-            main_bus_m170_internal_states_unpack(&can_bus.mc_state, (uint8_t*)&msg->data, msg->dlc);
-            break;
-        
-        default:
-            break;
-    }
-
-    // if we're counting this id, increment the count
-    for (int i = 0; i < next_id; i++)
-    {
-        if (id_counts[i].id == msg->id)
+        if (xQueueReceive(tx_can_message_queue, &dequeued_message, TICKS_TO_WAIT_QUEUE_CAN_MESSAGE) == pdTRUE) //Get next message to send if there is one
         {
-            id_counts[i].count++;
+            Error_t err = HAL_Can_send_message(dequeued_message.id, dequeued_message.dlc, dequeued_message.data);
+            can_error = err.active;
         }
+        else
+        {
+            break;
+        }   
+        num_free_mailboxes--;
     }
 }
 
+bool CAN_is_transmit_queue_empty_fromISR(void)
+{
+    return xQueueIsQueueEmptyFromISR(tx_can_message_queue) == pdTRUE;
+}
+
+void CAN_add_message_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data)
+{
+    uint64_t msg_data = 0x0;
+    memcpy(&msg_data, data, sizeof(msg_data));
+    
+    can_message rx_msg;
+    rx_msg.data = msg_data;
+    rx_msg.id = id;
+    rx_msg.dlc = dlc;
+    xQueueSend(rx_can_message_queue, &rx_msg, 10);
+}
 
 void CAN_begin_counting_id(unsigned int id)
 {
