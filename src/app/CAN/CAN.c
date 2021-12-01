@@ -28,8 +28,8 @@ static int next_id;
 
 void CAN_init(void)
 {
-    tx_can_message_queue = xQueueCreate(CAN_QUEUE_LEN, sizeof(can_message));
-    rx_can_message_queue= xQueueCreate(CAN_QUEUE_LEN, sizeof(can_message));
+    tx_can_message_queue = xQueueCreate(CAN_TX_QUEUE_LEN, sizeof(CanMessage_s));
+    rx_can_message_queue= xQueueCreate(CAN_RX_QUEUE_LEN, sizeof(CanMessage_s));
     can_tx_error = false;
     next_id = 0;
     for (int i = 0; i < NUM_ID_COUNTERS; i++)
@@ -76,14 +76,14 @@ void CAN_send_message(unsigned long int id)
     // get the message data for the given id
     if (-1 != pack_message(id, (uint8_t*) &msg_data))
     {
-        can_message thisMessage = {id, 8, msg_data};
+        CanMessage_s thisMessage = {id, 8, msg_data};
         xQueueSend(tx_can_message_queue, &thisMessage, 10);
         xSemaphoreGive(can_message_transmit_semaphore);
     }
     else
     {
         // CAN id invalid, dont attempt to send the message
-        can_error = true;
+        can_tx_error = true;
         printf("CAN ERROR: %x\n", id);
     }
 }
@@ -104,7 +104,7 @@ bool CAN_get_rx_error(void)
 
 void CAN_process_recieved_messages(void)
 {
-    can_message received_message;
+    CanMessage_s received_message;
     //Get all can messages received
     while (xQueueReceive(rx_can_message_queue, &received_message, TICKS_TO_WAIT_QUEUE_CAN_MESSAGE) == pdTRUE)
     {
@@ -113,15 +113,16 @@ void CAN_process_recieved_messages(void)
         {
             data[i] = (received_message.data >> (i*8)) & 0xff;
         }
-        uint8_t print_buffer[50];
-        uint8_t n = sprintf(&print_buffer[0], "ID: %d  Data: %d  %d  %d  %d  %d  %d  %d  %d\n\r", received_message.id, data[0],
-             data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
-        HAL_Uart_send(&print_buffer[0], n);
+        uint8_t print_buffer1[100];
+        // uint8_t n = sprintf(print_buffer1, "ID: %d  Data: %d  %d  %d  %d  %d  %d  %d  %d\n\r", received_message.id, data[0],
+        //      data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
+        uint8_t n1 = sprintf(print_buffer1, "ID:\n\r");
+        HAL_Uart_send(print_buffer1, n1);
         //Unpack message recieved
         switch(received_message.id)
         {
             case MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID:
-                f29bms_dbc_bms_status_unpack(&can_bus.mc_state, (uint8_t*)&received_message.data, 8);
+                main_bus_m170_internal_states_unpack(&can_bus.mc_state, (uint8_t*)&received_message.data, 8);
 
             default:
                 // printf("f29bms: unknown CAN id: %d\n", received_message.id);
@@ -136,13 +137,13 @@ void CAN_send_queued_messages(void)
 {
     //Check how many mailboxes are free, and put a new message in each empty mailbox, if there are any messages
     uint8_t num_free_mailboxes = HAL_number_of_empty_mailboxes();
-    can_message dequeued_message;
+    CanMessage_s dequeued_message;
     while (num_free_mailboxes > 0) //Fill all empty mailboxes with messages
     {
         if (xQueueReceive(tx_can_message_queue, &dequeued_message, TICKS_TO_WAIT_QUEUE_CAN_MESSAGE) == pdTRUE) //Get next message to send if there is one
         {
             Error_t err = HAL_Can_send_message(dequeued_message.id, dequeued_message.dlc, dequeued_message.data);
-            can_error = err.active;
+            can_tx_error = err.active;
         }
         else
         {
@@ -162,7 +163,7 @@ void CAN_add_message_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data)
     uint64_t msg_data = 0x0;
     memcpy(&msg_data, data, sizeof(msg_data));
     
-    can_message rx_msg;
+    CanMessage_s rx_msg;
     rx_msg.data = msg_data;
     rx_msg.id = id;
     rx_msg.dlc = dlc;

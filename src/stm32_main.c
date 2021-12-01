@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 
 // FreeRTOS stuff
 #include "FreeRTOSConfig.h"
@@ -21,7 +22,7 @@
 
 #define TASK_100Hz_NAME "task_100Hz"
 #define TASK_100Hz_PRIORITY (tskIDLE_PRIORITY + 1)
-#define TASK_100Hz_PERIOD_MS (1)
+#define TASK_100Hz_PERIOD_MS (10)
 #define TASK_100Hz_STACK_SIZE_B (1000)
 
 SemaphoreHandle_t can_message_recieved_semaphore;
@@ -34,7 +35,7 @@ void task_100Hz(void *pvParameters)
     for (;;)
     {
         VC_100Hz();
-        CAN_send_queued_messages();
+        // CAN_send_queued_messages();
         vTaskDelayUntil(&next_wake_time, TASK_100Hz_PERIOD_MS);
     }
 }
@@ -110,6 +111,11 @@ int main(void)
     // initialize all drivers
     HAL_Clock_init();
     HAL_Uart_init();
+    uint8_t print_buffer[30];
+    uint8_t n = sprintf(print_buffer, "Starting...\n\r");
+    HAL_Uart_send(print_buffer, n);
+    n = sprintf(print_buffer, "1234\n\r");
+    HAL_Uart_send(print_buffer, n);
     HAL_Can_init();
     HAL_Aio_init();
     HAL_Dio_init();

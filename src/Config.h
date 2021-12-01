@@ -65,6 +65,12 @@
 // How much space is allocated for messages in a CanQueue_s
 #define CAN_QUEUE_NUM_MSGS 15
 
+//How much space is allocated for messages in the can tx queue
+#define CAN_TX_QUEUE_LEN 15
+
+//How much space is allocated for messages in the can rx queue
+#define CAN_RX_QUEUE_LEN 15
+
 /**
  * ADC
  */
