@@ -13,7 +13,10 @@ typedef struct
     uint64_t data;
 } CanMessage_s;
 
+// semaphore only available in freertos, which isnt used for SIL
+#ifndef VC_SIL
 extern SemaphoreHandle_t can_message_transmit_semaphore;
+#endif
 
 /// Storage structure for current state of CAN bus.
 // Can be updated by the VC or by reading CAN messages from other systems.

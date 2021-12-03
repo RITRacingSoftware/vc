@@ -1,10 +1,12 @@
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "CAN.h"
 #include "HAL_Can.h"
 #include "Config.h"
 #include "HAL_Uart.h"
+#include "CanQueue.h"
 
 
 #define TICKS_TO_WAIT_QUEUE_CAN_MESSAGE (0) //Will return immediately if queue is full, not sure if this should be different
@@ -15,8 +17,14 @@ static bool can_rx_error;
 // can_obj_f29bms_dbc_h_t CAN_BUS;
 CAN_BUS can_bus;
 
+// use the freertos queue unless we are in SIL where freertos is not in use.
+#ifdef VC_SIL
+static CanQueue_s tx_can_message_queue;
+static CanQueue_s rx_can_message_queue;
+#else
 static QueueHandle_t tx_can_message_queue;
 static QueueHandle_t rx_can_message_queue;
+#endif
 
 typedef struct {
     int count;
@@ -28,8 +36,14 @@ static int next_id;
 
 void CAN_init(void)
 {
+    #ifdef VC_SIL
+    CanQueue_init(&tx_can_message_queue);
+    CanQueue_init(&rx_can_message_queue);
+    #else
     tx_can_message_queue = xQueueCreate(CAN_TX_QUEUE_LEN, sizeof(CanMessage_s));
     rx_can_message_queue= xQueueCreate(CAN_RX_QUEUE_LEN, sizeof(CanMessage_s));
+    #endif
+
     can_tx_error = false;
     next_id = 0;
     for (int i = 0; i < NUM_ID_COUNTERS; i++)
@@ -77,8 +91,12 @@ void CAN_send_message(unsigned long int id)
     if (-1 != pack_message(id, (uint8_t*) &msg_data))
     {
         CanMessage_s thisMessage = {id, 8, msg_data};
+        #ifdef VC_SIL
+        CanQueue_enqueue(&tx_can_message_queue, &thisMessage);
+        #else
         xQueueSend(tx_can_message_queue, &thisMessage, 10);
         xSemaphoreGive(can_message_transmit_semaphore);
+        #endif   
     }
     else
     {
@@ -106,13 +124,28 @@ void CAN_process_recieved_messages(void)
 {
     CanMessage_s received_message;
     //Get all can messages received
+    #ifdef VC_SIL
+    while (CanQueue_dequeue(&rx_can_message_queue, &received_message))
+    #else
     while (xQueueReceive(rx_can_message_queue, &received_message, TICKS_TO_WAIT_QUEUE_CAN_MESSAGE) == pdTRUE)
+    #endif
     {
         uint8_t data[8];
         for (int i = 0; i < 8; i++)
         {
             data[i] = (received_message.data >> (i*8)) & 0xff;
         }
+
+        // if we're counting this id, increment the count
+        for (int i = 0; i < next_id; i++)
+        {
+            if (id_counts[i].id == received_message.id)
+            {
+                id_counts[i].count++;
+            }
+        }
+
+
         // uint8_t print_buffer1[100];
         // uint8_t n1 = sprintf(print_buffer1, "ID: %d  Data: %d  %d  %d  %d  %d  %d  %d  %d\n\r", received_message.id, data[0],
         //      data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
@@ -139,7 +172,11 @@ void CAN_send_queued_messages(void)
     CanMessage_s dequeued_message;
     while (num_free_mailboxes > 0) //Fill all empty mailboxes with messages
     {
+        #ifdef VC_SIL
+        if (CanQueue_dequeue(&tx_can_message_queue, &dequeued_message))
+        #else
         if (xQueueReceive(tx_can_message_queue, &dequeued_message, TICKS_TO_WAIT_QUEUE_CAN_MESSAGE) == pdTRUE) //Get next message to send if there is one
+        #endif
         {
             Error_t err = HAL_Can_send_message(dequeued_message.id, dequeued_message.dlc, dequeued_message.data);
             can_tx_error = err.active;
@@ -154,19 +191,27 @@ void CAN_send_queued_messages(void)
 
 bool CAN_is_transmit_queue_empty_fromISR(void)
 {
+    #ifdef VC_SIL
+    return tx_can_message_queue.count > 0;
+    #else
     return xQueueIsQueueEmptyFromISR(tx_can_message_queue) == pdTRUE;
+    #endif
 }
 
 void CAN_add_message_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data)
 {
-    uint64_t msg_data = 0x0;
+    uint64_t msg_data = 0;
     memcpy(&msg_data, data, sizeof(msg_data));
-    
+
     CanMessage_s rx_msg;
     rx_msg.data = msg_data;
     rx_msg.id = id;
     rx_msg.dlc = dlc;
+    #ifdef VC_SIL
+    CanQueue_enqueue(&rx_can_message_queue, &rx_msg);
+    #else
     xQueueSend(rx_can_message_queue, &rx_msg, 10);
+    #endif
 }
 
 void CAN_begin_counting_id(unsigned int id)

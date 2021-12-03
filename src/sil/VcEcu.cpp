@@ -3,6 +3,7 @@
 
 // no extern "C" here since we're compiling these using g++
 #include "VC.h"
+#include "CAN.h"
 #include "VcCompat.h"
 #include "ShutdownMonitor.h"
 
@@ -28,10 +29,17 @@ void VcEcu::tick(void)
 {
     static int time_ms = 0;
     
+    if (can_data_available)
+    {
+        CAN_process_recieved_messages();
+    }
+
     if (time_ms % 10 == 0)
     {
         VC_100Hz();
     }
+
+    CAN_send_queued_messages();
 
     time_ms = (time_ms + 1) % 10;
 
@@ -48,8 +56,8 @@ void VcEcu::tick(void)
 
 void VcEcu::injectCan(ecusim::CanMsg msg)
 {
-    CanMessage_s msg_in = {msg.id, msg.dlc, *(uint64_t*)msg.data};
-    CAN_receive_message(&msg_in);
+    CAN_add_message_rx_queue(msg.id, msg.dlc, (uint8_t*)msg.data);
+    can_data_available = true;
 }
 
 void VcEcu::set(std::string key, float value)

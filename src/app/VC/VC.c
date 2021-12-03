@@ -80,9 +80,6 @@ void VC_100Hz(void)
     CAN_send_message(MAIN_BUS_VC_FAULT_VECTOR_FRAME_ID);
     CAN_send_message(MAIN_BUS_VC_STATUS_FRAME_ID);
 
-    // send all queued CAN messages
-    CAN_send_queued_messages();
-
     // Blink heartbeat led
     HeartBeatLed_100Hz();
 }

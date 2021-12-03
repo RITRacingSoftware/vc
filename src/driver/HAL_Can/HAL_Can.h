@@ -6,8 +6,10 @@
 #include "CAN.h"
 #include "semphr.h"
 
+#ifndef VC_SIL
 extern SemaphoreHandle_t can_message_recieved_semaphore;
 extern SemaphoreHandle_t can_message_transmit_semaphore;
+#endif
 
 /**
  * Initializes stm32 for CAN message transmissions, must be called befor a message is sent
