@@ -98,7 +98,8 @@ linux_cpp_env = Environment(
     CC='g++',
     CPPPATH=include_paths,
     CPPFLAGS=["-ggdb", "-fPIC"],
-    LIBS=['m', 'Vector_BLF']
+    LIBS=['m', 'Vector_BLF'],
+    CPPDEFINES=['VC_SIL']
 )
 
 # arm hex creation tool

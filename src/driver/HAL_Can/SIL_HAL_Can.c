@@ -12,10 +12,14 @@ void HAL_Can_init(void)
 /**
  * Transmits the CAN message
  */
-Error_t HAL_Can_send_message(CanMessage_s* msg)
+Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data)
 {
+    CanMessage_s msg;
+    msg.id = id;
+    msg.dlc = dlc;
+    msg.data = data;
     // will silently fail if the outbox is full
-    CanQueue_enqueue(&hardware.outbox, msg);
+    CanQueue_enqueue(&hardware.outbox, &msg);
 }
 
 /**

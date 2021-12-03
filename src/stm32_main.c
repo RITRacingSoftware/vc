@@ -1,13 +1,16 @@
 #include <string.h>
+#include <stdio.h>
 
 // FreeRTOS stuff
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 
 // drivers
 #include "HAL_Aio.h"
 #include "HAL_Dio.h"
+#include "HAL_Uart.h"
 #include "HAL_Can.h"
 #include "HAL_Clock.h"
 
@@ -15,10 +18,15 @@
 #include "VC.h"
 #include "CAN.h"
 
+#define SEPHAMORE_WAIT 0
+
 #define TASK_100Hz_NAME "task_100Hz"
 #define TASK_100Hz_PRIORITY (tskIDLE_PRIORITY + 1)
-#define TASK_100Hz_PERIOD_MS (1)
+#define TASK_100Hz_PERIOD_MS (10)
 #define TASK_100Hz_STACK_SIZE_B (1000)
+
+SemaphoreHandle_t can_message_recieved_semaphore;
+SemaphoreHandle_t can_message_transmit_semaphore;
 
 void task_100Hz(void *pvParameters)
 {
@@ -27,8 +35,47 @@ void task_100Hz(void *pvParameters)
     for (;;)
     {
         VC_100Hz();
-        CAN_send_queued_messages();
+        // CAN_send_queued_messages();
+        uint8_t print_buffer4[30];
+        uint8_t n4 = sprintf(print_buffer4, "100Hz...\n\r");
+        HAL_Uart_send(print_buffer4, n4);
+
         vTaskDelayUntil(&next_wake_time, TASK_100Hz_PERIOD_MS);
+    }
+}
+
+#define TASK_CAN_RX_NAME "task_CAN_RX"
+#define TASK_CAN_RX_PRIORITY (tskIDLE_PRIORITY + 4)
+#define TASK_CAN_RX_STACK_SIZE_B (500) 
+
+void task_can_rx(void *pvParameters)
+{
+    (void) pvParameters;
+    // TickType_t next_wake_time = xTaskGetTickCount();
+    for (;;)
+    {
+        if(xSemaphoreTake(can_message_recieved_semaphore, portMAX_DELAY) == pdTRUE)
+        {
+            uint8_t print_buffer3[30];
+            CAN_process_recieved_messages();
+        }
+    }
+}
+
+#define TASK_CAN_TX_NAME "task_CAN_TX"
+#define TASK_CAN_TX_PRIORITY (tskIDLE_PRIORITY + 4)
+#define TASK_CAN_TX_STACK_SIZE_B (500) 
+
+void task_can_tx(void *pvParameters)
+{
+    (void) pvParameters;
+    // TickType_t next_wake_time = xTaskGetTickCount();
+    for (;;)
+    {
+        if(xSemaphoreTake(can_message_transmit_semaphore, portMAX_DELAY) == pdTRUE)
+        {
+            CAN_send_queued_messages();
+        }
     }
 }
 
@@ -57,8 +104,16 @@ void hardfault_handler_routine(void)
 
 int main(void)
 {
+    can_message_recieved_semaphore = xSemaphoreCreateBinary();
+    xSemaphoreGive(can_message_recieved_semaphore);
+    xSemaphoreTake(can_message_recieved_semaphore, SEPHAMORE_WAIT);
+    can_message_transmit_semaphore = xSemaphoreCreateBinary();
+    xSemaphoreGive(can_message_transmit_semaphore);
+    xSemaphoreTake(can_message_transmit_semaphore, SEPHAMORE_WAIT);
+
     // initialize all drivers
     HAL_Clock_init();
+    // HAL_Uart_init(); //UART pins configured as AIO, UART won't work after HAL_Aio_init
     HAL_Can_init();
     HAL_Aio_init();
     HAL_Dio_init();
@@ -72,6 +127,20 @@ int main(void)
         TASK_100Hz_STACK_SIZE_B,
         NULL,
         TASK_100Hz_PRIORITY,
+        NULL);
+
+    xTaskCreate(task_can_rx, 
+        TASK_CAN_RX_NAME, 
+        TASK_CAN_RX_STACK_SIZE_B,
+        NULL,
+        TASK_CAN_RX_PRIORITY,
+        NULL);
+
+    xTaskCreate(task_can_tx, 
+        TASK_CAN_TX_NAME, 
+        TASK_CAN_TX_STACK_SIZE_B,
+        NULL,
+        TASK_CAN_TX_PRIORITY,
         NULL);
    
     // hand control over to FreeRTOS

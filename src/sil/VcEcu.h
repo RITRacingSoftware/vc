@@ -15,6 +15,7 @@ class VcEcu: public Ecu {
         float get(std::string);
     private:
         main_bus_vc_shutdown_status_t shutdown_status;
+        bool can_data_available;
 };
 
 #endif // VC_ECU_H

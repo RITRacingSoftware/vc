@@ -1,9 +1,10 @@
 #ifndef CAN_H
 #define CAN_H
-
-#include <stdint.h>
-
+#include <stdbool.h>
 #include "main_bus.h"
+#include "FreeRTOS.h"
+#include "queue.h"
+#include "semphr.h"
 
 typedef struct
 {
@@ -12,7 +13,12 @@ typedef struct
     uint64_t data;
 } CanMessage_s;
 
-// Storage structure for current state of CAN bus.
+// semaphore only available in freertos, which isnt used for SIL
+#ifndef VC_SIL
+extern SemaphoreHandle_t can_message_transmit_semaphore;
+#endif
+
+/// Storage structure for current state of CAN bus.
 // Can be updated by the VC or by reading CAN messages from other systems.
 // Only contains messages updated by the VC or read by the VC.
 typedef struct
@@ -55,11 +61,6 @@ bool CAN_get_tx_error(void);
 bool CAN_get_rx_error(void);
 
 /**
- * If we care about this message, unpack its values and update our internal structure of them.
- */
-void CAN_receive_message(CanMessage_s* msg);
-
-/**
  * Begin counting how many messages have been received of a certain id.
  * id [in] - id of CAN message to count. Invalid ids wont increase in count.
  */
@@ -74,14 +75,29 @@ void CAN_begin_counting_id(unsigned int id);
 int CAN_get_count_for_id(unsigned int id);
 
 /**
- * Periodic CAN functions. Build and send periodic CAN messages.
+ * Periodic CAN functions. Send periodic CAN messages.
  */
 void CAN_100Hz(void);
 void CAN_1Hz(void);
 
 /**
+ * Processes recevied can messages
+ */
+void CAN_process_recieved_messages(void);
+
+/**
  * Fills empty transmit mailboxes with CAN messages from the queue
  */
 void CAN_send_queued_messages(void);
+
+/**
+ * Returns whether the transmit queue is empty. Must only be called from an ISR
+ */
+bool CAN_is_transmit_queue_empty_fromISR(void);
+
+/**
+ * Adds a received CAN message to the receive queue
+ */
+void CAN_add_message_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data);
 
 #endif // CAN_H
