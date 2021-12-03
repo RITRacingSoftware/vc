@@ -54,23 +54,16 @@ void HAL_Can_init(void)
     
     // 1000kbps
     int prescaler = 3;
-    // if (HAL_Gpio_read(GpioPin_CHARGER_AVAILABLE) == 1)
-    // {
-    //     // 500 kpbs
-    //     prescaler = 6;
-    // }
+ 
     canInit.CAN_Prescaler = prescaler;
     canInit.CAN_SJW = CAN_SJW_1tq;
     canInit.CAN_BS1 = CAN_BS1_13tq;
     canInit.CAN_BS2 = CAN_BS2_2tq;
-    // CAN_ITConfig(CAN, CAN_IT_FMP0, 1);
     
     uint8_t ret = CAN_Init(CAN, &canInit);
     CAN->IER |= 0x3; //Enable interrupts for FIFO0 message pending and transmit mailbox empty
 
-
-    // CAN_SlaveStartBank(1);
-    HAL_Can_init_id_filter_16bit(0x9, 0x23, 0x69, 0x52);
+    // HAL_Can_init_id_filter_16bit(0x9, 0x23, 0x69, 0x52); //initializes IDs for filters
 
     //Enable interrupts for recieve
     NVIC_InitTypeDef nvic_init;

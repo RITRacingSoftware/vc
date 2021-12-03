@@ -36,13 +36,16 @@ void task_100Hz(void *pvParameters)
     {
         VC_100Hz();
         // CAN_send_queued_messages();
+        uint8_t print_buffer4[30];
+        uint8_t n4 = sprintf(print_buffer4, "100Hz...\n\r");
+        HAL_Uart_send(print_buffer4, n4);
+
         vTaskDelayUntil(&next_wake_time, TASK_100Hz_PERIOD_MS);
     }
 }
 
 #define TASK_CAN_RX_NAME "task_CAN_RX"
 #define TASK_CAN_RX_PRIORITY (tskIDLE_PRIORITY + 4)
-#define TASK_CAN_RX_PERIOD_MS (1)
 #define TASK_CAN_RX_STACK_SIZE_B (500) 
 
 void task_can_rx(void *pvParameters)
@@ -53,6 +56,7 @@ void task_can_rx(void *pvParameters)
     {
         if(xSemaphoreTake(can_message_recieved_semaphore, portMAX_DELAY) == pdTRUE)
         {
+            uint8_t print_buffer3[30];
             CAN_process_recieved_messages();
         }
     }
@@ -60,7 +64,6 @@ void task_can_rx(void *pvParameters)
 
 #define TASK_CAN_TX_NAME "task_CAN_TX"
 #define TASK_CAN_TX_PRIORITY (tskIDLE_PRIORITY + 4)
-#define TASK_CAN_TX_PERIOD_MS (1)
 #define TASK_CAN_TX_STACK_SIZE_B (500) 
 
 void task_can_tx(void *pvParameters)
@@ -110,12 +113,7 @@ int main(void)
 
     // initialize all drivers
     HAL_Clock_init();
-    HAL_Uart_init();
-    uint8_t print_buffer[30];
-    uint8_t n = sprintf(print_buffer, "Starting...\n\r");
-    HAL_Uart_send(print_buffer, n);
-    n = sprintf(print_buffer, "1234\n\r");
-    HAL_Uart_send(print_buffer, n);
+    // HAL_Uart_init(); //UART pins configured as AIO, UART won't work after HAL_Aio_init
     HAL_Can_init();
     HAL_Aio_init();
     HAL_Dio_init();

@@ -113,11 +113,10 @@ void CAN_process_recieved_messages(void)
         {
             data[i] = (received_message.data >> (i*8)) & 0xff;
         }
-        uint8_t print_buffer1[100];
-        // uint8_t n = sprintf(print_buffer1, "ID: %d  Data: %d  %d  %d  %d  %d  %d  %d  %d\n\r", received_message.id, data[0],
+        // uint8_t print_buffer1[100];
+        // uint8_t n1 = sprintf(print_buffer1, "ID: %d  Data: %d  %d  %d  %d  %d  %d  %d  %d\n\r", received_message.id, data[0],
         //      data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
-        uint8_t n1 = sprintf(print_buffer1, "ID:\n\r");
-        HAL_Uart_send(print_buffer1, n1);
+        // HAL_Uart_send(print_buffer1, n1);
         //Unpack message recieved
         switch(received_message.id)
         {
