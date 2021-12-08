@@ -13,6 +13,12 @@ typedef struct
     uint64_t data;
 } CanMessage_s;
 
+#ifdef VC_SIL
+#include "CanQueue.h"
+#endif
+
+
+
 // semaphore only available in freertos, which isnt used for SIL
 #ifndef VC_SIL
 extern SemaphoreHandle_t can_message_transmit_semaphore;

@@ -7,6 +7,7 @@ void setUp(void)
     CAN_init();
 }
 
+
 void test_CAN_counting(void)
 {
     int id = 0x69;
@@ -21,7 +22,8 @@ void test_CAN_counting(void)
     {
         CanMessage_s msg;
         msg.id = id;
-        CAN_receive_message(&msg);
+        CAN_add_message_rx_queue(msg.id, msg.dlc, (uint8_t*)&msg.data);
+        CAN_process_recieved_messages();
     }
 
     TEST_ASSERT_MESSAGE(CAN_get_count_for_id(id) == 101, "Count did not increment appropriately.");
@@ -32,9 +34,13 @@ void test_CAN_counting(void)
         CanMessage_s msg;
         msg.id = i;
         if (i != id)
-        CAN_receive_message(&msg);
+        {
+            CAN_add_message_rx_queue(msg.id, msg.dlc, (uint8_t*)&msg.data);
+            CAN_process_recieved_messages();
+        }
         msg.id = id;
-        CAN_receive_message(&msg);
+        CAN_add_message_rx_queue(msg.id, msg.dlc, (uint8_t*)&msg.data);
+        CAN_process_recieved_messages();
     }
     TEST_ASSERT_MESSAGE(CAN_get_count_for_id(id) == 202, "Count did not increment appropriately when amidst other messages.");
 }

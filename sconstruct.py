@@ -90,6 +90,7 @@ linux_c_env = Environment(
     CC='gcc',
     CPPPATH=include_paths,
     CCFLAGS=[],
+    CPPDEFINES=['VC_SIL'],
     LIBS=['m'],
     SHELL='bash'
 )
@@ -292,7 +293,6 @@ Clean(cmock_libs, CMOCK_ROOT_DIR.Dir('build'))
 """
 Application module linux target compilation instructions.
 """
-
 modules_to_compile = app_modules
 linux_objs = {}
 for (name, path) in modules_to_compile:
@@ -302,6 +302,19 @@ for (name, path) in modules_to_compile:
     )
 
 Alias('linux_objs', linux_objs.values())
+
+"""
+Common module linux target compilation instructions.
+"""
+modules_to_compile = common_modules
+common_objs = {}
+for (name, path) in modules_to_compile:
+    common_objs[name] = linux_c_env.Object(
+        source=path.File(f'{name}.c'),
+        target=BUILD_DIR.File(f'{SRC_DIR.rel_path(path)}/{name}.o')
+    )
+
+Alias('common_objs', common_objs.values())
 
 
 """
@@ -335,7 +348,7 @@ for name, obj in cmock_testrunner_src.items():
         
     unit_test_execs += [
         linux_c_env.Program(
-            source=[obj, linux_objs[name], test_script_objs[name]] + objs + cmock_libs,
+            source=[obj, linux_objs[name], test_script_objs[name]] + objs + cmock_libs + common_objs.values(),
             target=BUILD_DIR.Dir(SRC_DIR.rel_path(obj.dir)).File(f'{name}_tests')
             )
     ]
