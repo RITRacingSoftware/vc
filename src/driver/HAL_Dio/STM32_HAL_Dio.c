@@ -17,6 +17,7 @@ static GPIO_TypeDef* port_for_pin(DIOpin_e pin)
         case DIOpin_SOUND_4:
         case DIOpin_SOUND_5:
         case DIOpin_SOUND_6:
+        case DIOpin_STATUS_LED:
             port = GPIOB;
             break;
         
@@ -104,6 +105,13 @@ void HAL_Dio_init(void)
     gpio_init.GPIO_OType = GPIO_OType_PP; // shouldnt matter
     gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL; // TODO - figure out what this should be
     GPIO_Init(GPIOA, &gpio_init);
+
+    // gpio_init.GPIO_Pin = mask_for_pin(DIOpin_STATUS_LED); // status led
+    // gpio_init.GPIO_Mode = GPIO_Mode_OUT;
+    // gpio_init.GPIO_Speed = GPIO_Speed_Level_1;
+    // gpio_init.GPIO_OType = GPIO_OType_PP; // shouldnt matter
+    // gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL; // TODO - figure out what this should be
+    // GPIO_Init(GPIOA, &gpio_init);
 
     // now do port B pins
     gpio_init.GPIO_Pin = GPIO_Pin_2 |  // sound 0
