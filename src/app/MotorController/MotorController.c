@@ -156,6 +156,10 @@ void MotorController_100Hz(void)
             {
                 state = MCstate_DISCONNECTED;
             }
+            else if (!inputs.mc_state_ready)
+            {
+                state = MCstate_ENABLED;
+            }
             else if (!inputs.mc_enabled)
             {
                 state = MCstate_DISABLED;
@@ -192,7 +196,7 @@ void MotorController_100Hz(void)
     CAN_send_message(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
 
     // update status CAN message
-    can_bus.vc_status.vc_status_mc_ready = main_bus_vc_status_vc_status_mc_ready_encode(MotorController_is_ready());
+    can_bus.vc_status.vc_status_m_cstate = main_bus_vc_status_vc_status_m_cstate_encode(state);
 }
 
 /**

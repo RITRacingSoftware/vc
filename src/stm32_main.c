@@ -17,16 +17,17 @@
 // application code
 #include "VC.h"
 #include "CAN.h"
+#include "MotorController.h"
+#include "SoundController.h"
 
 #define SEPHAMORE_WAIT 0
+SemaphoreHandle_t can_message_recieved_semaphore;
+SemaphoreHandle_t can_message_transmit_semaphore;
 
 #define TASK_100Hz_NAME "task_100Hz"
 #define TASK_100Hz_PRIORITY (tskIDLE_PRIORITY + 1)
 #define TASK_100Hz_PERIOD_MS (10)
 #define TASK_100Hz_STACK_SIZE_B (1000)
-
-SemaphoreHandle_t can_message_recieved_semaphore;
-SemaphoreHandle_t can_message_transmit_semaphore;
 
 void task_100Hz(void *pvParameters)
 {
@@ -41,6 +42,23 @@ void task_100Hz(void *pvParameters)
         HAL_Uart_send(print_buffer4, n4);
 
         vTaskDelayUntil(&next_wake_time, TASK_100Hz_PERIOD_MS);
+    }
+}
+
+
+#define TASK_1kHz_NAME "task_1kHz"
+#define TASK_1kHz_PRIORITY (tskIDLE_PRIORITY + 1)
+#define TASK_1kHz_PERIOD_MS (1)
+#define TASK_1kHz_STACK_SIZE_B (1000)
+
+void task_1kHz(void *pvParameters)
+{
+    (void) pvParameters;
+    TickType_t next_wake_time = xTaskGetTickCount();
+    for (;;)
+    {
+        VC_1kHz();
+        vTaskDelayUntil(&next_wake_time, TASK_1kHz_PERIOD_MS);
     }
 }
 
@@ -120,13 +138,20 @@ int main(void)
 
     // initialize all application modules
     VC_init();
-    
+
     // initialize tasks
     xTaskCreate(task_100Hz, 
         TASK_100Hz_NAME, 
         TASK_100Hz_STACK_SIZE_B,
         NULL,
         TASK_100Hz_PRIORITY,
+        NULL);
+
+    xTaskCreate(task_1kHz, 
+        TASK_1kHz_NAME, 
+        TASK_1kHz_STACK_SIZE_B,
+        NULL,
+        TASK_1kHz_PRIORITY,
         NULL);
 
     xTaskCreate(task_can_rx, 

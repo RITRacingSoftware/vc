@@ -29,6 +29,11 @@
  */
 #define MAX_TORQUE_NM 240.0
 
+// the first and last % of the accelerator torque curve will be flat
+// ex: if both are set to 5, torque will start being commanded at 5% pedal travel, and reach 100% pedal travel at 95%
+#define ACC_LOWER_DEADZONE_PERCENT 5.0
+#define ACC_UPPER_DEADZONE_PERCENT 5.0
+
 /**
  * APPS
  */
@@ -76,7 +81,7 @@
  */
 
 #define ADC_MAX_VAL 4095.0 // 12 bit adc
-#define ADC_MAX_V 3.3
+#define ADC_MAX_VOLTAGE 3.3
 
 /**
  * Accelerator Position Sensors
@@ -85,14 +90,14 @@
 // to what discretion voltages must be equal to be considered equal
 #define VOLTAGE_TOL 0.001
 
-#define APS_A_SENSOR_V 3.3
-#define APS_A_MIN_RATIONAL_V 0.1
-#define APS_A_MAX_RATIONAL_V 3.2
+#define APS_A_SENSOR_V 1.6
+#define APS_A_MIN_RATIONAL_V 0
+#define APS_A_MAX_RATIONAL_V 1.55
 #define APS_A_RANGE_V ((APS_A_MAX_RATIONAL_V) - (APS_A_MIN_RATIONAL_V))
 
-#define APS_B_SENSOR_V 1.8
-#define APS_B_MIN_RATIONAL_V 0.1
-#define APS_B_MAX_RATIONAL_V 1.7
+#define APS_B_SENSOR_V 1.9
+#define APS_B_MIN_RATIONAL_V 0
+#define APS_B_MAX_RATIONAL_V 1.85
 #define APS_B_RANGE_V ((APS_B_MAX_RATIONAL_V) - (APS_B_MIN_RATIONAL_V))
 
 
@@ -101,8 +106,8 @@
  */
 
 #define BPS_MIN_V 0.5
-#define BPS_RANGE_V 4.0
-#define BPS_MAX_V 5.0 // the sensor still only goes to 4.5v, if it reads up here itll be irrational
+#define BPS_MAX_V 3.3 // the sensor still only goes to 4.5v, if it reads up here itll be irrational
+#define BPS_RANGE_V (BPS_MAX_V - BPS_MIN_V)
 
 #define BPS_MIN_PSI 50
 #define BPS_RANGE_PSI 7950

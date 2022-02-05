@@ -18,6 +18,9 @@ bool Brake_read_pressure(float* pressure)
     // convert the analog input line to sensor voltage
     // This is different than the adc input (3v3) but is scaled down to 3v3 so this should work
     float voltage = ((float) adc_val / ADC_MAX_VAL) * BPS_MAX_V;
+
+    // update CAN message
+    can_bus.vc_pedal_inputs_raw.vc_pedal_inputs_raw_brake_voltage = main_bus_vc_pedal_inputs_raw_vc_pedal_inputs_raw_brake_voltage_encode(voltage);
     
     // get rid of offset
     float voltage_normalized = voltage - BPS_MIN_V;

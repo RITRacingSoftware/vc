@@ -32,6 +32,7 @@ typedef struct
     // things the vc sends
     struct main_bus_vc_status_t vc_status;
     struct main_bus_vc_pedal_inputs_t vc_pedal_inputs;
+    struct main_bus_vc_pedal_inputs_raw_t vc_pedal_inputs_raw;
     struct main_bus_vc_dash_inputs_t vc_dash_inputs;
     struct main_bus_vc_shutdown_status_t vc_shutdown_status;
     struct main_bus_vc_fault_vector_t vc_fault_vector;

@@ -17,6 +17,7 @@
 #include "VehicleState.h"
 
 #include "main_bus.h"
+#include "HAL_Dio.h"
 
 // #define VC_DEBUG
 
@@ -47,6 +48,7 @@ void VC_100Hz(void)
     Brake_read_pressure(&brake_pressure);
 
     CAN_send_message(MAIN_BUS_VC_PEDAL_INPUTS_FRAME_ID);
+    CAN_send_message(MAIN_BUS_VC_PEDAL_INPUTS_RAW_FRAME_ID);
 
     // perform dynamic rationality checks on pedal inputs
     APPS_100Hz(&accel_pos, brake_pressure);
@@ -82,4 +84,18 @@ void VC_100Hz(void)
 
     // Blink heartbeat led
     HeartBeatLed_100Hz();
+}
+
+void VC_1kHz(void)
+{
+    static struct main_bus_vc_shutdown_status_t status;
+    status.vc_shutdown_status_bms_fault = HAL_Dio_read(DIOpin_BMS_FAULT);
+    status.vc_shutdown_status_imd_fault = HAL_Dio_read(DIOpin_IMD_FAULT);
+    status.vc_shutdown_status_bspd_fault = HAL_Dio_read(DIOpin_BSPD_FAULT);
+    status.vc_shutdown_status_bspd_signal_lost = HAL_Dio_read(DIOpin_BSPD_SIGNAL_LOST);
+    status.vc_shutdown_status_precharge = HAL_Dio_read(DIOpin_PRECHARGE);
+    
+    ShutdownMonitor_update(&status);
+
+    CAN_send_message(MAIN_BUS_VC_SHUTDOWN_STATUS_FRAME_ID);
 }

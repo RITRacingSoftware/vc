@@ -63,6 +63,9 @@ static int pack_message(int id, uint8_t* msg_data)
         case MAIN_BUS_VC_PEDAL_INPUTS_FRAME_ID:
             return main_bus_vc_pedal_inputs_pack(msg_data, &can_bus.vc_pedal_inputs, 8);
 
+        case MAIN_BUS_VC_PEDAL_INPUTS_RAW_FRAME_ID:
+            return main_bus_vc_pedal_inputs_raw_pack(msg_data, &can_bus.vc_pedal_inputs_raw, 8);
+
         case MAIN_BUS_VC_DASH_INPUTS_FRAME_ID:
             return main_bus_vc_dash_inputs_pack(msg_data, &can_bus.vc_dash_inputs, 8);
         
@@ -92,10 +95,13 @@ void CAN_send_message(unsigned long int id)
     {
         CanMessage_s thisMessage = {id, 8, msg_data};
         #ifdef VC_SIL
-        CanQueue_enqueue(&tx_can_message_queue, &thisMessage);
+        can_tx_error = !CanQueue_enqueue(&tx_can_message_queue, &thisMessage);
         #else
-        xQueueSend(tx_can_message_queue, &thisMessage, 10);
-        xSemaphoreGive(can_message_transmit_semaphore);
+        can_tx_error = !xQueueSend(tx_can_message_queue, &thisMessage, 0);
+        if (!can_tx_error) 
+        {
+            xSemaphoreGive(can_message_transmit_semaphore);
+        }
         #endif   
     }
     else
@@ -178,8 +184,7 @@ void CAN_send_queued_messages(void)
         if (xQueueReceive(tx_can_message_queue, &dequeued_message, TICKS_TO_WAIT_QUEUE_CAN_MESSAGE) == pdTRUE) //Get next message to send if there is one
         #endif
         {
-            Error_t err = HAL_Can_send_message(dequeued_message.id, dequeued_message.dlc, dequeued_message.data);
-            can_tx_error = err.active;
+            HAL_Can_send_message(dequeued_message.id, dequeued_message.dlc, dequeued_message.data);
         }
         else
         {

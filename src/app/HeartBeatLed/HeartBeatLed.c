@@ -54,11 +54,11 @@ static void pattern_faulted(unsigned int count_ms)
 
 static void pattern_can_error(unsigned int count_ms)
 {
-    unsigned int mod_ms = count_ms % 500;
+    unsigned int mod_ms = count_ms % 200;
 
     // fast blink, 4 Hz
 
-    if (mod_ms < 250)
+    if (mod_ms < 100)
     {
         led_on();
     }

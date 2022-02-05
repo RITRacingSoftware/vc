@@ -39,10 +39,10 @@ void Switches_100Hz(void)
 {
     // read new switch inputs
     bool new_switch_states[NUM_SWITCHES];
-    new_switch_states[0] = HAL_Dio_read(DIOpin_SWITCH_0);
-    new_switch_states[1] = HAL_Dio_read(DIOpin_SWITCH_0);
-    new_switch_states[2] = HAL_Dio_read(DIOpin_SWITCH_0);  
-    new_switch_states[3] = HAL_Dio_read(DIOpin_SWITCH_0);
+    new_switch_states[0] = HAL_Dio_read(DIOpin_SWITCH_1);
+    new_switch_states[1] = HAL_Dio_read(DIOpin_SWITCH_2);
+    new_switch_states[2] = HAL_Dio_read(DIOpin_SWITCH_3);  
+    new_switch_states[3] = HAL_Dio_read(DIOpin_SWITCH_4);
 
     // detect any switch edges and act on them
     for (int i = 0; i < NUM_SWITCHES; i++)

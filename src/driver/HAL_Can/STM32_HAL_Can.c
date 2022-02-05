@@ -63,7 +63,7 @@ void HAL_Can_init(void)
     uint8_t ret = CAN_Init(CAN, &canInit);
     CAN->IER |= 0x3; //Enable interrupts for FIFO0 message pending and transmit mailbox empty
 
-    // HAL_Can_init_id_filter_16bit(0x9, 0x23, 0x69, 0x52); //initializes IDs for filters
+    HAL_Can_init_id_filter_16bit(0xAA, 0x00, 0x00, 0x00); //initializes IDs for filters
 
     //Enable interrupts for recieve
     NVIC_InitTypeDef nvic_init;
@@ -133,21 +133,23 @@ Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data)
     else if (dlc > 8)
         dlc = 8;
 
-    for (int i = 0; i < dlc; i++)
-    {
-        msg.Data[i] = (data >> (i*8)) & 0xff;
-    }
+    *((uint64_t*)msg.Data) = data;
+
     CAN_Transmit(CAN, &msg); 
 
     Error_t error;
-    error.active = true;
 
-    if (CAN_GetLastErrorCode(CAN) == 0)
+    int code = CAN_GetLastErrorCode(CAN);
+
+    if (code == CAN_ErrorCode_NoErr)
     {
         error.active = false;
     }
+    else
+    {
+        error.active = true;
+    }
 
-    // return error;
     return error;
 }
 

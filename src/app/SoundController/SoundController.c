@@ -12,7 +12,8 @@ unsigned int pin_durations_ms[Sounds_NUM];
 void SoundController_init(void)
 {
     // set up pin mapping
-    pin_map[Sounds_READY_TO_DRIVE] = DIOpin_SOUND_0;
+    pin_map[Sounds_READY_TO_DRIVE] = DIOpin_SOUND_1;
+    HAL_Dio_write(pin_map[Sounds_READY_TO_DRIVE], false);
 
     // zero out pin low time timers
     for (int i = 0; i < Sounds_NUM; i++)
@@ -23,7 +24,7 @@ void SoundController_init(void)
 
 void SoundController_play_sound(Sounds_e sound)
 {
-    HAL_Dio_write(pin_map[sound], false);
+    HAL_Dio_write(pin_map[sound], true);
     // reset duration to keep this low for longer if its already low
     pin_durations_ms[sound] = 0;
 }
@@ -36,14 +37,14 @@ void SoundController_100Hz(void)
     for (int sound = 0; sound < Sounds_NUM; sound++)
     {   
         // only care if output is low
-        if (HAL_Dio_read(pin_map[(DIOpin_e) sound]) == false)
+        if (HAL_Dio_read(pin_map[(DIOpin_e) sound]) == true)
         {
             pin_durations_ms[sound] += 10;
 
             // if trigger has been low for long enough, set to high
             if (pin_durations_ms[sound] >= SOUND_TRIGGER_HOLD_MS)
             {
-                HAL_Dio_write((DIOpin_e) sound, true);
+                HAL_Dio_write((DIOpin_e) sound, false);
                 pin_durations_ms[sound] = 0;
             }
         }

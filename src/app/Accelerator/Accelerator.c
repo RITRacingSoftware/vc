@@ -13,8 +13,15 @@ bool Accelerator_read_positions(AccelPos_s* accel_pos)
     #ifdef ACCEL_DEBUG
     printf("ADC: %d %d\r\n", HAL_Aio_read(AIOpin_ACCEL_A), HAL_Aio_read(AIOpin_ACCEL_B));
     #endif
-    float voltage_a = ((float) HAL_Aio_read(AIOpin_ACCEL_A) / ADC_MAX_VAL) * ADC_MAX_V;
-    float voltage_b = ((float) HAL_Aio_read(AIOpin_ACCEL_B) / ADC_MAX_VAL) * ADC_MAX_V;
+    uint16_t adc_a = HAL_Aio_read(AIOpin_ACCEL_A);
+    uint16_t adc_b = HAL_Aio_read(AIOpin_ACCEL_B);
+
+    float voltage_a = ((float) adc_a / ADC_MAX_VAL) * ADC_MAX_VOLTAGE;
+    float voltage_b = ((float) adc_b / ADC_MAX_VAL) * ADC_MAX_VOLTAGE;
+
+    can_bus.vc_pedal_inputs_raw.vc_pedal_inputs_raw_accel_voltage_a = main_bus_vc_pedal_inputs_raw_vc_pedal_inputs_raw_accel_voltage_a_encode(voltage_a);
+    can_bus.vc_pedal_inputs_raw.vc_pedal_inputs_raw_accel_voltage_b = main_bus_vc_pedal_inputs_raw_vc_pedal_inputs_raw_accel_voltage_b_encode(voltage_b);
+
     #ifdef ACCEL_DEBUG
     printf("VOLTAGE: %.02f %.02f\r\n", voltage_a, voltage_b);
     #endif 

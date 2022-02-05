@@ -34,6 +34,9 @@ void FaultManager_set_fault_active(FaultCode_e code)
 
         // update the fault vector CAN message data
         main_bus_vc_fault_vector_unpack(&can_bus.vc_fault_vector, (uint8_t*)&fault_vector, 8);
+
+        // send the fault matrix so the rising edge of the fault is caught by logging
+        CAN_send_message(MAIN_BUS_VC_FAULT_VECTOR_FRAME_ID);
     }
 }
 
