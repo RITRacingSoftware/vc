@@ -44,14 +44,13 @@ void VC_100Hz(void)
     AccelPos_s accel_pos;
     Accelerator_read_positions(&accel_pos);
 
-    float brake_pressure;
-    Brake_read_pressure(&brake_pressure);
+    float brake_on = Brake_is_pressed();
 
     CAN_send_message(MAIN_BUS_VC_PEDAL_INPUTS_FRAME_ID);
     CAN_send_message(MAIN_BUS_VC_PEDAL_INPUTS_RAW_FRAME_ID);
 
     // perform dynamic rationality checks on pedal inputs
-    APPS_100Hz(&accel_pos, brake_pressure);
+    APPS_100Hz(&accel_pos, brake_on);
 
     // keep up to date with the state of the motor controller. Enable it if necessary.
     MotorController_100Hz();

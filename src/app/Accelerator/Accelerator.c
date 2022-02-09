@@ -37,18 +37,18 @@ bool Accelerator_read_positions(AccelPos_s* accel_pos)
     // check for irrationality
     // this gon flicker
     
-    if (FLOAT_LT(voltage_a, APS_A_MIN_RATIONAL_V, VOLTAGE_TOL) || FLOAT_GT(voltage_a, APS_A_MAX_RATIONAL_V, VOLTAGE_TOL)
-        || FLOAT_LT(voltage_b, APS_B_MIN_RATIONAL_V, VOLTAGE_TOL) || FLOAT_GT(voltage_b, APS_B_MAX_RATIONAL_V, VOLTAGE_TOL))
-    {
-        #ifdef ACCEL_DEBUG
-        printf("Setting irrational fault.\r\n");
-        #endif
-        FaultManager_set_fault_active(FaultCode_ACCELERATOR_SENSOR_IRRATIONAL);
-    }
-    else
-    {
-        FaultManager_clear_fault(FaultCode_ACCELERATOR_SENSOR_IRRATIONAL);
-    }
+    // if (FLOAT_LT(voltage_a, APS_A_MIN_RATIONAL_V, VOLTAGE_TOL) || FLOAT_GT(voltage_a, APS_A_MAX_RATIONAL_V, VOLTAGE_TOL)
+    //     || FLOAT_LT(voltage_b, APS_B_MIN_RATIONAL_V, VOLTAGE_TOL) || FLOAT_GT(voltage_b, APS_B_MAX_RATIONAL_V, VOLTAGE_TOL))
+    // {
+    //     #ifdef ACCEL_DEBUG
+    //     printf("Setting irrational fault.\r\n");
+    //     #endif
+    //     FaultManager_set_fault_active(FaultCode_ACCELERATOR_SENSOR_IRRATIONAL);
+    // }
+    // else
+    // {
+    //     FaultManager_clear_fault(FaultCode_ACCELERATOR_SENSOR_IRRATIONAL);
+    // }
     #ifdef ACCEL_DEBUG
     printf("ACCEL: %.02f %.02f\r\n", accel_pos->a, accel_pos->b);
     #endif

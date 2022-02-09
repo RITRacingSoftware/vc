@@ -14,7 +14,6 @@ void VcCompat_init(void)
     
     // Digital I/O initialization:
     // start all sounds not triggered
-    hardware.dio[DIOpin_SOUND_0] = 
     hardware.dio[DIOpin_SOUND_1] = 
     hardware.dio[DIOpin_SOUND_2] = 
     hardware.dio[DIOpin_SOUND_3] =
@@ -26,10 +25,10 @@ void VcCompat_init(void)
     hardware.dio[DIOpin_STATUS_LED] = false;
 
     // start all switches low
-    hardware.dio[DIOpin_SWITCH_0] =
     hardware.dio[DIOpin_SWITCH_1] =
     hardware.dio[DIOpin_SWITCH_2] =
-    hardware.dio[DIOpin_SWITCH_3] = false;
+    hardware.dio[DIOpin_SWITCH_3] =
+    hardware.dio[DIOpin_SWITCH_4] = false;
 
     CanQueue_init(&hardware.outbox);
 }

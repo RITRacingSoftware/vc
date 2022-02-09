@@ -126,7 +126,7 @@ void pedal_disagreement_check(AccelPos_s* accel_pos)
     }
 }
 
-void double_pedal_check(float average_accel_pos, float brake_pres_psi)
+void double_pedal_check(float average_accel_pos, bool brake_on)
 {
     if (FaultManager_is_fault_active(FaultCode_APPS_DOUBLE_PEDAL))
     {
@@ -137,7 +137,7 @@ void double_pedal_check(float average_accel_pos, float brake_pres_psi)
     }
     else
     {
-        if ((brake_pres_psi > BRAKE_ON_PSI) && (average_accel_pos > DOUBLE_PEDAL_APS_THRESHOLD))
+        if (brake_on && (average_accel_pos > DOUBLE_PEDAL_APS_THRESHOLD))
         {
             FaultManager_set_fault_active(FaultCode_APPS_DOUBLE_PEDAL);
         }
@@ -145,8 +145,8 @@ void double_pedal_check(float average_accel_pos, float brake_pres_psi)
 }
 
 
-void APPS_100Hz(AccelPos_s* accel_pos, float brake_pres_psi)
+void APPS_100Hz(AccelPos_s* accel_pos, bool brake_on)
 {
     pedal_disagreement_check(accel_pos);
-    double_pedal_check(accel_pos->average, brake_pres_psi);
+    double_pedal_check(accel_pos->average, brake_on);
 }

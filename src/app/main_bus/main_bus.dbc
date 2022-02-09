@@ -218,9 +218,8 @@ BO_ 305 VcShutdownStatus: 8 VCU
 
 BO_ 311 VcFaultVector: 8 VCU
  SG_ VcFaultVector_BRAKE_SENSOR_IRRATIONAL: 0|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcFaultVector_ACCELERATOR_SENSOR_IRRATIONAL: 1|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcFaultVector_APPS_SENSOR_DISAGREEMENT: 2|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcFaultVector_APPS_DOUBLE_PEDAL: 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ VcFaultVector_APPS_SENSOR_DISAGREEMENT: 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ VcFaultVector_APPS_DOUBLE_PEDAL: 2|1@1+ (1,0) [0|1] "" Vector__XXX
  
 BO_ 315 VcHardFaultIndicator: 8 Vc
  SG_ VcHardFaultIndicator_task: 0|4@1+ (1,0) [0|15] "" Vector__XXX

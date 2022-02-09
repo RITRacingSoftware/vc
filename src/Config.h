@@ -51,7 +51,7 @@
 #define DOUBLE_PEDAL_APS_RECOVERY_THRESHOLD 5
 
 // Pressure indicating the driver has intentionally applied force to the brake pedal.
-#define BRAKE_ON_PSI 1000
+#define BRAKE_PRESSED_V 1.0
 
 /**
  * Sound Control
@@ -107,10 +107,10 @@
 
 #define BPS_MIN_V 0.5
 #define BPS_MAX_V 3.3 // the sensor still only goes to 4.5v, if it reads up here itll be irrational
-#define BPS_RANGE_V (BPS_MAX_V - BPS_MIN_V)
+// #define BPS_RANGE_V (BPS_MAX_V - BPS_MIN_V)
 
-#define BPS_MIN_PSI 50
-#define BPS_RANGE_PSI 7950
+// #define BPS_MIN_PSI 50
+// #define BPS_RANGE_PSI 7950
 
 
 #endif // VC_CONFIG_H scons sim
