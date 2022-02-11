@@ -74,6 +74,12 @@ class VcHandle:
         Send a single motor controller internal states message to the VC.
         """
         self.handle.inject_mc_state_msg(state, enabled)
+    
+    def inject_pbx_status_msg(self, pumps_on):
+        """
+        Send a single pbx status message to the vc.
+        """
+        self.handle.inject_pbx_status_msg(pumps_on);
 
     def __getitem__(self, key):
         return self.handle.get(ctypes.c_char_p(key.encode("utf-8")))

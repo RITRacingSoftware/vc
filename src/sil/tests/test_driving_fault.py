@@ -11,6 +11,7 @@ def test_mc_lost(vc):
 
     # run until the VC starts commanding torque
     vc.hold_mc_state(state=5, enabled=1)
+    vc.inject_pbx_status_msg(True)
     vc.run_ms(10000)
 
     # press the pedal, make sure we get torque commanded
@@ -45,6 +46,7 @@ def test_pedal_breakage(vc):
 
     # run until the VC starts commanding torque
     vc.hold_mc_state(state=5, enabled=1)
+    vc.inject_pbx_status_msg(True)
     vc.run_ms(10000)
 
     # press the pedal, make sure we get torque commanded
@@ -85,6 +87,7 @@ def test_double_pedal(vc):
 
     # run until the VC starts commanding torque
     vc.hold_mc_state(state=5, enabled=1)
+    vc.inject_pbx_status_msg(True)
     vc.run_ms(10000)
 
     # press the pedal, make sure we get torque commanded

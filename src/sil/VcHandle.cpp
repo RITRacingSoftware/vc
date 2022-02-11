@@ -80,6 +80,18 @@ void inject_mc_state_msg(int state, bool enabled)
     vc->injectCan(msg);
 }
 
+void inject_pbx_status_msg(bool pumps_on)
+{
+    ecusim::CanMsg msg;
+    msg.id = MAIN_BUS_PBX_STATUS_FRAME_ID;
+    msg.dlc = 8;
+
+    struct main_bus_pbx_status_t pbx_status;
+    pbx_status.pbx_status_pump_on = pumps_on;
+    main_bus_pbx_status_pack((uint8_t*)msg.data, &pbx_status, 8);
+    vc->injectCan(msg);
+}
+
 unsigned long int next_can_msg(int64_t* data)
 {
     if (!emptied->empty())

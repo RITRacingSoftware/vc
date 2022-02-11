@@ -28,6 +28,7 @@ void VehicleState_100Hz(float torque)
     bool mc_ready = MotorController_is_ready();
     bool faulted = FaultManager_is_any_fault_active();
     bool torque_requested = torque > 0.0; // this input keeps the VC from instantaneously jumping from 0 requested torque to a high number
+    bool pumps_running = can_bus.pbx_status.pbx_status_pump_on;
 
     // determine state
     switch (state)
@@ -36,7 +37,7 @@ void VehicleState_100Hz(float torque)
         #ifdef VEHICLE_STATE_DEBUG
             printf("VEHICLE STATE: NOT READY\r\n");
         #endif
-            if (mc_ready && !faulted && !torque_requested)
+            if (mc_ready && !faulted && !torque_requested && pumps_running)
             {
                 new_state(VehicleState_STARTUP);
             }

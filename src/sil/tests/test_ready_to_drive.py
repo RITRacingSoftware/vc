@@ -38,6 +38,12 @@ def test_ready_to_drive(vc):
     # indicate the motor controller is ready
     vc.hold_mc_state(state=5, enabled=1)
 
+    # MC is ready but pumps are not yet running
+    vc.run_ms(10000)
+    assert vc.signals['Torque_Command'] == 0
+    
+    vc.inject_pbx_status_msg(True)
+
     # ready to drive sound should be triggered
     while vc['sound0'] == 1:
         vc.run_ms(1)

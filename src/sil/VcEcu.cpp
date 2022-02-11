@@ -230,4 +230,6 @@ float VcEcu::get(std::string key)
     {
         return this->shutdown_status.vc_shutdown_status_precharge;
     }
+    
+    return -1;
 }

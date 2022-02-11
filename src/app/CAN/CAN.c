@@ -93,7 +93,7 @@ void CAN_send_message(unsigned long int id)
     // get the message data for the given id
     if (-1 != pack_message(id, (uint8_t*) &msg_data))
     {
-        CanMessage_s thisMessage = {id, 8, msg_data};
+        CanMessage_s thisMessage = {(int)id, 8, msg_data};
         #ifdef VC_SIL
         can_tx_error = !CanQueue_enqueue(&tx_can_message_queue, &thisMessage);
         #else
@@ -108,7 +108,7 @@ void CAN_send_message(unsigned long int id)
     {
         // CAN id invalid, dont attempt to send the message
         can_tx_error = true;
-        printf("CAN ERROR: %x\n", id);
+        printf("CAN ERROR: %lx\n", id);
     }
 }
 
@@ -161,6 +161,10 @@ void CAN_process_recieved_messages(void)
         {
             case MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID:
                 main_bus_m170_internal_states_unpack(&can_bus.mc_state, (uint8_t*)&received_message.data, 8);
+                break;
+            
+            case MAIN_BUS_PBX_STATUS_FRAME_ID:
+                main_bus_pbx_status_unpack(&can_bus.pbx_status, (uint8_t*)&received_message.data, 8);
 
             default:
                 // printf("f29bms: unknown CAN id: %d\n", received_message.id);
