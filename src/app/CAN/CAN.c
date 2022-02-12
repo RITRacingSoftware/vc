@@ -165,6 +165,7 @@ void CAN_process_recieved_messages(void)
             
             case MAIN_BUS_PBX_STATUS_FRAME_ID:
                 main_bus_pbx_status_unpack(&can_bus.pbx_status, (uint8_t*)&received_message.data, 8);
+                break;
 
             default:
                 // printf("f29bms: unknown CAN id: %d\n", received_message.id);

@@ -90,15 +90,19 @@
 // to what discretion voltages must be equal to be considered equal
 #define VOLTAGE_TOL 0.001
 
-#define APS_A_SENSOR_V 1.6
-#define APS_A_MIN_RATIONAL_V 0
-#define APS_A_MAX_RATIONAL_V 1.55
-#define APS_A_RANGE_V ((APS_A_MAX_RATIONAL_V) - (APS_A_MIN_RATIONAL_V))
+#define APS_A_SENSOR_V 2.83
+#define APS_A_OFFSET_V 0.0
+#define APS_A_SENSOR_RANGE_V (APS_A_SENSOR_V - APS_A_OFFSET_V)
+// #define APS_A_MIN_RATIONAL_V 0
+// #define APS_A_MAX_RATIONAL_V 3.3
+// #define APS_A_RANGE_V ((APS_A_MAX_RATIONAL_V) - (APS_A_MIN_RATIONAL_V))
 
-#define APS_B_SENSOR_V 1.9
-#define APS_B_MIN_RATIONAL_V 0
-#define APS_B_MAX_RATIONAL_V 1.85
-#define APS_B_RANGE_V ((APS_B_MAX_RATIONAL_V) - (APS_B_MIN_RATIONAL_V))
+#define APS_B_SENSOR_V 1.82
+#define APS_B_OFFSET_V 0.16
+#define APS_B_SENSOR_RANGE_V (APS_B_SENSOR_V - APS_B_OFFSET_V)
+// #define APS_B_MIN_RATIONAL_V 0
+// #define APS_B_MAX_RATIONAL_V 1.8
+// #define APS_B_RANGE_V ((APS_B_MAX_RATIONAL_V) - (APS_B_MIN_RATIONAL_V))
 
 
 /**

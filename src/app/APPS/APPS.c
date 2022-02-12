@@ -1,6 +1,7 @@
 #include <math.h>
 
 #include "APPS.h"
+#include "CAN.h"
 #include "Config.h"
 #include "FaultManager.h"
 
@@ -84,8 +85,10 @@ void APPS_init(void)
 // Check if the pedals are within a certain percentage of each other
 // Return true if they are, false otherwise
 bool accel_pos_agree(AccelPos_s* pos)
-{
-    return fabs(pos->a - pos->b) < APPS_PEDAL_DISAGREEMENT_PERCENTAGE;
+{   
+    float err = fabs(pos->a - pos->b);
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_accel_position_err = main_bus_vc_pedal_inputs_vc_pedal_inputs_accel_position_err_encode(err);
+    return err < APPS_PEDAL_DISAGREEMENT_PERCENTAGE;
 }
 
 void pedal_disagreement_check(AccelPos_s* accel_pos)

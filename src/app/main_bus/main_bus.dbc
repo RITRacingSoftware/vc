@@ -195,6 +195,8 @@ BO_ 302 VcPedalInputs: 8 VCU
  SG_ VcPedalInputs_AccelPositionA : 16|7@1+ (1,0) [0|100] "%" Vector__XXX
  SG_ VcPedalInputs_AccelPositionB : 23|7@1+ (1,0) [0|100] "%" Vector__XXX
  SG_ VcPedalInputs_AccelPositionAvg : 30|16@1+ (0.1,0) [0|100] "%" Vector__XXX
+ SG_ VcPedalInputs_AccelPositionErr : 46|7@1+ (1,0) [0|100] "%" Vector__XXX
+ SG_ VcPedalInputs_TorqueRequested : 53|8@1+ (1,0) [0|254] "Nm" Vector__XXX
 
 BO_ 303 VcPedalInputsRaw: 8 VCU
  SG_ VcPedalInputsRaw_AccelVoltageA : 0|9@1+ (0.01,0) [0|5] "V" Vector__XXX

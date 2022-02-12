@@ -25,8 +25,8 @@ bool Accelerator_read_positions(AccelPos_s* accel_pos)
     #ifdef ACCEL_DEBUG
     printf("VOLTAGE: %.02f %.02f\r\n", voltage_a, voltage_b);
     #endif 
-    accel_pos->a = ((voltage_a -APS_A_MIN_RATIONAL_V) / APS_A_RANGE_V) * 100.0;
-    accel_pos->b = ((voltage_b -APS_B_MIN_RATIONAL_V) / APS_B_RANGE_V) * 100.0;
+    accel_pos->a = (MAX((voltage_a - APS_A_OFFSET_V), 0.0) / APS_A_SENSOR_RANGE_V) * 100.0;
+    accel_pos->b = (MAX((voltage_b - APS_B_OFFSET_V), 0.0)/ APS_B_SENSOR_RANGE_V) * 100.0;
 
     // limit positions to from 0-100
     accel_pos->a = SAT(accel_pos->a, 0, 100);

@@ -7,8 +7,8 @@ void VcCompat_init(void)
 {
     // Analog I/O initialization:
     // zero accelerator input
-    hardware.aio[AIOpin_ACCEL_A] =  APS_A_MIN_RATIONAL_V;
-    hardware.aio[AIOpin_ACCEL_B] = APS_B_MIN_RATIONAL_V;
+    hardware.aio[AIOpin_ACCEL_A] =  0;
+    hardware.aio[AIOpin_ACCEL_B] = 0;
     // zero brake press
     hardware.aio[AIOpin_BRAKE_PRESSURE] = BPS_MIN_V;
     

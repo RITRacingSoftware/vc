@@ -67,6 +67,8 @@ void VC_100Hz(void)
     // calculate the torque to request based on the accelerator pedal input
     commanded_torque = TorqueConverter_pos_to_torque(accel_pos.average);
 
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_torque_requested = main_bus_vc_pedal_inputs_vc_pedal_inputs_torque_requested_encode(commanded_torque);
+
     // limit torque to max torque, or 0 if the system is not ready or faulted
     limited_torque = TorqueLimiter_apply_limit(commanded_torque);
 

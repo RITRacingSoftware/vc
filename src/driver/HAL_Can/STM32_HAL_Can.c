@@ -63,7 +63,7 @@ void HAL_Can_init(void)
     uint8_t ret = CAN_Init(CAN, &canInit);
     CAN->IER |= 0x3; //Enable interrupts for FIFO0 message pending and transmit mailbox empty
 
-    HAL_Can_init_id_filter_16bit(0xAA, 0x00, 0x00, 0x00); //initializes IDs for filters
+    HAL_Can_init_id_filter_16bit(0xAA, 0x1A4, 0x00, 0x00); //initializes IDs for filters
 
     //Enable interrupts for recieve
     NVIC_InitTypeDef nvic_init;
