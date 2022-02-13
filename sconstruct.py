@@ -469,7 +469,7 @@ for module_name, module_dir in common_modules:
 # compile ecusim 
 ecusim = SConscript('libs/ecu-sim/sconstruct.py')
 ecusim_objs = ecusim['ecusim_objs']
-blf_lib = ecusim['blf_lib']
+# blf_lib = ecusim['blf_lib']
 ecusim_src_dirs = ecusim['src_dirs']
 
 linux_cpp_env['CPPPATH'] += ecusim_src_dirs
