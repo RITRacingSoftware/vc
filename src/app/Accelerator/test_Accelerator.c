@@ -19,8 +19,8 @@ void test_Accelerator_convert(void)
     float expected_pos_a = 76.0;
     float expected_pos_b = 44.0;
 
-    HAL_Aio_read_ExpectAndReturn(AIOpin_ACCEL_A, ((((expected_pos_a / 100.0) * APS_A_RANGE_V)+ APS_A_MIN_RATIONAL_V)/ADC_MAX_VOLTAGE)*ADC_MAX_VAL);
-    HAL_Aio_read_ExpectAndReturn(AIOpin_ACCEL_B, ((((expected_pos_b / 100.0) * APS_B_RANGE_V) + APS_B_MIN_RATIONAL_V)/ADC_MAX_VOLTAGE)*ADC_MAX_VAL);
+    HAL_Aio_read_ExpectAndReturn(AIOpin_ACCEL_A, ((((expected_pos_a / 100.0) * APS_A_SENSOR_RANGE_V)+ APS_A_OFFSET_V)/ADC_MAX_VOLTAGE)*ADC_MAX_VAL);
+    HAL_Aio_read_ExpectAndReturn(AIOpin_ACCEL_B, ((((expected_pos_b / 100.0) * APS_B_SENSOR_RANGE_V) + APS_B_OFFSET_V)/ADC_MAX_VOLTAGE)*ADC_MAX_VAL);
     // FaultManager_clear_fault_Expect(FaultCode_ACCELERATOR_SENSOR_IRRATIONAL);
     AccelPos_s pos;
 

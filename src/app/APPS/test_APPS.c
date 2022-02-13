@@ -7,6 +7,9 @@
 
 #include "MockFaultManager.h"
 
+#include "CAN.h"
+CAN_BUS can_bus;
+
 void setUp(void)
 {   
     APPS_init();
