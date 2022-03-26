@@ -110,9 +110,9 @@ void VcEcu::set(std::string key, float value)
     {
         hardware.dio[DIOpin_SWITCH_3] = value == 0.0;
     }
-    else if (key == "switch4")
+    else if (key == "rtd")
     {
-        hardware.dio[DIOpin_SWITCH_4] = value == 0.0;
+        hardware.dio[DIOpin_RTD_BUTTON] = value != 0.0;
     }
     else if (key == "led")
     {
@@ -200,9 +200,9 @@ float VcEcu::get(std::string key)
     {
         return hardware.dio[DIOpin_SWITCH_3];
     }
-    else if (key == "switch4")
+    else if (key == "rtd")
     {
-        return hardware.dio[DIOpin_SWITCH_4];
+        return hardware.dio[DIOpin_RTD_BUTTON];
     }
     else if (key == "led")
     {

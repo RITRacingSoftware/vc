@@ -22,7 +22,7 @@
 #define MC_CAN_TIMEOUT_MS 300 // message cycle time is 100ms so this means we missed three messages
 
 // If the motor controller isn't unlocked on the first attempt, this is how long to wait before trying again.
-#define UNLOCK_ATTEMPT_TIMEOUT_MS 4000
+#define UNLOCK_ATTEMPT_TIMEOUT_MS 500
 
 /**
  * Torque Conversion (pedal position -> torque transfer function)

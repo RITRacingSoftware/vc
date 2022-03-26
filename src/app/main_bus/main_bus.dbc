@@ -205,11 +205,10 @@ BO_ 303 VcPedalInputsRaw: 8 VCU
 
 
 BO_ 304 VcDashInputs: 8 VCU
- SG_ VcDashInputs_DRSbutton : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ VcDashInputs_RTDbutton : 1|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ VcDashInputs_Switch0 : 2|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ VcDashInputs_Switch1 : 3|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ VcDashInputs_Switch2 : 4|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ VcDashInputs_Switch3 : 5|1@1+ (1,0) [0|1] "" Vector__XXX
 
 BO_ 305 VcShutdownStatus: 8 VCU
  SG_ VcShutdownStatus_BMS_fault : 0|1@1+ (1,0) [0|1] "" Vector__XXX

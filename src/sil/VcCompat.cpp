@@ -28,7 +28,7 @@ void VcCompat_init(void)
     hardware.dio[DIOpin_SWITCH_1] =
     hardware.dio[DIOpin_SWITCH_2] =
     hardware.dio[DIOpin_SWITCH_3] =
-    hardware.dio[DIOpin_SWITCH_4] = false;
+    hardware.dio[DIOpin_RTD_BUTTON] = false;
 
     CanQueue_init(&hardware.outbox);
 }

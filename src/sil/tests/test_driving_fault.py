@@ -12,7 +12,10 @@ def test_mc_lost(vc):
     # run until the VC starts commanding torque
     vc.hold_mc_state(state=5, enabled=1)
     vc.inject_pbx_status_msg(True)
+    vc['brakep'] = 1.1
+    vc['rtd'] = 1
     vc.run_ms(10000)
+    vc['brakep'] = 0.5
 
     # press the pedal, make sure we get torque commanded
     vc.acc_press(50)
@@ -47,7 +50,10 @@ def test_pedal_breakage(vc):
     # run until the VC starts commanding torque
     vc.hold_mc_state(state=5, enabled=1)
     vc.inject_pbx_status_msg(True)
+    vc['rtd'] = 1
+    vc['brakep'] = 1.1
     vc.run_ms(10000)
+    vc['brakep'] = 0.5
 
     # press the pedal, make sure we get torque commanded
     vc.acc_press(50)
@@ -88,12 +94,18 @@ def test_double_pedal(vc):
     # run until the VC starts commanding torque
     vc.hold_mc_state(state=5, enabled=1)
     vc.inject_pbx_status_msg(True)
+    vc['rtd'] = 1
+    vc['brakep'] = 1.1
     vc.run_ms(10000)
+    vc['brakep'] = 0.5
 
     # press the pedal, make sure we get torque commanded
     vc.acc_press(50)
     vc.run_ms(20)
 
+    assert vc.signals['VcFaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
+    assert vc.signals['VcFaultVector_APPS_SENSOR_DISAGREEMENT'] == 0
+    assert vc.signals['VcFaultVector_APPS_DOUBLE_PEDAL'] == 0
     assert vc.signals['Torque_Command'] > 0
 
     # run a bit like dat

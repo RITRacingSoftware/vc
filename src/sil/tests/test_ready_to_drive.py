@@ -18,18 +18,25 @@ def test_ready_to_drive(vc):
     # simulate a motor controller power on by sending status messages to the VC
     # should see Inverter_Enable flip to 0 then back to 1 to unlock then enable the MC
     vc.hold_mc_state(state=0, enabled=0)
-    
-    while vc.signals['Inverter_Enable'] == 1:
-        vc.run_ms(10)
-    # no torque should be commanded yet
-    assert vc.signals['Torque_Command'] == 0
-    # wait until enable flips back to 1
+    vc.run_ms(1000)
+    # make sure we are unlocking
+    assert vc.signals['Inverter_Enable'] == 0
+
+    # press brake pedal and rtd button
+    vc['rtd'] = 1
+    vc['brakep'] = 1.1
+
+    # wait for enable to go high
     while vc.signals['Inverter_Enable'] == 0:
         vc.run_ms(10)
-    assert vc.signals['Torque_Command'] == 0
 
+    # no torque should be commanded yet
+    assert vc.signals['Torque_Command'] == 0
+    
     # simulate motor controller becoming enabled
     vc.hold_mc_state(state=0,enabled=1)
+    # release brake
+    vc['brakep'] = 0.5
 
     # VC should know it has enabled MC at this point, but should still not request torque
     vc.run_ms(10000)
