@@ -35,11 +35,11 @@ def test_ready_to_drive(vc):
     
     # simulate motor controller becoming enabled
     vc.hold_mc_state(state=0,enabled=1)
-    # release brake
-    vc['brakep'] = 0.5
 
     # VC should know it has enabled MC at this point, but should still not request torque
     vc.run_ms(10000)
+    # release brake
+    vc['brakep'] = 0.5
     assert vc.signals['Torque_Command'] == 0
 
     # indicate the motor controller is ready

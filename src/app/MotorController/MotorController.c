@@ -124,6 +124,10 @@ void MotorController_100Hz(void)
             {
                 state = MCstate_DISCONNECTED;
             }
+            else if (!inputs.brake_pressed || !inputs.rtd_button_pressed)
+            {
+                state = MCstate_DISABLED;
+            }
             else if (inputs.mc_enabled)
             {
                 state = MCstate_ENABLED;
