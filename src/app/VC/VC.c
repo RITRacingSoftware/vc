@@ -85,6 +85,7 @@ void VC_100Hz(void)
 
     // Blink heartbeat led
     HeartBeatLed_100Hz();
+    // HAL_Dio_write(DIOpin_STATUS_LED, true);
 }
 
 void VC_1kHz(void)
@@ -98,5 +99,5 @@ void VC_1kHz(void)
     
     ShutdownMonitor_update(&status);
 
-    CAN_send_message(MAIN_BUS_VC_SHUTDOWN_STATUS_FRAME_ID);
+    // CAN_send_message(MAIN_BUS_VC_SHUTDOWN_STATUS_FRAME_ID);
 }

@@ -88,6 +88,7 @@ void MotorController_100Hz(void)
 
     inputs.brake_pressed = Brake_is_pressed();
     inputs.rtd_button_pressed = HAL_Dio_read(DIOpin_RTD_BUTTON);
+    can_bus.vc_dash_inputs.vc_dash_inputs_rt_dbutton = inputs.rtd_button_pressed;
 
     // determine any transitions that must happen
     switch (state)
@@ -176,14 +177,14 @@ void MotorController_100Hz(void)
     outputs.attempt_unlock = (state == MCstate_DISABLED_UNLOCKING) || (state == MCstate_ENABLED) || (state == MCstate_READY);
 
     // now apply outputs
-    if (outputs.attempt_unlock)
-    {        
-        can_bus.mc_command.inverter_enable = 1;
-    }
-    else
-    {
+    // if (outputs.attempt_unlock)
+    // {        
+    //     can_bus.mc_command.inverter_enable = 1;
+    // }
+    // else
+    // {
         can_bus.mc_command.inverter_enable = 0;
-    }
+    // }
 
     // increment state counter
     state_counter_ms += 10;
