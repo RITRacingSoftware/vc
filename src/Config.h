@@ -16,10 +16,10 @@
 
 // This value is what the motor controller is configured with.
 // Should be the maximum possible legal torque the vehicle is capable of producing.
-#define ABSOLUTE_MAX_TORQUE_N 0
+#define ABSOLUTE_MAX_TORQUE_N 100 // TODO: Figure out what this should be
 
 // How long the VC must go without receiving a MC status message before declaring the motor controller MIA
-#define MC_CAN_TIMEOUT_MS 1000 // message cycle time is 100ms so this means we missed three messages
+#define MC_CAN_TIMEOUT_MS 1500 // message cycle time is 100ms so this means we missed three messages
 
 // If the motor controller isn't unlocked on the first attempt, this is how long to wait before trying again.
 #define UNLOCK_ATTEMPT_TIMEOUT_MS 500
@@ -27,7 +27,7 @@
 /**
  * Torque Conversion (pedal position -> torque transfer function)
  */
-#define MAX_TORQUE_NM 0
+#define MAX_TORQUE_NM 10
 
 // the first and last % of the accelerator torque curve will be flat
 // ex: if both are set to 5, torque will start being commanded at 5% pedal travel, and reach 100% pedal travel at 95%
