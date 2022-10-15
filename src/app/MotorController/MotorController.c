@@ -177,14 +177,14 @@ void MotorController_100Hz(void)
     outputs.attempt_unlock = (state == MCstate_DISABLED_UNLOCKING) || (state == MCstate_ENABLED) || (state == MCstate_READY);
 
     // now apply outputs
-    // if (outputs.attempt_unlock)
-    // {        
-    //     can_bus.mc_command.inverter_enable = 1;
-    // }
-    // else
-    // {
+    if (outputs.attempt_unlock)
+    {        
+        can_bus.mc_command.inverter_enable = 1;
+    }
+    else
+    {
         can_bus.mc_command.inverter_enable = 0;
-    // }
+    }
 
     // increment state counter
     state_counter_ms += 10;

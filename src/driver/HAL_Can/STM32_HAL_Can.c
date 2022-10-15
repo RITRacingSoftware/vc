@@ -9,6 +9,7 @@
 #include "semphr.h"
 #include "queue.h"
 #include "HAL_Uart.h"
+#include "HAL_Dio.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -61,9 +62,9 @@ void HAL_Can_init(void)
     canInit.CAN_BS2 = CAN_BS2_2tq;
     
     uint8_t ret = CAN_Init(CAN, &canInit);
-    // CAN->IER |= 0x3; //Enable interrupts for FIFO0 message pending and transmit mailbox empty
+    CAN->IER |= 0x3; //Enable interrupts for FIFO0 message pending and transmit mailbox empty
 
-    // HAL_Can_init_id_filter_16bit(0xAA, 0x1A4, 0x00, 0x00); //initializes IDs for filters
+    HAL_Can_init_id_filter_16bit(MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID, MAIN_BUS_PBX_STATUS_FRAME_ID, 0x00, 0x00); //initializes IDs for filters
 
     //Enable interrupts for recieve
     NVIC_InitTypeDef nvic_init;
