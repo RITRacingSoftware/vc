@@ -85,7 +85,6 @@ void VC_100Hz(void)
 
     // Blink heartbeat led
     HeartBeatLed_100Hz();
-    // HAL_Dio_write(DIOpin_STATUS_LED, true);
 }
 
 void VC_1kHz(void)

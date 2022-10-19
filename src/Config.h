@@ -1,7 +1,7 @@
 #ifndef VC_CONFIG_H
 #define VC_CONFIG_H
 
-#define CAN_TX_QUEUE_LEN 15
+// #define CAN_TX_QUEUE_LEN 15
 
 /**
  * Faults
@@ -19,7 +19,7 @@
 #define ABSOLUTE_MAX_TORQUE_N 100 // TODO: Figure out what this should be
 
 // How long the VC must go without receiving a MC status message before declaring the motor controller MIA
-#define MC_CAN_TIMEOUT_MS 1500 // message cycle time is 100ms so this means we missed three messages
+#define MC_CAN_TIMEOUT_MS 1500 // message cycle time is 500ms so this means we missed three messages
 
 // If the motor controller isn't unlocked on the first attempt, this is how long to wait before trying again.
 #define UNLOCK_ATTEMPT_TIMEOUT_MS 500

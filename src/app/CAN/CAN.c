@@ -155,7 +155,10 @@ void CAN_process_recieved_messages(void)
         // uint8_t n1 = sprintf(print_buffer1, "ID: %d  Data: %d  %d  %d  %d  %d  %d  %d  %d\n\r", received_message.id, data[0],
         //      data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
         // HAL_Uart_send(print_buffer1, n1);
+
+
         //Unpack message recieved
+        // IMPORTANT: For any CAN messages to be received, the message ID has to be added to the CAN filter in the CAN Driver init function (HAL_Can_init)
         switch(received_message.id)
         {
             case MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID:

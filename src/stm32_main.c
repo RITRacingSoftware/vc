@@ -113,6 +113,19 @@ void hardfault_handler_routine(void)
     {
         task_id = 1;
     }
+    else if (strcmp(task_name, TASK_1kHz_NAME) == 0)
+    {
+        task_id = 2;
+    }
+    else if (strcmp(task_name, TASK_CAN_RX_NAME) == 0)
+    {
+        task_id = 3;
+    }
+    else if (strcmp(task_name, TASK_CAN_TX_NAME) == 0)
+    {
+        task_id = 4;
+    }
+    
 
     uint8_t data[8];
     can_bus.vc_hard_fault_indicator.vc_hard_fault_indicator_task = task_id;
