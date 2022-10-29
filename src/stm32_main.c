@@ -74,7 +74,7 @@ void task_can_rx(void *pvParameters)
     {
         if(xSemaphoreTake(can_message_recieved_semaphore, portMAX_DELAY) == pdTRUE)
         {
-            uint8_t print_buffer3[30];
+            // uint8_t print_buffer3[30];
             CAN_process_recieved_messages();
         }
     }

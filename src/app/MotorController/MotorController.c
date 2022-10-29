@@ -184,7 +184,7 @@ void MotorController_100Hz(void)
     // else
     // {
         can_bus.mc_command.inverter_enable = 0;
-    // }
+    // }`
 
     // increment state counter
     state_counter_ms += 10;
