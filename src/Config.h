@@ -16,7 +16,7 @@
 
 // This value is what the motor controller is configured with.
 // Should be the maximum possible legal torque the vehicle is capable of producing.
-#define ABSOLUTE_MAX_TORQUE_N 100 // TODO: Figure out what this should be
+#define ABSOLUTE_MAX_TORQUE_N 0 
 
 // How long the VC must go without receiving a MC status message before declaring the motor controller MIA
 #define MC_CAN_TIMEOUT_MS 1500 // message cycle time is 500ms so this means we missed three messages
@@ -27,7 +27,7 @@
 /**
  * Torque Conversion (pedal position -> torque transfer function)
  */
-#define MAX_TORQUE_NM 10
+#define MAX_TORQUE_NM 20
 
 // the first and last % of the accelerator torque curve will be flat
 // ex: if both are set to 5, torque will start being commanded at 5% pedal travel, and reach 100% pedal travel at 95%
@@ -46,7 +46,7 @@
 #define APPS_PEDAL_DISAGREEMENT_RECOVERY_MS 100
 
 // How far the brake must be pressed while also pressing the accelerator to trigger a double pedal fault
-#define DOUBLE_PEDAL_APS_THRESHOLD 101 //TEMP NEED TO CHANGE BACK TO 25
+#define DOUBLE_PEDAL_APS_THRESHOLD 25 
 // How far the brake must be released to to clear a double pedal fault
 #define DOUBLE_PEDAL_APS_RECOVERY_THRESHOLD 5
 
