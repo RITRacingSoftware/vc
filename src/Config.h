@@ -8,7 +8,7 @@
  */
 
 // any bits set in this won't get set in the fault vector
-#define DISABLE_FAULT_MASK (0) 
+#define DISABLE_FAULT_MASK (0)
 
 /**
  * Motor Controller Interface
@@ -16,7 +16,8 @@
 
 // This value is what the motor controller is configured with.
 // Should be the maximum possible legal torque the vehicle is capable of producing.
-#define ABSOLUTE_MAX_TORQUE_N 0 
+// 0 means default to EEPROM value, currently 240 Nm
+#define ABSOLUTE_MAX_TORQUE_NM 0
 
 // How long the VC must go without receiving a MC status message before declaring the motor controller MIA
 #define MC_CAN_TIMEOUT_MS 1500 // message cycle time is 500ms so this means we missed three messages
@@ -46,7 +47,7 @@
 #define APPS_PEDAL_DISAGREEMENT_RECOVERY_MS 100
 
 // How far the brake must be pressed while also pressing the accelerator to trigger a double pedal fault
-#define DOUBLE_PEDAL_APS_THRESHOLD 101 
+#define DOUBLE_PEDAL_APS_THRESHOLD 101
 // How far the brake must be released to to clear a double pedal fault
 #define DOUBLE_PEDAL_APS_RECOVERY_THRESHOLD 5
 

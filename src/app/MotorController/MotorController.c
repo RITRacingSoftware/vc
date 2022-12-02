@@ -40,7 +40,7 @@ void MotorController_init(void)
     can_bus.mc_command.inverter_enable = 1;
     can_bus.mc_command.direction_command = 1; // go forward
     can_bus.mc_command.torque_command = 0;
-    can_bus.mc_command.torque_limit_command = main_bus_m192_command_message_torque_limit_command_encode(ABSOLUTE_MAX_TORQUE_N);
+    can_bus.mc_command.torque_limit_command = main_bus_m192_command_message_torque_limit_command_encode(ABSOLUTE_MAX_TORQUE_NM);
     can_bus.mc_command.inverter_discharge = 1; // enable discharge
     can_bus.mc_command.speed_command = 0; // just in case
     can_bus.mc_command.speed_mode_enable = 0; // no speed mode
@@ -96,7 +96,7 @@ void MotorController_100Hz(void)
         case MCstate_DISCONNECTED:
         #ifdef MC_DEBUG
             printf("MC state: DISCONNECTED\r\n");
-        #endif 
+        #endif
             if (inputs.mc_messages_seen)
             {
                 state = MCstate_DISABLED;
@@ -106,7 +106,7 @@ void MotorController_100Hz(void)
         case MCstate_DISABLED:
         #ifdef MC_DEBUG
             printf("MC state: DISABLED\r\n");
-        #endif 
+        #endif
             if (!inputs.mc_messages_seen)
             {
                 state = MCstate_DISCONNECTED;
@@ -116,11 +116,11 @@ void MotorController_100Hz(void)
                 state = MCstate_DISABLED_UNLOCKING;
             }
             break;
-        
+
         case MCstate_DISABLED_UNLOCKING:
         #ifdef MC_DEBUG
             printf("MC state: DISABLED_UNLOCKING\r\n");
-        #endif 
+        #endif
             if (!inputs.mc_messages_seen)
             {
                 state = MCstate_DISCONNECTED;
@@ -138,7 +138,7 @@ void MotorController_100Hz(void)
         case MCstate_ENABLED:
         #ifdef MC_DEBUG
             printf("MC state: ENABLED\r\n");
-        #endif 
+        #endif
             if (!inputs.mc_messages_seen)
             {
                 state = MCstate_DISCONNECTED;
@@ -178,7 +178,7 @@ void MotorController_100Hz(void)
 
     // now apply outputs
     if (outputs.attempt_unlock)
-    {        
+    {
         can_bus.mc_command.inverter_enable = 1;
     }
     else
