@@ -8,7 +8,7 @@
  */
 
 // any bits set in this won't get set in the fault vector
-#define DISABLE_FAULT_MASK (0) 
+#define DISABLE_FAULT_MASK (FaultCode_BRAKE_SENSOR_IRRATIONAL) 
 
 /**
  * Motor Controller Interface
@@ -19,7 +19,7 @@
 #define ABSOLUTE_MAX_TORQUE_N 0 
 
 // How long the VC must go without receiving a MC status message before declaring the motor controller MIA
-#define MC_CAN_TIMEOUT_MS 1500 // message cycle time is 500ms so this means we missed three messages
+#define MC_CAN_TIMEOUT_MS 300 // message cycle time is 100ms so this means we missed three messages
 
 // If the motor controller isn't unlocked on the first attempt, this is how long to wait before trying again.
 #define UNLOCK_ATTEMPT_TIMEOUT_MS 500
@@ -51,7 +51,7 @@
 #define DOUBLE_PEDAL_APS_RECOVERY_THRESHOLD 5
 
 // Pressure indicating the driver has intentionally applied force to the brake pedal.
-#define BRAKE_PRESSED_V 1.0
+#define BRAKE_PRESSED_V 0.8
 
 /**
  * Sound Control
@@ -109,7 +109,7 @@
  * Brake Pressure Sensor
  */
 
-#define BPS_MIN_V 0.5
+#define BPS_MIN_V 0.1
 #define BPS_MAX_V 3.3 // the sensor still only goes to 4.5v, if it reads up here itll be irrational
 // #define BPS_RANGE_V (BPS_MAX_V - BPS_MIN_V)
 
