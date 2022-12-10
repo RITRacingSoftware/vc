@@ -8,7 +8,7 @@
  */
 
 // any bits set in this won't get set in the fault vector
-#define DISABLE_FAULT_MASK (FaultCode_BRAKE_SENSOR_IRRATIONAL)
+#define DISABLE_FAULT_MASK (0)
 
 /**
  * Motor Controller Interface
@@ -27,7 +27,7 @@
 /**
  * Torque Conversion (pedal position -> torque transfer function)
  */
-#define MAX_TORQUE_NM 240
+#define MAX_TORQUE_NM 240.0
 
 // the first and last % of the accelerator torque curve will be flat
 // ex: if both are set to 5, torque will start being commanded at 5% pedal travel, and reach 100% pedal travel at 95%
@@ -46,7 +46,7 @@
 #define APPS_PEDAL_DISAGREEMENT_RECOVERY_MS 100
 
 // How far the brake must be pressed while also pressing the accelerator to trigger a double pedal fault
-#define DOUBLE_PEDAL_APS_THRESHOLD 101
+#define DOUBLE_PEDAL_APS_THRESHOLD 101 // Temporary, change back to 25 once BSPD verified to work
 // How far the brake must be released to to clear a double pedal fault
 #define DOUBLE_PEDAL_APS_RECOVERY_THRESHOLD 5
 
