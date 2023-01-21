@@ -26,6 +26,9 @@ doxygen \
 gdb-multiarch \
 graphviz
 
+RUN cd libs/ecu-sim/libs/vector_blf && touch LICENSE.GPL-3.0 && mkdir -p build && cd build && cmake .. && make && make install DESTDIR=.. && make install && /usr/sbin/ldconfig
+
+
 # 'scons' command uses 'python' not 'python3.8', so make a symlink for it to use
 RUN ln -s /usr/bin/python3.8 /usr/bin/python
 

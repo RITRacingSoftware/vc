@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include "MotorController.h"
 
+#include "Brake.h"
 #include "CAN.h"
 #include "Config.h"
+#include "HAL_Dio.h"
 
 // #define MC_DEBUG
 
@@ -10,6 +12,8 @@ typedef struct {
     bool mc_messages_seen;
     bool mc_enabled;
     bool mc_state_ready;
+    bool brake_pressed;
+    bool rtd_button_pressed;
 } SMinputs_s;
 
 typedef struct {
@@ -34,9 +38,9 @@ void MotorController_init(void)
     last_checkin_ms = MC_CAN_TIMEOUT_MS + 1;
     last_mc_msg_count = 0;
     can_bus.mc_command.inverter_enable = 1;
-    can_bus.mc_command.direction_command = 1; // go forward
+    can_bus.mc_command.direction_command = 0; // go forward
     can_bus.mc_command.torque_command = 0;
-    can_bus.mc_command.torque_limit_command = main_bus_m192_command_message_torque_limit_command_encode(ABSOLUTE_MAX_TORQUE_N);
+    can_bus.mc_command.torque_limit_command = main_bus_m192_command_message_torque_limit_command_encode(ABSOLUTE_MAX_TORQUE_NM);
     can_bus.mc_command.inverter_discharge = 1; // enable discharge
     can_bus.mc_command.speed_command = 0; // just in case
     can_bus.mc_command.speed_mode_enable = 0; // no speed mode
@@ -82,32 +86,19 @@ void MotorController_100Hz(void)
         inputs.mc_state_ready = false;
     }
 
+    inputs.brake_pressed = Brake_is_pressed();
+    inputs.rtd_button_pressed = HAL_Dio_read(DIOpin_RTD_BUTTON);
+    can_bus.vc_dash_inputs.vc_dash_inputs_rt_dbutton = inputs.rtd_button_pressed;
+
     // determine any transitions that must happen
     switch (state)
     {
         case MCstate_DISCONNECTED:
         #ifdef MC_DEBUG
             printf("MC state: DISCONNECTED\r\n");
-        #endif 
+        #endif
             if (inputs.mc_messages_seen)
             {
-                state = MCstate_DISABLED_UNLOCKING;
-            }
-            break;
-
-        
-        
-        case MCstate_DISABLED_UNLOCKING:
-        #ifdef MC_DEBUG
-            printf("MC state: DISABLED_UNLOCKING\r\n");
-        #endif 
-            if (!inputs.mc_messages_seen)
-            {
-                state = MCstate_DISCONNECTED;
-            }
-            else
-            {
-                // we only stay in DISABLED_UNLOCKING for one iteration to flip the enabled bit low for one command message
                 state = MCstate_DISABLED;
             }
             break;
@@ -115,25 +106,39 @@ void MotorController_100Hz(void)
         case MCstate_DISABLED:
         #ifdef MC_DEBUG
             printf("MC state: DISABLED\r\n");
-        #endif 
+        #endif
             if (!inputs.mc_messages_seen)
             {
                 state = MCstate_DISCONNECTED;
             }
+            else if (inputs.brake_pressed && inputs.rtd_button_pressed)
+            {
+                state = MCstate_DISABLED_UNLOCKING;
+            }
+            break;
+
+        case MCstate_DISABLED_UNLOCKING:
+        #ifdef MC_DEBUG
+            printf("MC state: DISABLED_UNLOCKING\r\n");
+        #endif
+            if (!inputs.mc_messages_seen)
+            {
+                state = MCstate_DISCONNECTED;
+            }
+            else if (!inputs.brake_pressed || !inputs.rtd_button_pressed)
+            {
+                state = MCstate_DISABLED;
+            }
             else if (inputs.mc_enabled)
             {
                 state = MCstate_ENABLED;
-            }
-            else if (state_counter_ms > UNLOCK_ATTEMPT_TIMEOUT_MS)
-            {
-                state = MCstate_DISABLED_UNLOCKING;
             }
             break;
 
         case MCstate_ENABLED:
         #ifdef MC_DEBUG
             printf("MC state: ENABLED\r\n");
-        #endif 
+        #endif
             if (!inputs.mc_messages_seen)
             {
                 state = MCstate_DISCONNECTED;
@@ -156,6 +161,10 @@ void MotorController_100Hz(void)
             {
                 state = MCstate_DISCONNECTED;
             }
+            else if (!inputs.mc_state_ready)
+            {
+                state = MCstate_ENABLED;
+            }
             else if (!inputs.mc_enabled)
             {
                 state = MCstate_DISABLED;
@@ -165,19 +174,16 @@ void MotorController_100Hz(void)
 
     // now determine outputs
     outputs.mc_ready = state == MCstate_READY;
-    outputs.attempt_unlock = state == MCstate_DISABLED_UNLOCKING;
+    outputs.attempt_unlock = (state == MCstate_DISABLED_UNLOCKING) || (state == MCstate_ENABLED) || (state == MCstate_READY);
 
     // now apply outputs
     if (outputs.attempt_unlock)
     {
-        // attempt to unlock the motor controller
-        
-        can_bus.mc_command.inverter_enable = 0;
+        can_bus.mc_command.inverter_enable = 1;
     }
     else
     {
-        // otherwise hold it enabled
-        can_bus.mc_command.inverter_enable = 1;
+        can_bus.mc_command.inverter_enable = 0;
     }
 
     // increment state counter
@@ -192,7 +198,7 @@ void MotorController_100Hz(void)
     CAN_send_message(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
 
     // update status CAN message
-    can_bus.vc_status.vc_status_mc_ready = main_bus_vc_status_vc_status_mc_ready_encode(MotorController_is_ready());
+    can_bus.vc_status.vc_status_m_cstate = main_bus_vc_status_vc_status_m_cstate_encode(state);
 }
 
 /**

@@ -5,7 +5,7 @@
 #include "Switches.h"
 #include "HAL_Dio.h"
 
-#define NUM_SWITCHES 4
+#define NUM_SWITCHES 3
 
 bool switch_states[NUM_SWITCHES];
 
@@ -39,10 +39,9 @@ void Switches_100Hz(void)
 {
     // read new switch inputs
     bool new_switch_states[NUM_SWITCHES];
-    new_switch_states[0] = HAL_Dio_read(DIOpin_SWITCH_0);
-    new_switch_states[1] = HAL_Dio_read(DIOpin_SWITCH_0);
-    new_switch_states[2] = HAL_Dio_read(DIOpin_SWITCH_0);  
-    new_switch_states[3] = HAL_Dio_read(DIOpin_SWITCH_0);
+    new_switch_states[0] = HAL_Dio_read(DIOpin_SWITCH_1);
+    new_switch_states[1] = HAL_Dio_read(DIOpin_SWITCH_2);
+    new_switch_states[2] = HAL_Dio_read(DIOpin_SWITCH_3);  
 
     // detect any switch edges and act on them
     for (int i = 0; i < NUM_SWITCHES; i++)
@@ -59,7 +58,6 @@ void Switches_100Hz(void)
     can_bus.vc_dash_inputs.vc_dash_inputs_switch0 = switch_states[0];
     can_bus.vc_dash_inputs.vc_dash_inputs_switch1 = switch_states[1];
     can_bus.vc_dash_inputs.vc_dash_inputs_switch2 = switch_states[2];
-    can_bus.vc_dash_inputs.vc_dash_inputs_switch3 = switch_states[3]; 
 
     CAN_send_message(MAIN_BUS_VC_DASH_INPUTS_FRAME_ID);
 }

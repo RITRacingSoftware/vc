@@ -4,10 +4,9 @@
 #include <stdbool.h>
 
 /**
- * Read brake pressure sensor line.
- * Convert brake pressure sensor reading to brake pressure.
- * Return true if pressure is rational, false otherwise.
+ * Read if the brake is pressed or not.
+ * return true if pressed, false otherwise
  */
-bool Brake_read_pressure(float* pressure);
+bool Brake_is_pressed(void);
 
 #endif // BRAKE_H

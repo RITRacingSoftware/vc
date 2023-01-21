@@ -1,33 +1,36 @@
 #ifndef VC_CONFIG_H
 #define VC_CONFIG_H
 
-#define CAN_TX_QUEUE_LEN 15
-
 /**
  * Faults
  */
 
 // any bits set in this won't get set in the fault vector
-#define DISABLE_FAULT_MASK 0
+#define DISABLE_FAULT_MASK (0)
 
 /**
  * Motor Controller Interface
  */
 
-// This value is what the motor controller is configured with.
 // Should be the maximum possible legal torque the vehicle is capable of producing.
-#define ABSOLUTE_MAX_TORQUE_N 60
+// 0 means default to EEPROM value, currently 240 Nm
+#define ABSOLUTE_MAX_TORQUE_NM 0
 
 // How long the VC must go without receiving a MC status message before declaring the motor controller MIA
 #define MC_CAN_TIMEOUT_MS 300 // message cycle time is 100ms so this means we missed three messages
 
 // If the motor controller isn't unlocked on the first attempt, this is how long to wait before trying again.
-#define UNLOCK_ATTEMPT_TIMEOUT_MS 4000
+#define UNLOCK_ATTEMPT_TIMEOUT_MS 500
 
 /**
  * Torque Conversion (pedal position -> torque transfer function)
  */
 #define MAX_TORQUE_NM 240.0
+
+// the first and last % of the accelerator torque curve will be flat
+// ex: if both are set to 5, torque will start being commanded at 5% pedal travel, and reach 100% pedal travel at 95%
+#define ACC_LOWER_DEADZONE_PERCENT 5.0
+#define ACC_UPPER_DEADZONE_PERCENT 5.0
 
 /**
  * APPS
@@ -41,12 +44,12 @@
 #define APPS_PEDAL_DISAGREEMENT_RECOVERY_MS 100
 
 // How far the brake must be pressed while also pressing the accelerator to trigger a double pedal fault
-#define DOUBLE_PEDAL_APS_THRESHOLD 25
+#define DOUBLE_PEDAL_APS_THRESHOLD 101 // Temporary, change back to 25 once BSPD verified to work
 // How far the brake must be released to to clear a double pedal fault
 #define DOUBLE_PEDAL_APS_RECOVERY_THRESHOLD 5
 
 // Pressure indicating the driver has intentionally applied force to the brake pedal.
-#define BRAKE_ON_PSI 1000
+#define BRAKE_PRESSED_V 0.8
 
 /**
  * Sound Control
@@ -76,7 +79,7 @@
  */
 
 #define ADC_MAX_VAL 4095.0 // 12 bit adc
-#define ADC_MAX_V 3.3
+#define ADC_MAX_VOLTAGE 3.3
 
 /**
  * Accelerator Position Sensors
@@ -85,27 +88,22 @@
 // to what discretion voltages must be equal to be considered equal
 #define VOLTAGE_TOL 0.001
 
-#define APS_A_SENSOR_V 3.3
-#define APS_A_MIN_RATIONAL_V 0.1
-#define APS_A_MAX_RATIONAL_V 3.2
-#define APS_A_RANGE_V ((APS_A_MAX_RATIONAL_V) - (APS_A_MIN_RATIONAL_V))
+#define APS_A_SENSOR_V 3.2 //2.83
+#define APS_A_OFFSET_V 0.28
+#define APS_A_SENSOR_RANGE_V (APS_A_SENSOR_V - APS_A_OFFSET_V)
 
-#define APS_B_SENSOR_V 1.8
-#define APS_B_MIN_RATIONAL_V 0.1
-#define APS_B_MAX_RATIONAL_V 1.7
-#define APS_B_RANGE_V ((APS_B_MAX_RATIONAL_V) - (APS_B_MIN_RATIONAL_V))
+#define APS_B_SENSOR_V 1.5
+#define APS_B_OFFSET_V 0.0 //0.16
+#define APS_B_SENSOR_RANGE_V (APS_B_SENSOR_V - APS_B_OFFSET_V)
 
 
 /**
  * Brake Pressure Sensor
  */
 
-#define BPS_MIN_V 0.5
-#define BPS_RANGE_V 4.0
-#define BPS_MAX_V 5.0 // the sensor still only goes to 4.5v, if it reads up here itll be irrational
-
-#define BPS_MIN_PSI 50
-#define BPS_RANGE_PSI 7950
+#define BPS_MIN_V 0.1
+#define BPS_MAX_V 3.3 // the sensor still only goes to 4.5v, if it reads up here itll be irrational
+// #define BPS_RANGE_V (BPS_MAX_V - BPS_MIN_V)
 
 
 #endif // VC_CONFIG_H scons sim

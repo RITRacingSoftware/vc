@@ -25,8 +25,6 @@ typedef enum
 {
     // Brake sensor is reading out of realistic range
     FaultCode_BRAKE_SENSOR_IRRATIONAL,
-    // One of the accelerator sensors is reading out of realistic range
-    FaultCode_ACCELERATOR_SENSOR_IRRATIONAL,
     // Accelerator sensors are reading too differently
     FaultCode_APPS_SENSOR_DISAGREEMENT,
     // The brake and accelerator are pressed too much at the same time

@@ -20,8 +20,8 @@ class VcHandle:
         self.handle.init()
 
         # now set up inputs that won't cause a fault
-        self['accela'] = 0.1
-        self['accelb'] = 0.1
+        self['accela'] = 0.0
+        self['accelb'] = 0.0
         self['brakep'] = 0.5
 
         # dont automatically send mc state messages
@@ -74,6 +74,12 @@ class VcHandle:
         Send a single motor controller internal states message to the VC.
         """
         self.handle.inject_mc_state_msg(state, enabled)
+    
+    def inject_pbx_status_msg(self, pumps_on):
+        """
+        Send a single pbx status message to the vc.
+        """
+        self.handle.inject_pbx_status_msg(pumps_on);
 
     def __getitem__(self, key):
         return self.handle.get(ctypes.c_char_p(key.encode("utf-8")))
@@ -87,17 +93,8 @@ class VcHandle:
         Press the accelerator. Assume both sensors are working perfectly.
         pos is accelerator position from 0-100
         """
-        self['accela'] = (pos/100) * (3.2-.1) + .1
-        self['accelb'] = (pos/100) * (1.7-.1) + .1
-
-
-    def brake_set_pressure(self, pressure):
-        """
-        Press the brake with a specific pressure.
-        """
-        voltage_5v = (((pressure - 50.0) / 7950.0) * 4.0) + .5
-        voltage_3v3 = 3.3*(voltage_5v / 5.0)
-        self['brakep'] = voltage_3v3
+        self['accela'] = (pos/100) * (1.6)
+        self['accelb'] = (pos/100) * (1.55)
 
 @pytest.fixture
 def vc():

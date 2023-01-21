@@ -15,4 +15,9 @@ void VC_init(void);
  */
 void VC_100Hz(void);
 
+/**
+ * The sequence of events that must happen 1000 times a second.
+ */
+void VC_1kHz(void);
+
 #endif // PERIODIC_H

@@ -1,6 +1,7 @@
 #include <math.h>
 
 #include "APPS.h"
+#include "CAN.h"
 #include "Config.h"
 #include "FaultManager.h"
 
@@ -84,8 +85,10 @@ void APPS_init(void)
 // Check if the pedals are within a certain percentage of each other
 // Return true if they are, false otherwise
 bool accel_pos_agree(AccelPos_s* pos)
-{
-    return fabs(pos->a - pos->b) < APPS_PEDAL_DISAGREEMENT_PERCENTAGE;
+{   
+    float err = fabs(pos->a - pos->b);
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_accel_position_err = main_bus_vc_pedal_inputs_vc_pedal_inputs_accel_position_err_encode(err);
+    return err < APPS_PEDAL_DISAGREEMENT_PERCENTAGE;
 }
 
 void pedal_disagreement_check(AccelPos_s* accel_pos)
@@ -126,7 +129,7 @@ void pedal_disagreement_check(AccelPos_s* accel_pos)
     }
 }
 
-void double_pedal_check(float average_accel_pos, float brake_pres_psi)
+void double_pedal_check(float average_accel_pos, bool brake_on)
 {
     if (FaultManager_is_fault_active(FaultCode_APPS_DOUBLE_PEDAL))
     {
@@ -137,7 +140,7 @@ void double_pedal_check(float average_accel_pos, float brake_pres_psi)
     }
     else
     {
-        if ((brake_pres_psi > BRAKE_ON_PSI) && (average_accel_pos > DOUBLE_PEDAL_APS_THRESHOLD))
+        if (brake_on && (average_accel_pos > DOUBLE_PEDAL_APS_THRESHOLD))
         {
             FaultManager_set_fault_active(FaultCode_APPS_DOUBLE_PEDAL);
         }
@@ -145,8 +148,8 @@ void double_pedal_check(float average_accel_pos, float brake_pres_psi)
 }
 
 
-void APPS_100Hz(AccelPos_s* accel_pos, float brake_pres_psi)
+void APPS_100Hz(AccelPos_s* accel_pos, bool brake_on)
 {
     pedal_disagreement_check(accel_pos);
-    double_pedal_check(accel_pos->average, brake_pres_psi);
+    double_pedal_check(accel_pos->average, brake_on);
 }

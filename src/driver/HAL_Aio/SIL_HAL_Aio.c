@@ -8,5 +8,5 @@ void HAL_Aio_init(void)
 
 uint16_t HAL_Aio_read(AIOpin_e pin)
 {
-    return (uint16_t) ((hardware.aio[pin] / ADC_MAX_V) * ADC_MAX_VAL);
+    return (uint16_t) ((hardware.aio[pin] / ADC_MAX_VOLTAGE) * ADC_MAX_VAL);
 }

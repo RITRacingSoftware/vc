@@ -17,8 +17,8 @@ void APPS_init(void);
 /**
  * Perform and/or continue to perform accelerator sensor agreement check and double pedal checks.
  * accel_pos [in] - accelerator per-sensor position + associated data
- * brake_pres_psi [in] - brake pressure (psi)
+ * brake_on [in] - is brake on or not
  */
-void APPS_100Hz(AccelPos_s* accel_pos, float brake_pres_psi);
+void APPS_100Hz(AccelPos_s* accel_pos, bool brake_on);
 
 #endif // APPS_H

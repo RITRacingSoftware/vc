@@ -5,8 +5,11 @@
 #include "common_macros.h"
 
 #include "MotorController.h"
+#include "Config.h"
 
+#include "MockHAL_Dio.h"
 #include "MockCAN.h"
+#include "MockBrake.h"
 
 CAN_BUS can_bus;
 
@@ -36,22 +39,37 @@ void test_MotorController_ready_sequence(void)
         CAN_get_count_for_id_ExpectAnyArgsAndReturn(0);
         // should start out sending command messages so that the MC doesn't immediately time out on power on
         CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+        Brake_is_pressed_ExpectAndReturn(false); // dont press brake
+        HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, false); // dont press start button
         MotorController_100Hz();
         TEST_ASSERT_MESSAGE(!MotorController_is_ready(), "MC is not ready at startup");   
     }
 
     // a transition should be seen into the DISABLED state upon receiving a MC status message
+    
     CAN_get_count_for_id_ExpectAnyArgsAndReturn(1);
     CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+    Brake_is_pressed_ExpectAndReturn(true); // press brake
+    HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
     MotorController_100Hz();
+    
     // mc still not ready yet
     TEST_ASSERT(!MotorController_is_ready());   
     // enable bit should flip low to unlock MC
     TEST_ASSERT_MESSAGE(can_bus.mc_command.inverter_enable == 0, "VC should flip enable bit low upon receiving a message from the MC.");
 
+    // run one more iteration
+    CAN_get_count_for_id_ExpectAnyArgsAndReturn(1);
+    CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+    Brake_is_pressed_ExpectAndReturn(true); // press brake
+    HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
+    MotorController_100Hz();
+
     // now run again, the enable bit should flip high to enable MC
     CAN_get_count_for_id_ExpectAnyArgsAndReturn(1);
     CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+    Brake_is_pressed_ExpectAndReturn(true); // press brake
+    HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
     MotorController_100Hz();
 
     // mc should still not be deemed ready
@@ -64,6 +82,8 @@ void test_MotorController_ready_sequence(void)
     CAN_get_count_for_id_ExpectAnyArgsAndReturn(2);
     can_bus.mc_state.d6_inverter_enable_state = 1;
     CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+    Brake_is_pressed_ExpectAndReturn(true); // press brake
+    HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
     MotorController_100Hz();
 
     TEST_ASSERT(!MotorController_is_ready());
@@ -81,6 +101,8 @@ void test_MotorController_ready_sequence(void)
 
         CAN_get_count_for_id_ExpectAnyArgsAndReturn(can_count);
         CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+        Brake_is_pressed_ExpectAndReturn(true); // press brake
+    HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
         MotorController_100Hz();
 
         TEST_ASSERT(!MotorController_is_ready());
@@ -90,6 +112,8 @@ void test_MotorController_ready_sequence(void)
     can_bus.mc_state.d1_vsm_state = main_bus_m170_internal_states_d1_vsm_state_encode(5); // 5 is VSM_READY
     CAN_get_count_for_id_ExpectAnyArgsAndReturn(can_count);
     CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+    Brake_is_pressed_ExpectAndReturn(true); // press brake
+    HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
     MotorController_100Hz();
 
     TEST_ASSERT(MotorController_is_ready());
@@ -111,6 +135,8 @@ void test_MotorController_disconnect(void)
     {
         CAN_get_count_for_id_ExpectAnyArgsAndReturn(can_count++);
         CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+        Brake_is_pressed_ExpectAndReturn(true); // press brake
+        HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
         MotorController_100Hz();
     }
 
@@ -121,6 +147,8 @@ void test_MotorController_disconnect(void)
     {
         CAN_get_count_for_id_ExpectAnyArgsAndReturn(can_count);
         CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+        Brake_is_pressed_ExpectAndReturn(true); // press brake
+        HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
         MotorController_100Hz();
     }
 

@@ -1,3 +1,5 @@
+#include "common_macros.h"
+
 #include "TorqueConverter.h"
 
 #include "Config.h"
@@ -8,11 +10,20 @@
  */
 float pos_to_t(float pos)
 {
-    // basic linear function for now
-    return (pos / 100.0) * MAX_TORQUE_NM;
+    float normalized_pos = MAX(pos - ACC_LOWER_DEADZONE_PERCENT, 0); // normalized pedal position wrt lower deadzone
+
+
+    // range of pedal travel where torque is proportional to travel
+    // float increasing_range = 100.0 - (ACC_LOWER_DEADZONE_PERCENT + ACC_UPPER_DEADZONE_PERCENT);
+    float portion_of_max = MIN(normalized_pos / (100.0-ACC_UPPER_DEADZONE_PERCENT), 100);
+
+    float torque = (portion_of_max) * MAX_TORQUE_NM;
+
+    return torque;
 }
 
 float TorqueConverter_pos_to_torque(float pos)
 {
+    // don't command negative torque or torque above max torque
     return pos_to_t(pos);
 }

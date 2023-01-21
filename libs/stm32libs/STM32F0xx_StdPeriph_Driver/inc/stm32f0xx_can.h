@@ -150,6 +150,8 @@ typedef struct
   uint8_t DLC;     /*!< Specifies the length of the frame that will be 
                         transmitted. This parameter can be a value between 
                         0 to 8 */
+                        
+  uint8_t balls; // dont remove or hardfault
 
   uint8_t Data[8]; /*!< Contains the data to be transmitted. It ranges from 0 
                         to 0xFF. */

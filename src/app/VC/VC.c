@@ -17,6 +17,7 @@
 #include "VehicleState.h"
 
 #include "main_bus.h"
+#include "HAL_Dio.h"
 
 // #define VC_DEBUG
 
@@ -43,13 +44,13 @@ void VC_100Hz(void)
     AccelPos_s accel_pos;
     Accelerator_read_positions(&accel_pos);
 
-    float brake_pressure;
-    Brake_read_pressure(&brake_pressure);
+    float brake_on = Brake_is_pressed();
 
     CAN_send_message(MAIN_BUS_VC_PEDAL_INPUTS_FRAME_ID);
+    CAN_send_message(MAIN_BUS_VC_PEDAL_INPUTS_RAW_FRAME_ID);
 
     // perform dynamic rationality checks on pedal inputs
-    APPS_100Hz(&accel_pos, brake_pressure);
+    APPS_100Hz(&accel_pos, brake_on);
 
     // keep up to date with the state of the motor controller. Enable it if necessary.
     MotorController_100Hz();
@@ -65,6 +66,8 @@ void VC_100Hz(void)
 
     // calculate the torque to request based on the accelerator pedal input
     commanded_torque = TorqueConverter_pos_to_torque(accel_pos.average);
+
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_torque_requested = main_bus_vc_pedal_inputs_vc_pedal_inputs_torque_requested_encode(commanded_torque);
 
     // limit torque to max torque, or 0 if the system is not ready or faulted
     limited_torque = TorqueLimiter_apply_limit(commanded_torque);
@@ -82,4 +85,18 @@ void VC_100Hz(void)
 
     // Blink heartbeat led
     HeartBeatLed_100Hz();
+}
+
+void VC_1kHz(void)
+{
+    static struct main_bus_vc_shutdown_status_t status;
+    status.vc_shutdown_status_bms_fault = HAL_Dio_read(DIOpin_BMS_FAULT);
+    status.vc_shutdown_status_imd_fault = HAL_Dio_read(DIOpin_IMD_FAULT);
+    status.vc_shutdown_status_bspd_fault = HAL_Dio_read(DIOpin_BSPD_FAULT);
+    status.vc_shutdown_status_bspd_signal_lost = HAL_Dio_read(DIOpin_BSPD_SIGNAL_LOST);
+    status.vc_shutdown_status_precharge = HAL_Dio_read(DIOpin_PRECHARGE);
+    
+    ShutdownMonitor_update(&status);
+
+    // CAN_send_message(MAIN_BUS_VC_SHUTDOWN_STATUS_FRAME_ID);
 }

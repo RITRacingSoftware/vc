@@ -58,7 +58,7 @@ uint16_t HAL_Aio_read(AIOpin_e pin)
     }
 
     // select channel
-    ADC1->CHSELR |= channel;
+    ADC1->CHSELR = channel;
 
     // start conversion
     ADC_StartOfConversion(ADC1);

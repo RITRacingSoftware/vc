@@ -15,14 +15,11 @@ VcEcu::VcEcu(void)
     VcCompat_init();
     VC_init();
 
-    shutdown_status.vc_shutdown_status_bms_input = 1;
-    shutdown_status.vc_shutdown_status_bms_latch = 1;
-    shutdown_status.vc_shutdown_status_bspd_input = 1;
-    shutdown_status.vc_shutdown_status_bspd_latch = 1;
-    shutdown_status.vc_shutdown_status_imd1_input = 1;
-    shutdown_status.vc_shutdown_status_imd1_latch = 1;
-    shutdown_status.vc_shutdown_status_imd2_input = 1;
-    shutdown_status.vc_shutdown_status_imd2_latch = 1;
+    shutdown_status.vc_shutdown_status_bms_fault = 1;
+    shutdown_status.vc_shutdown_status_imd_fault = 1;
+    shutdown_status.vc_shutdown_status_bspd_fault = 1;
+    shutdown_status.vc_shutdown_status_bspd_signal_lost = 1;
+    shutdown_status.vc_shutdown_status_precharge = 1;
 }
 
 void VcEcu::tick(void)
@@ -77,11 +74,7 @@ void VcEcu::set(std::string key, float value)
     }
 
     // digital inputs (some of these are outputs in practice)
-    else if (key == "sound0")
-    {
-        hardware.dio[DIOpin_SOUND_0] = value == 0.0;
-    }
-    else if (key == "sound1")
+    if (key == "sound1")
     {
         hardware.dio[DIOpin_SOUND_1] = value == 0.0;
     }
@@ -105,10 +98,6 @@ void VcEcu::set(std::string key, float value)
     {
         hardware.dio[DIOpin_SOUND_6] = value == 0.0;
     }
-    else if (key == "switch0")
-    {
-        hardware.dio[DIOpin_SWITCH_0] = value == 0.0;
-    }
     else if (key == "switch1")
     {
         hardware.dio[DIOpin_SWITCH_1] = value == 0.0;
@@ -121,50 +110,39 @@ void VcEcu::set(std::string key, float value)
     {
         hardware.dio[DIOpin_SWITCH_3] = value == 0.0;
     }
+    else if (key == "rtd")
+    {
+        hardware.dio[DIOpin_RTD_BUTTON] = value != 0.0;
+    }
     else if (key == "led")
     {
         hardware.dio[DIOpin_STATUS_LED] = value == 0.0;
     }
 
     // shutdown inputs (handled by interrupt on hardware)
-    else if (key == "bmsinput")
+    else if (key == "bmsfault")
     {
-        this->shutdown_status.vc_shutdown_status_bms_input = value == 0.0;
+        this->shutdown_status.vc_shutdown_status_bms_fault = value == 0.0;
         ShutdownMonitor_update(&this->shutdown_status);
     }
-    else if (key == "bmslatch")
+    else if (key == "imdfault")
     {
-        this->shutdown_status.vc_shutdown_status_bms_input = value == 0.0;
+        this->shutdown_status.vc_shutdown_status_imd_fault = value == 0.0;
         ShutdownMonitor_update(&this->shutdown_status);
     }
-    else if (key == "bspdinput")
+    else if (key == "bspdfault")
     {
-        this->shutdown_status.vc_shutdown_status_bms_input = value == 0.0;
+        this->shutdown_status.vc_shutdown_status_bms_fault = value == 0.0;
         ShutdownMonitor_update(&this->shutdown_status);
     }
-    else if (key == "bspdlatch")
+    else if (key == "bspd_signal_lost")
     {
-        this->shutdown_status.vc_shutdown_status_bms_input = value == 0.0;
+        this->shutdown_status.vc_shutdown_status_bspd_signal_lost = value == 0.0;
         ShutdownMonitor_update(&this->shutdown_status);
     }
-    else if (key == "imd0input")
+    else if (key == "precharge")
     {
-        this->shutdown_status.vc_shutdown_status_bms_input = value == 0.0;
-        ShutdownMonitor_update(&this->shutdown_status);
-    }
-    else if (key == "imd0latch")
-    {
-        this->shutdown_status.vc_shutdown_status_bms_input = value == 0.0;
-        ShutdownMonitor_update(&this->shutdown_status);
-    }
-    else if (key == "imd1input")
-    {
-        this->shutdown_status.vc_shutdown_status_bms_input = value == 0.0;
-        ShutdownMonitor_update(&this->shutdown_status);
-    }
-    else if (key == "imd1latch")
-    {
-        this->shutdown_status.vc_shutdown_status_bms_input = value == 0.0;
+        this->shutdown_status.vc_shutdown_status_precharge = value == 0.0;
         ShutdownMonitor_update(&this->shutdown_status);
     }
 }
@@ -186,11 +164,7 @@ float VcEcu::get(std::string key)
     }
 
     // digital inputs (some of these are outputs in practice)
-    else if (key == "sound0") // scons sim
-    {
-        return hardware.dio[DIOpin_SOUND_0];
-    }
-    else if (key == "sound1")
+    else if (key == "sound1") // scons sim
     {
         return hardware.dio[DIOpin_SOUND_1];
     }
@@ -214,10 +188,6 @@ float VcEcu::get(std::string key)
     {
         return hardware.dio[DIOpin_SOUND_6];
     }
-    else if (key == "switch0")
-    {
-        return hardware.dio[DIOpin_SWITCH_0];
-    }
     else if (key == "switch1")
     {
         return hardware.dio[DIOpin_SWITCH_1];
@@ -230,42 +200,36 @@ float VcEcu::get(std::string key)
     {
         return hardware.dio[DIOpin_SWITCH_3];
     }
+    else if (key == "rtd")
+    {
+        return hardware.dio[DIOpin_RTD_BUTTON];
+    }
     else if (key == "led")
     {
         return hardware.dio[DIOpin_STATUS_LED];
     }
 
     // shutdown inputs (handled by interrupt on hardware)
-    else if (key == "bmsinput")
+    else if (key == "bmsfault")
     {
-        return this->shutdown_status.vc_shutdown_status_bms_input;
+        return this->shutdown_status.vc_shutdown_status_bms_fault;
     }
-    else if (key == "bmslatch")
+    else if (key == "imdfault")
     {
-        return this->shutdown_status.vc_shutdown_status_bms_input;
+        return this->shutdown_status.vc_shutdown_status_imd_fault;
     }
-    else if (key == "bspdinput")
+    else if (key == "bspdfault")
     {
-        return this->shutdown_status.vc_shutdown_status_bms_input;
+        return this->shutdown_status.vc_shutdown_status_bspd_fault;
     }
-    else if (key == "bspdlatch")
+    else if (key == "bspd_signal_lost")
     {
-        return this->shutdown_status.vc_shutdown_status_bms_input;
+        return this->shutdown_status.vc_shutdown_status_bspd_signal_lost;
     }
-    else if (key == "imd0input")
+    else if (key == "precharge")
     {
-        return this->shutdown_status.vc_shutdown_status_bms_input;
+        return this->shutdown_status.vc_shutdown_status_precharge;
     }
-    else if (key == "imd0latch")
-    {
-        return this->shutdown_status.vc_shutdown_status_bms_input;
-    }
-    else if (key == "imd1input")
-    {
-        return this->shutdown_status.vc_shutdown_status_bms_input;
-    }
-    else if (key == "imd1latch")
-    {
-        return this->shutdown_status.vc_shutdown_status_bms_input;
-    }
+    
+    return -1;
 }
