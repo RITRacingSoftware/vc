@@ -90,7 +90,6 @@ void HeartBeatLed_100Hz(void)
     {
         status = SystemStatus_NOMINAL;
     }
-    // status = SystemStatus_CAN_ERROR;
 
     // run pattern function for led blinking
     switch (status)
