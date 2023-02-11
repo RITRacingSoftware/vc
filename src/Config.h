@@ -98,12 +98,23 @@
 
 
 /**
+ * Brake position sensors
+*/
+#define BRAKE_TORQUE_LIMIT 1
+#define REGEN_TORQUE_LIMIT 15
+
+
+/**
  * Brake Pressure Sensor
  */
 
 #define BPS_MIN_V 0.1
 #define BPS_MAX_V 3.3 // the sensor still only goes to 4.5v, if it reads up here itll be irrational
 // #define BPS_RANGE_V (BPS_MAX_V - BPS_MIN_V)
+#define BPS_NOT_PRESSED_V 1 // placeholder value
+
+#define BPS_REGEN_LOWER_DEADZONE_V .1 // placeholder value
+#define BPS_REGEN_MAX_V 1 // placeholder value
 
 
 #endif // VC_CONFIG_H scons sim

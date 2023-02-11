@@ -10,7 +10,23 @@
 
 // #define BRAKE_DEBUG
 
-bool Brake_is_pressed(void)
+bool Brake_is_pressed(float voltage)
+{
+    // this gon flicker
+    if (FLOAT_LT(voltage, BPS_MIN_V, VOLTAGE_TOL))
+    {
+        // FaultManager_set_fault_active(FaultCode_BRAKE_SENSOR_IRRATIONAL); //TODO: RE-enable
+    }
+    else
+    {
+        FaultManager_clear_fault(FaultCode_BRAKE_SENSOR_IRRATIONAL);
+    }
+
+    return FLOAT_GT(voltage, BRAKE_PRESSED_V, VOLTAGE_TOL);
+}
+
+//Gives brake voltage
+float Brake_Get_Voltage(void)
 {
     // read the analog input line
     uint16_t adc_val = HAL_Aio_read(AIOpin_BRAKE_PRESSURE);
@@ -24,16 +40,6 @@ bool Brake_is_pressed(void)
 #endif
     // update CAN message
     can_bus.vc_pedal_inputs_raw.vc_pedal_inputs_raw_brake_voltage = main_bus_vc_pedal_inputs_raw_vc_pedal_inputs_raw_brake_voltage_encode(voltage);
-    
-    // this gon flicker
-    if (FLOAT_LT(voltage, BPS_MIN_V, VOLTAGE_TOL))
-    {
-        // FaultManager_set_fault_active(FaultCode_BRAKE_SENSOR_IRRATIONAL); //TODO: RE-enable
-    }
-    else
-    {
-        FaultManager_clear_fault(FaultCode_BRAKE_SENSOR_IRRATIONAL);
-    }
 
-    return FLOAT_GT(voltage, BRAKE_PRESSED_V, VOLTAGE_TOL);
+    return voltage
 }

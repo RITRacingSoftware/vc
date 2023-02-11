@@ -43,8 +43,8 @@ void VC_100Hz(void)
     // read the new pedal inputs, perform basic rationality checks on values read
     AccelPos_s accel_pos;
     Accelerator_read_positions(&accel_pos);
-
-    float brake_on = Brake_is_pressed();
+    float brake_voltage = Brake_Get_Voltage();
+    bool brake_on = Brake_is_pressed(brake_voltage);
 
     CAN_send_message(MAIN_BUS_VC_PEDAL_INPUTS_FRAME_ID);
     CAN_send_message(MAIN_BUS_VC_PEDAL_INPUTS_RAW_FRAME_ID);
@@ -65,7 +65,7 @@ void VC_100Hz(void)
     VehicleState_100Hz(commanded_torque);
 
     // calculate the torque to request based on the accelerator pedal input
-    commanded_torque = TorqueConverter_pos_to_torque(accel_pos.average);
+    commanded_torque = TorqueConverter_pos_to_torque(accel_pos.average, brake_voltage);
 
     can_bus.vc_pedal_inputs.vc_pedal_inputs_torque_requested = main_bus_vc_pedal_inputs_vc_pedal_inputs_torque_requested_encode(commanded_torque);
 
