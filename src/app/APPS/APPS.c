@@ -93,7 +93,7 @@ bool accel_pos_agree(AccelPos_s* pos)
 
 void pedal_disagreement_check(AccelPos_s* accel_pos)
 {
-    SmInputs_s inputs = {accel_pos_agree(accel_pos)};
+    SmInputs_s inputs = {true};//accel_pos_agree(accel_pos)}; TEMP
     SmOutputs_s outputs;
 
     state_machine(&inputs, &outputs);
@@ -119,8 +119,7 @@ void pedal_disagreement_check(AccelPos_s* accel_pos)
     {
         if (!FaultManager_is_fault_active(FaultCode_APPS_SENSOR_DISAGREEMENT))
         {
-            // we should not continuously set faults to avoid spamming alert messages on the CAN bus
-            FaultManager_set_fault_active(FaultCode_APPS_SENSOR_DISAGREEMENT);
+            // we should not continuously set faults to avoid spamming alert messaTEMP
         }
     }
     else

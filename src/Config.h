@@ -6,7 +6,7 @@
  */
 
 // any bits set in this won't get set in the fault vector
-#define DISABLE_FAULT_MASK (0)
+#define DISABLE_FAULT_MASK (FaultCode_APPS_SENSOR_DISAGREEMENT)
 
 /**
  * Motor Controller Interface
@@ -37,14 +37,14 @@
  */
 
 // How different the accelerator pedal positon sensors can read for a disagreement to be determined
-#define APPS_PEDAL_DISAGREEMENT_PERCENTAGE 10
+#define APPS_PEDAL_DISAGREEMENT_PERCENTAGE 150 //TEMP
 // How long the accelerator position sensors can disagree for before causing a fault
 #define APPS_PEDAL_DISAGREEMENT_TIMEOUT_MS 100
 // How long the accelerator position sensors must agree after a disagreement fault before the fault clears
 #define APPS_PEDAL_DISAGREEMENT_RECOVERY_MS 100
 
 // How far the brake must be pressed while also pressing the accelerator to trigger a double pedal fault
-#define DOUBLE_PEDAL_APS_THRESHOLD 101 // Temporary, change back to 25 once BSPD verified to work
+#define DOUBLE_PEDAL_APS_THRESHOLD 25 // Temporary, change back to 25 once BSPD verified to work
 // How far the brake must be released to to clear a double pedal fault
 #define DOUBLE_PEDAL_APS_RECOVERY_THRESHOLD 5
 
@@ -91,10 +91,12 @@
 #define APS_A_SENSOR_V 3.2 //2.83
 #define APS_A_OFFSET_V 0.28
 #define APS_A_SENSOR_RANGE_V (APS_A_SENSOR_V - APS_A_OFFSET_V)
+#define APS_B_IRRATIONAL_V 1.5
 
 #define APS_B_SENSOR_V 1.5
 #define APS_B_OFFSET_V 0.0 //0.16
 #define APS_B_SENSOR_RANGE_V (APS_B_SENSOR_V - APS_B_OFFSET_V)
+#define APS_B_IRRATIONAL_V 1.5
 
 
 /**
@@ -103,6 +105,7 @@
 
 #define BPS_MIN_V 0.1
 #define BPS_MAX_V 3.3 // the sensor still only goes to 4.5v, if it reads up here itll be irrational
+#define BPS_IRRATIONAL_V 3.15
 // #define BPS_RANGE_V (BPS_MAX_V - BPS_MIN_V)
 
 

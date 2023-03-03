@@ -28,7 +28,11 @@ bool Brake_is_pressed(void)
     // this gon flicker
     if (FLOAT_LT(voltage, BPS_MIN_V, VOLTAGE_TOL))
     {
-        // FaultManager_set_fault_active(FaultCode_BRAKE_SENSOR_IRRATIONAL); //TODO: RE-enable
+        FaultManager_set_fault_active(FaultCode_BRAKE_SENSOR_IRRATIONAL); 
+    }
+    else if(FLOAT_GT(voltage, BPS_IRRATIONAL_V, VOLTAGE_TOL))
+    {
+        FaultManager_set_fault_active(FaultCode_BRAKE_SENSOR_IRRATIONAL);
     }
     else
     {
