@@ -6,7 +6,7 @@
  */
 
 // any bits set in this won't get set in the fault vector
-#define DISABLE_FAULT_MASK (FaultCode_APPS_SENSOR_DISAGREEMENT)
+#define DISABLE_FAULT_MASK ()
 
 /**
  * Motor Controller Interface
@@ -42,6 +42,8 @@
 #define APPS_PEDAL_DISAGREEMENT_TIMEOUT_MS 100
 // How long the accelerator position sensors must agree after a disagreement fault before the fault clears
 #define APPS_PEDAL_DISAGREEMENT_RECOVERY_MS 100
+// How long the brake and accelerator pedal can read as pressed for before causing a fault
+#define APPS_DOUBLE_PEDAL_TIMEOUT_MS 30
 
 // How far the brake must be pressed while also pressing the accelerator to trigger a double pedal fault
 #define DOUBLE_PEDAL_APS_THRESHOLD 25 // Temporary, change back to 25 once BSPD verified to work
