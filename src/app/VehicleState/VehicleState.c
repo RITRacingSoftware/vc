@@ -98,7 +98,7 @@ void VehicleState_100Hz(float torque)
     bool play_sound = state == VehicleState_STARTUP;
     allow_torque = state == VehicleState_READY_TO_DRIVE;
 
-    // apply outputs
+    // apply outputs, which is now a CAN message that the PBX will read and power the speaker for the sound
     if (play_sound)
     {
         SoundController_play_sound(Sounds_READY_TO_DRIVE);

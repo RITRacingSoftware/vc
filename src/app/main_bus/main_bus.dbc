@@ -225,6 +225,9 @@ BO_ 311 VcFaultVector: 8 VCU
 BO_ 315 VcHardFaultIndicator: 8 Vc
  SG_ VcHardFaultIndicator_task: 0|4@1+ (1,0) [0|15] "" Vector__XXX
 
+BO_ 316 VcRTDSRequest: 8 Vc
+ SG_ VcRequestRTDS: 0|1@1+ (1,0) [0|1] "" Vector__XXX
+
 BO_ 420 PbxStatus: 8 PBX
  SG_ PbxStatus_PumpOn: 0|1@1+ (1,0) [0|1] "" Vector__XXX
 

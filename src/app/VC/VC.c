@@ -60,6 +60,7 @@ void VC_100Hz(void)
 
     // Stop sound triggers that are done triggering
     SoundController_100Hz();
+    CAN_send_message(MAIN_BUS_VC_RTDS_REQUEST_FRAME_ID);
 
     // figure out new vehicle state based on changes this iteration
     VehicleState_100Hz(commanded_torque);

@@ -6,7 +6,7 @@
  */
 
 // any bits set in this won't get set in the fault vector
-#define DISABLE_FAULT_MASK ()
+#define DISABLE_FAULT_MASK (0)
 
 /**
  * Motor Controller Interface
@@ -58,7 +58,7 @@
  */
 
 // How long a sound trigger is held.
-#define SOUND_TRIGGER_HOLD_MS 200
+#define SOUND_TRIGGER_HOLD_MS 15000
 
 /**
  * CAN
