@@ -19,6 +19,6 @@ void APPS_init(void);
  * accel_pos [in] - accelerator per-sensor position + associated data
  * brake_on [in] - is brake on or not
  */
-void APPS_100Hz(AccelPos_s* accel_pos, bool brake_on);
+void APPS_100Hz(AccelPos_s* accel_pos, bool brake_on, bool is_accelerator_rational);
 
 #endif // APPS_H

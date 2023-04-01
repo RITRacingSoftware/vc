@@ -37,9 +37,9 @@
  */
 
 // How different the accelerator pedal positon sensors can read for a disagreement to be determined
-#define APPS_PEDAL_DISAGREEMENT_PERCENTAGE 150 //TEMP
+#define APPS_PEDAL_DISAGREEMENT_PERCENTAGE 10
 // How long the accelerator position sensors can disagree for before causing a fault
-#define APPS_PEDAL_DISAGREEMENT_TIMEOUT_MS 100
+#define APPS_PEDAL_DISAGREEMENT_TIMEOUT_MS 70
 // How long the accelerator position sensors must agree after a disagreement fault before the fault clears
 #define APPS_PEDAL_DISAGREEMENT_RECOVERY_MS 100
 // How long the brake and accelerator pedal can read as pressed for before causing a fault
@@ -58,7 +58,7 @@
  */
 
 // How long a sound trigger is held.
-#define SOUND_TRIGGER_HOLD_MS 15000
+#define SOUND_TRIGGER_HOLD_MS 2000
 
 /**
  * CAN
@@ -93,12 +93,12 @@
 #define APS_A_SENSOR_V 3.2 //2.83
 #define APS_A_OFFSET_V 0.28
 #define APS_A_SENSOR_RANGE_V (APS_A_SENSOR_V - APS_A_OFFSET_V)
-#define APS_B_IRRATIONAL_V 1.5
+#define APS_A_IRRATIONAL_V 0.2 //Anything below this is considered irrational (open)
 
 #define APS_B_SENSOR_V 1.5
 #define APS_B_OFFSET_V 0.0 //0.16
 #define APS_B_SENSOR_RANGE_V (APS_B_SENSOR_V - APS_B_OFFSET_V)
-#define APS_B_IRRATIONAL_V 1.5
+#define APS_B_IRRATIONAL_V 0.0
 
 
 /**

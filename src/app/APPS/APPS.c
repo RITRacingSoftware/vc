@@ -8,6 +8,7 @@
 
 typedef struct {
     bool accel_sensors_agree;
+    bool accelerator_rational;
 } DisagreementSmInputs_s;
 
 typedef struct {
@@ -60,7 +61,7 @@ static void disagreement_state_machine(DisagreementSmInputs_s* inputs, Disagreem
     {
         case AppsDisagreementState_SENSORS_AGREE:
             // printf("APPS_STATE: AGREE\r\n");
-            if (!inputs->accel_sensors_agree)
+            if (!inputs->accel_sensors_agree || !inputs->accelerator_rational)
             {
                 new_disagreement_state(AppsDisagreementState_SENSORS_DISAGREE);
             }
@@ -68,7 +69,7 @@ static void disagreement_state_machine(DisagreementSmInputs_s* inputs, Disagreem
 
         case AppsDisagreementState_SENSORS_DISAGREE:
             // printf("APPS_STATE: DISAGREE\r\n");
-            if (inputs->accel_sensors_agree)
+            if (inputs->accel_sensors_agree || inputs->accelerator_rational)
             {
                 new_disagreement_state(AppsDisagreementState_SENSORS_AGREE);
             }
@@ -80,7 +81,7 @@ static void disagreement_state_machine(DisagreementSmInputs_s* inputs, Disagreem
         
         case AppsDisagreementState_SENSORS_DISAGREE_FAULTED:
             // printf("APPS_STATE: DISAGREE_FAULTED\r\n");
-            if (inputs->accel_sensors_agree)
+            if (inputs->accel_sensors_agree || inputs->accelerator_rational)
             {
                 new_disagreement_state(AppsDisagreementState_SENSORS_AGREE_FAULTED);
             }
@@ -88,7 +89,7 @@ static void disagreement_state_machine(DisagreementSmInputs_s* inputs, Disagreem
         
         case AppsDisagreementState_SENSORS_AGREE_FAULTED:
             // printf("APPS_STATE: AGREE_FAULTED\r\n");
-            if (!inputs->accel_sensors_agree)
+            if (!inputs->accel_sensors_agree || !inputs->accelerator_rational)
             {
                 new_disagreement_state(AppsDisagreementState_SENSORS_DISAGREE_FAULTED);
             }
@@ -148,9 +149,9 @@ bool accel_pos_agree(AccelPos_s* pos)
     return err < APPS_PEDAL_DISAGREEMENT_PERCENTAGE;
 }
 
-void pedal_disagreement_check(AccelPos_s* accel_pos)
+void pedal_disagreement_check(AccelPos_s* accel_pos, bool is_accelerator_rational)
 {
-    DisagreementSmInputs_s disagreement_inputs = {accel_pos_agree(accel_pos)}; 
+    DisagreementSmInputs_s disagreement_inputs = {accel_pos_agree(accel_pos), is_accelerator_rational}; 
     DisagreementSmOutputs_s disagreement_outputs;
 
     disagreement_state_machine(&disagreement_inputs, &disagreement_outputs);
@@ -224,8 +225,8 @@ void double_pedal_check(float average_accel_pos, bool brake_on)
 }
 
 
-void APPS_100Hz(AccelPos_s* accel_pos, bool brake_on)
+void APPS_100Hz(AccelPos_s* accel_pos, bool brake_on, bool is_accelerator_rational)
 {
-    pedal_disagreement_check(accel_pos);
+    pedal_disagreement_check(accel_pos, is_accelerator_rational);
     double_pedal_check(accel_pos->average, brake_on);
 }
