@@ -69,7 +69,7 @@ static void disagreement_state_machine(DisagreementSmInputs_s* inputs, Disagreem
 
         case AppsDisagreementState_SENSORS_DISAGREE:
             // printf("APPS_STATE: DISAGREE\r\n");
-            if (inputs->accel_sensors_agree || inputs->accelerator_rational)
+            if (inputs->accel_sensors_agree && inputs->accelerator_rational)
             {
                 new_disagreement_state(AppsDisagreementState_SENSORS_AGREE);
             }
@@ -81,7 +81,7 @@ static void disagreement_state_machine(DisagreementSmInputs_s* inputs, Disagreem
         
         case AppsDisagreementState_SENSORS_DISAGREE_FAULTED:
             // printf("APPS_STATE: DISAGREE_FAULTED\r\n");
-            if (inputs->accel_sensors_agree || inputs->accelerator_rational)
+            if (inputs->accel_sensors_agree && inputs->accelerator_rational)
             {
                 new_disagreement_state(AppsDisagreementState_SENSORS_AGREE_FAULTED);
             }
