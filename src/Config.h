@@ -46,9 +46,12 @@
 #define APPS_DOUBLE_PEDAL_TIMEOUT_MS 30
 
 // How far the brake must be pressed while also pressing the accelerator to trigger a double pedal fault
-#define DOUBLE_PEDAL_APS_THRESHOLD 25 // Temporary, change back to 25 once BSPD verified to work
+#define DOUBLE_PEDAL_APS_THRESHOLD 25
 // How far the brake must be released to to clear a double pedal fault
 #define DOUBLE_PEDAL_APS_RECOVERY_THRESHOLD 5
+
+// The maiximum number of samples in a row that the brake can be irrational before a fault is set
+#define MAX_BRAKE_IRRATIONAL_COUNT 3
 
 // Pressure indicating the driver has intentionally applied force to the brake pedal.
 #define BRAKE_PRESSED_V 0.8
