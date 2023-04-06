@@ -25,7 +25,7 @@
 /**
  * Torque Conversion (pedal position -> torque transfer function)
  */
-#define MAX_TORQUE_NM 240.0
+#define MAX_TORQUE_NM 231.0
 
 // the first and last % of the accelerator torque curve will be flat
 // ex: if both are set to 5, torque will start being commanded at 5% pedal travel, and reach 100% pedal travel at 95%

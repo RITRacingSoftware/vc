@@ -44,7 +44,10 @@ bool Brake_is_pressed(void)
     // Set fault if irrational, clear it if not
     if(irrational_count > MAX_BRAKE_IRRATIONAL_COUNT)
     {
-        FaultManager_set_fault_active(FaultCode_BRAKE_SENSOR_IRRATIONAL);
+        if(!FaultManager_is_fault_active(FaultCode_BRAKE_SENSOR_IRRATIONAL))
+        {
+            FaultManager_set_fault_active(FaultCode_BRAKE_SENSOR_IRRATIONAL);
+        }
     }
     else
     {
