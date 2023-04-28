@@ -22,18 +22,23 @@ float pos_to_t(float acc_pos)
     return torque;
 }
 
-
 /**
- * 
+ * Reverse braking issues
+ * returns 
 */
 float break_to_t(float brake_v)
 {
+    // check if the speed of the car is below the minimum value
+    float motor_speed = can_bus.mc_state.motor_position_status.d2_motor_speed;
+    if(motor_speed * RPM_TO_KM_PER_HOUR <= MIN_REGEN_SPEED)
+    {
+        return 0;
+    }
     float normalized_pos = MAX(brake_v - BPS_REGEN_LOWER_DEADZONE_V, 0); // normalized pedal position wrt lower deadzone
-
 
     float portion_of_max = MIN(normalized_pos / (BPS_REGEN_MAX_V), 100);
 
-    float torque = -(portion_of_max) * MAX_TORQUE_NM;
+    float torque = -(portion_of_max * MAX_TORQUE_NM);
 
     return torque;
 }
@@ -46,7 +51,6 @@ float TorqueConverter_pos_to_torque(float pos, float brake_v)
     float commanded_torque = pos_to_t(pos);
     if(commanded_torque == 0)
     {
-        break_to_t(brake_v)
+        break_to_t(brake_v);
     }
 }
-

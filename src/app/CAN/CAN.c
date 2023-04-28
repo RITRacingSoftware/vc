@@ -77,6 +77,7 @@ static int pack_message(int id, uint8_t* msg_data)
 
         case MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID:
             return main_bus_m192_command_message_pack(msg_data, &can_bus.mc_command, 8);
+        
 
         default:
             printf("f29bms: CAN id not suppoted for sending: %d\n", id);
@@ -166,6 +167,10 @@ void CAN_process_recieved_messages(void)
             
             case MAIN_BUS_PBX_STATUS_FRAME_ID:
                 main_bus_pbx_status_unpack(&can_bus.pbx_status, (uint8_t*)&received_message.data, 8);
+                break;
+
+            case MAIN_BUS_M165_MOTOR_POSITION_INFO_FRAME_ID:
+                main_bus_m165_motor_position_info_unpack(&can_bus.motor_positon_status, (uint8_t*)&received_message.data, 8);
                 break;
 
             default:

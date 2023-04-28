@@ -116,5 +116,10 @@
 #define BPS_REGEN_LOWER_DEADZONE_V .1 // placeholder value
 #define BPS_REGEN_MAX_V 1 // placeholder value
 
+// Minimun speed in rules for regen braking speed in kmph
+#define MIN_REGEN_SPEED 5
+
+// Rpm to Kph is calculated by converting min to hr, gear ratio (in this case 11/40) mutliply by circumference, convert to kilometers from inches
+#define RPM_TO_KM_PER_HOUR 0.00191414
 
 #endif // VC_CONFIG_H scons sim
