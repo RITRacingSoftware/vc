@@ -26,9 +26,28 @@ bool Brake_is_pressed(void)
     can_bus.vc_pedal_inputs_raw.vc_pedal_inputs_raw_brake_voltage = main_bus_vc_pedal_inputs_raw_vc_pedal_inputs_raw_brake_voltage_encode(voltage);
     
     // this gon flicker
+    // Only set a fualt if the brake is irrational for a number of samples in a row
+    uint8_t irrational_count = 0;
     if (FLOAT_LT(voltage, BPS_MIN_V, VOLTAGE_TOL))
     {
-        // FaultManager_set_fault_active(FaultCode_BRAKE_SENSOR_IRRATIONAL); //TODO: RE-enable
+        irrational_count += 1;
+    }
+    else if(FLOAT_GT(voltage, BPS_IRRATIONAL_V, VOLTAGE_TOL))
+    {
+        irrational_count += 1;
+    }
+    else
+    {
+        irrational_count = 0;
+    }
+
+    // Set fault if irrational, clear it if not
+    if(irrational_count > MAX_BRAKE_IRRATIONAL_COUNT)
+    {
+        if(!FaultManager_is_fault_active(FaultCode_BRAKE_SENSOR_IRRATIONAL))
+        {
+            FaultManager_set_fault_active(FaultCode_BRAKE_SENSOR_IRRATIONAL);
+        }
     }
     else
     {

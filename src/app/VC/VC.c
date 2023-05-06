@@ -42,7 +42,7 @@ void VC_100Hz(void)
 {
     // read the new pedal inputs, perform basic rationality checks on values read
     AccelPos_s accel_pos;
-    Accelerator_read_positions(&accel_pos);
+    bool is_accelerator_rational = Accelerator_read_positions(&accel_pos);
 
     float brake_on = Brake_is_pressed();
 
@@ -50,7 +50,7 @@ void VC_100Hz(void)
     CAN_send_message(MAIN_BUS_VC_PEDAL_INPUTS_RAW_FRAME_ID);
 
     // perform dynamic rationality checks on pedal inputs
-    APPS_100Hz(&accel_pos, brake_on);
+    APPS_100Hz(&accel_pos, brake_on, is_accelerator_rational);
 
     // keep up to date with the state of the motor controller. Enable it if necessary.
     MotorController_100Hz();
@@ -60,6 +60,7 @@ void VC_100Hz(void)
 
     // Stop sound triggers that are done triggering
     SoundController_100Hz();
+    CAN_send_message(MAIN_BUS_VC_RTDS_REQUEST_FRAME_ID);
 
     // figure out new vehicle state based on changes this iteration
     VehicleState_100Hz(commanded_torque);

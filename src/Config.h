@@ -6,7 +6,7 @@
  */
 
 // any bits set in this won't get set in the fault vector
-#define DISABLE_FAULT_MASK (0)
+#define DISABLE_FAULT_MASK (0) //TEMP
 
 /**
  * Motor Controller Interface
@@ -39,14 +39,19 @@
 // How different the accelerator pedal positon sensors can read for a disagreement to be determined
 #define APPS_PEDAL_DISAGREEMENT_PERCENTAGE 10
 // How long the accelerator position sensors can disagree for before causing a fault
-#define APPS_PEDAL_DISAGREEMENT_TIMEOUT_MS 100
+#define APPS_PEDAL_DISAGREEMENT_TIMEOUT_MS 70
 // How long the accelerator position sensors must agree after a disagreement fault before the fault clears
 #define APPS_PEDAL_DISAGREEMENT_RECOVERY_MS 100
+// How long the brake and accelerator pedal can read as pressed for before causing a fault
+#define APPS_DOUBLE_PEDAL_TIMEOUT_MS 30
 
 // How far the brake must be pressed while also pressing the accelerator to trigger a double pedal fault
-#define DOUBLE_PEDAL_APS_THRESHOLD 101 // Temporary, change back to 25 once BSPD verified to work
+#define DOUBLE_PEDAL_APS_THRESHOLD 25
 // How far the brake must be released to to clear a double pedal fault
 #define DOUBLE_PEDAL_APS_RECOVERY_THRESHOLD 5
+
+// The maiximum number of samples in a row that the brake can be irrational before a fault is set
+#define MAX_BRAKE_IRRATIONAL_COUNT 3
 
 // Pressure indicating the driver has intentionally applied force to the brake pedal.
 #define BRAKE_PRESSED_V 0.8
@@ -56,7 +61,7 @@
  */
 
 // How long a sound trigger is held.
-#define SOUND_TRIGGER_HOLD_MS 200
+#define SOUND_TRIGGER_HOLD_MS 2000
 
 /**
  * CAN
@@ -88,13 +93,15 @@
 // to what discretion voltages must be equal to be considered equal
 #define VOLTAGE_TOL 0.001
 
-#define APS_A_SENSOR_V 3.2 //2.83
-#define APS_A_OFFSET_V 0.28
+#define APS_A_SENSOR_V 3.18 //2.83
+#define APS_A_OFFSET_V 0.52
 #define APS_A_SENSOR_RANGE_V (APS_A_SENSOR_V - APS_A_OFFSET_V)
+#define APS_A_IRRATIONAL_V 0.2 //Anything below this is considered irrational (open)
 
 #define APS_B_SENSOR_V 1.5
-#define APS_B_OFFSET_V 0.0 //0.16
+#define APS_B_OFFSET_V 0.05 //0.16
 #define APS_B_SENSOR_RANGE_V (APS_B_SENSOR_V - APS_B_OFFSET_V)
+#define APS_B_IRRATIONAL_V 0.0
 
 
 /**
@@ -103,6 +110,7 @@
 
 #define BPS_MIN_V 0.1
 #define BPS_MAX_V 3.3 // the sensor still only goes to 4.5v, if it reads up here itll be irrational
+#define BPS_IRRATIONAL_V 3.15
 // #define BPS_RANGE_V (BPS_MAX_V - BPS_MIN_V)
 
 

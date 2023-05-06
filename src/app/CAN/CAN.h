@@ -38,6 +38,7 @@ typedef struct
     struct main_bus_vc_fault_vector_t vc_fault_vector;
     struct main_bus_m192_command_message_t mc_command;
     struct main_bus_vc_hard_fault_indicator_t vc_hard_fault_indicator;
+    struct main_bus_vc_rtds_request_t vc_request_rtds;
 
     // things read by the vc
     struct main_bus_m170_internal_states_t mc_state;
