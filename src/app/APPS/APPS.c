@@ -168,7 +168,7 @@ void pedal_disagreement_check(AccelPos_s* accel_pos, bool is_accelerator_rationa
             break;
         case AppsDisagreementState_SENSORS_AGREE_FAULTED:
         case AppsDisagreementState_SENSORS_DISAGREE_FAULTED:
-            // disagreement_outputs.pedal_disagreement_fault = true;  TEMP
+            disagreement_outputs.pedal_disagreement_fault = true;  
             break;
     }
 
