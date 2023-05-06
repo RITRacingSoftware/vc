@@ -46,7 +46,7 @@
 #define APPS_DOUBLE_PEDAL_TIMEOUT_MS 30
 
 // How far the brake must be pressed while also pressing the accelerator to trigger a double pedal fault
-#define DOUBLE_PEDAL_APS_THRESHOLD 25
+#define DOUBLE_PEDAL_APS_THRESHOLD 15
 // How far the brake must be released to to clear a double pedal fault
 #define DOUBLE_PEDAL_APS_RECOVERY_THRESHOLD 5
 
