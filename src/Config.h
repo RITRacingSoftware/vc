@@ -29,7 +29,7 @@
 
 // the first and last % of the accelerator torque curve will be flat
 // ex: if both are set to 5, torque will start being commanded at 5% pedal travel, and reach 100% pedal travel at 95%
-#define ACC_LOWER_DEADZONE_PERCENT 2.5
+#define ACC_LOWER_DEADZONE_PERCENT 5.0
 #define ACC_UPPER_DEADZONE_PERCENT 5.0
 
 /**
@@ -93,15 +93,15 @@
 // to what discretion voltages must be equal to be considered equal
 #define VOLTAGE_TOL 0.001
 
-#define APS_A_SENSOR_V 2.73
-#define APS_A_OFFSET_V 0.01 //0.03 
+#define APS_A_SENSOR_V 3.28
+#define APS_A_OFFSET_V 0.28
 #define APS_A_SENSOR_RANGE_V (APS_A_SENSOR_V - APS_A_OFFSET_V)
-#define APS_A_IRRATIONAL_V 0.0 // TODO: CHange this //Anything below this is considered irrational (open)
+#define APS_A_IRRATIONAL_V 0.12 //Anything below this is considered irrational (open/ not connected)
 
 #define APS_B_SENSOR_V 1.78
-#define APS_B_OFFSET_V 0.25 //0.19 
+#define APS_B_OFFSET_V 0.14 
 #define APS_B_SENSOR_RANGE_V (APS_B_SENSOR_V - APS_B_OFFSET_V)
-#define APS_B_IRRATIONAL_V 0.07
+#define APS_B_IRRATIONAL_V 0.10 //Anything below this is considered irrational (open/not connected)
 
 
 /**
