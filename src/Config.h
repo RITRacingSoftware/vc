@@ -43,7 +43,7 @@
 // How long the accelerator position sensors must agree after a disagreement fault before the fault clears
 #define APPS_PEDAL_DISAGREEMENT_RECOVERY_MS 100
 // How long the brake and accelerator pedal can read as pressed for before causing a fault
-#define APPS_DOUBLE_PEDAL_TIMEOUT_MS 30
+#define APPS_DOUBLE_PEDAL_TIMEOUT_MS 70
 
 // How far the brake must be pressed while also pressing the accelerator to trigger a double pedal fault
 #define DOUBLE_PEDAL_APS_THRESHOLD 15
