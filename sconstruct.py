@@ -38,10 +38,10 @@ LINKER_FILE = REPO_ROOT_DIR.File('stm32f091.ld')
 Find the modules, accumulate a list of include paths while we're at it.
 """
 include_paths = [
-    APP_DIR, 
-    SRC_DIR, 
-    COMMON_DIR, 
-    DRIVER_DIR, 
+    APP_DIR,
+    SRC_DIR,
+    COMMON_DIR,
+    DRIVER_DIR,
     SIL_DIR,
     LIBS_DIR.Dir('cmock/src'),
     LIBS_DIR.Dir('cmock/vendor/unity/src'),
@@ -63,14 +63,14 @@ for dir_path in (d for d in Path(str(APP_DIR)).iterdir() if d.is_dir()):
     include_paths.append(dir_path_str)
     module_dir = REPO_ROOT_DIR.Dir(dir_path_str)
     module_name = dir_path_str.split('/')[-1]
-    app_modules += [(module_name, module_dir)] 
+    app_modules += [(module_name, module_dir)]
 
 for dir_path in (d for d in Path(str(DRIVER_DIR)).iterdir() if d.is_dir()):
     dir_path_str = str(dir_path)
     include_paths.append(dir_path_str)
     module_dir = REPO_ROOT_DIR.Dir(dir_path_str)
     module_name = dir_path_str.split('/')[-1]
-    driver_modules += [(module_name, module_dir)] 
+    driver_modules += [(module_name, module_dir)]
 
 for dir_path in (d for d in Path(str(COMMON_DIR)).iterdir() if d.is_dir()):
     dir_path_str = str(dir_path)
@@ -112,7 +112,7 @@ def TOOL_ARM_ELF_HEX(env):
     """
     Description of command below:
     -mcpu=cortex-m0: the cortex-m0 is our microprocessor. This tells the compiler to use its instruction set
-    --specs=nosys.specs: this removes a default spec that tries to compile a wrapper layer of sorts for linux debugging 
+    --specs=nosys.specs: this removes a default spec that tries to compile a wrapper layer of sorts for linux debugging
     (will get error looking for _exit function if removed)
     SOURCE must be a list of strings
     """
@@ -158,7 +158,7 @@ def TOOL_DBC_CODE_GENERATE(env):
     TARGET - c file node that will be generated. The directory of this file will be used in the command.
     """
     can_src_builder = SCons.Builder.Builder(action=[
-        'cd ${SOURCE.dir.abspath} && cantools generate_c_source ${SOURCE.abspath}' 
+        'cd ${SOURCE.dir.abspath} && cantools generate_c_source ${SOURCE.abspath}'
     ])
 
     env.Append(BUILDERS = {
@@ -200,7 +200,7 @@ def TOOL_CMOCK(env):
     """
     # cmock ruby scripts are here
     CMOCK_SCRIPT_DIR = REPO_ROOT_DIR.Dir('libs/cmock/lib')
-    
+
     CMOCK_CONFIG_FILE = SRC_DIR.File('cmock_config.yml')
 
     # build the command to run cmock from the SOURCE parameter
@@ -212,7 +212,7 @@ def TOOL_CMOCK(env):
 
     # cmock test generation script is in unity repo for some reason
     CMOCK_TESTGEN_DIR = REPO_ROOT_DIR.Dir('libs/cmock/vendor/unity/auto/')
-    
+
     # run ruby script from unity repo to generate unit test runner from unit test source file
     cmock_testrunner_builder = SCons.Builder.Builder(action=[
         'cd ${SOURCE.dir.abspath} && ruby ' + CMOCK_TESTGEN_DIR.abspath + '/generate_test_runner.rb ${SOURCE.abspath} ${TARGET.abspath}'
@@ -237,7 +237,7 @@ for module_name, module_dir in (app_modules + driver_modules):
     if module_name != 'main_bus': # this module is huge and has no dependencies so can be used without mocking
         build_dir = BUILD_DIR.Dir(SRC_DIR.rel_path(module_dir))
         mocks_dir = module_dir.Dir('mocks')
-        
+
         # later source in this file will need these directories
         mock_modules.append(mocks_dir)
         linux_c_env['CPPPATH'] += [mocks_dir]
@@ -282,11 +282,12 @@ found in the module directory.
 # compiles the cmock library
 # also compiles unity (unit testing framework, submodule of cmock lib)
 CMOCK_ROOT_DIR = REPO_ROOT_DIR.Dir('libs/cmock/')
-cmock_libs = [CMOCK_ROOT_DIR.File('build/src/libcmock.a.p/cmock.c.o'), CMOCK_ROOT_DIR.File('build/vendor/unity/src/libunity.a.p/unity.c.o')]
+CMOCK_BUILD_DIR = BUILD_DIR.Dir("cmock", create=True)
+cmock_libs = [CMOCK_BUILD_DIR.File('src/libcmock.a.p/cmock.c.o'), CMOCK_BUILD_DIR.File('vendor/unity/src/libunity.a.p/unity.c.o')]
 cmock_libs = Command(
     cmock_libs,
     [],
-    f'cd {CMOCK_ROOT_DIR.abspath} && meson build && cd build && meson compile'
+    f'cd {CMOCK_ROOT_DIR.abspath} && meson {CMOCK_BUILD_DIR} && cd {CMOCK_BUILD_DIR} && meson compile'
 )
 Clean(cmock_libs, CMOCK_ROOT_DIR.Dir('build'))
 
@@ -345,7 +346,7 @@ for name, obj in cmock_testrunner_src.items():
     # every test uses the authentic main_bus module, except the main_bus test
     if name != 'main_bus':
         objs += [linux_objs['main_bus']]
-        
+
     unit_test_execs += [
         linux_c_env.Program(
             source=[obj, linux_objs[name], test_script_objs[name]] + objs + cmock_libs + common_objs.values(),
@@ -430,7 +431,7 @@ for src_file in Glob(Path(SIL_DIR.abspath) / "*.cpp"):
     )
 
     build_dir = BUILD_DIR.Dir('g++').Dir('sil')
-    sil_objs.append(obj)    
+    sil_objs.append(obj)
 
     # file_name = src_file.abspath.split('/')[-1]
     # print(file_name)
@@ -466,7 +467,7 @@ for module_name, module_dir in common_modules:
         target=build_dir.File(f'{module_name}.o')
     ))
 
-# compile ecusim 
+# compile ecusim
 ecusim = SConscript('libs/ecu-sim/sconstruct.py')
 ecusim_objs = ecusim['ecusim_objs']
 # blf_lib = ecusim['blf_lib']
@@ -516,7 +517,7 @@ SIL_BLF_DIR = BUILD_DIR.Dir('sil_test_blfs')
 sil_test_results = []
 for test in sil_tests:
     test_name = test.abspath.split('/')[-1].split('.')
-    
+
     blf = SIL_BLF_DIR.File(f"{test_name}.blf")
 
     sil_test_result = Command(
