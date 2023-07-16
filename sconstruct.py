@@ -287,7 +287,7 @@ cmock_libs = [CMOCK_BUILD_DIR.File('src/libcmock.a.p/cmock.c.o'), CMOCK_BUILD_DI
 cmock_libs = Command(
     cmock_libs,
     [],
-    f'cd {CMOCK_ROOT_DIR.abspath} && meson {CMOCK_BUILD_DIR} && cd {CMOCK_BUILD_DIR} && meson compile'
+    f'cd {CMOCK_ROOT_DIR.abspath} && meson setup {CMOCK_BUILD_DIR} && cd {CMOCK_BUILD_DIR} && meson compile'
 )
 Clean(cmock_libs, CMOCK_ROOT_DIR.Dir('build'))
 
