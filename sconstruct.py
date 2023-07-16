@@ -50,7 +50,8 @@ include_paths = [
     STM32_CMSIS_DIR.Dir('Device/ST/STM32F0xx/Include'),
     STM32_CMSIS_DIR.Dir('Include'),
     FREERTOS_DIR.Dir('Source/include'),
-    FREERTOS_DIR.Dir('Source/portable/ThirdParty/GCC/ARM_CM0')
+    FREERTOS_DIR.Dir('Source/portable/ThirdParty/GCC/ARM_CM0'),
+    BUILD_DIR.Dir('formula-main-dbc'),
 ]
 
 app_modules = []
@@ -158,7 +159,7 @@ def TOOL_DBC_CODE_GENERATE(env):
     TARGET - c file node that will be generated. The directory of this file will be used in the command.
     """
     can_src_builder = SCons.Builder.Builder(action=[
-        'cd ${SOURCE.dir.abspath} && cantools generate_c_source ${SOURCE.abspath}'
+        'cd ${TARGET.dir.abspath} && cantools generate_c_source ${SOURCE.abspath}'
     ])
 
     env.Append(BUILDERS = {
@@ -169,9 +170,11 @@ dbc_env = Environment(
     tools=[TOOL_DBC_CODE_GENERATE]
 )
 
+DBC_BUILD_DIR = BUILD_DIR.Dir("formula-main-dbc", create=True);
+
 dbc_src = dbc_env.GenerateDbcSource(
-    source=APP_DIR.File('main_bus/main_bus.dbc'),
-    target=[APP_DIR.File('main_bus/main_bus.c'), APP_DIR.File('main_bus/main_bus.h')]
+    source=LIBS_DIR.Dir('formula-main-dbc').File('formula_main_dbc.dbc'),
+    target=[DBC_BUILD_DIR.File('formula_main_dbc.c'), DBC_BUILD_DIR.File('formula_main_dbc.h')]
 )
 
 Alias('dbc-gen', dbc_src)
@@ -234,26 +237,25 @@ mock_modules = []
 cmock_generated_headers = []
 cmock_objs = {}
 for module_name, module_dir in (app_modules + driver_modules):
-    if module_name != 'main_bus': # this module is huge and has no dependencies so can be used without mocking
-        build_dir = BUILD_DIR.Dir(SRC_DIR.rel_path(module_dir))
-        mocks_dir = module_dir.Dir('mocks')
+    build_dir = BUILD_DIR.Dir(SRC_DIR.rel_path(module_dir))
+    mocks_dir = module_dir.Dir('mocks')
 
-        # later source in this file will need these directories
-        mock_modules.append(mocks_dir)
-        linux_c_env['CPPPATH'] += [mocks_dir]
-        cmock_c = mocks_dir.File('Mock{}.c'.format(module_name))
-        cmock_header = mocks_dir.File('Mock{}.h'.format(module_name))
-        cmock_src = cmock_env.GenerateMocks(
-            # only input is the module's header file
-            source=module_dir.File(module_name + '.h'),
-            target=[cmock_c, cmock_header]
+    # later source in this file will need these directories
+    mock_modules.append(mocks_dir)
+    linux_c_env['CPPPATH'] += [mocks_dir]
+    cmock_c = mocks_dir.File('Mock{}.c'.format(module_name))
+    cmock_header = mocks_dir.File('Mock{}.h'.format(module_name))
+    cmock_src = cmock_env.GenerateMocks(
+        # only input is the module's header file
+        source=module_dir.File(module_name + '.h'),
+        target=[cmock_c, cmock_header]
+    )
+    cmock_objs[module_name] = linux_c_env.Object(
+        source=cmock_c,
+        target=build_dir.File(f'Mock{module_name}.o')
         )
-        cmock_objs[module_name] = linux_c_env.Object(
-            source=cmock_c,
-            target=build_dir.File(f'Mock{module_name}.o')
-            )
-        cmock_generated_headers += [cmock_header]
-        Clean(cmock_header, mocks_dir) # tell scons to clean these up when --clean is specified
+    cmock_generated_headers += [cmock_header]
+    Clean(cmock_header, mocks_dir) # tell scons to clean these up when --clean is specified
 
 Alias('cmock-headers', cmock_generated_headers)
 Alias('cmock-objs', cmock_objs.values())
@@ -342,10 +344,6 @@ for name, obj in cmock_testrunner_src.items():
     for n, o in cmock_objs.items():
         if n != name:
             objs += [o]
-
-    # every test uses the authentic main_bus module, except the main_bus test
-    if name != 'main_bus':
-        objs += [linux_objs['main_bus']]
 
     unit_test_execs += [
         linux_c_env.Program(
