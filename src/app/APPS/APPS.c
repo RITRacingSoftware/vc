@@ -145,7 +145,7 @@ void APPS_init(void)
 bool accel_pos_agree(AccelPos_s* pos)
 {   
     float err = fabs(pos->a - pos->b);
-    can_bus.vc_pedal_inputs.vc_pedal_inputs_accel_position_err = main_bus_vc_pedal_inputs_vc_pedal_inputs_accel_position_err_encode(err);
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_accel_position_err = formula_main_dbc_vc_pedal_inputs_vc_pedal_inputs_accel_position_err_encode(err);
     return err < APPS_PEDAL_DISAGREEMENT_PERCENTAGE;
 }
 

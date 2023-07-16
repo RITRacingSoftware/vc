@@ -57,29 +57,29 @@ static int pack_message(int id, uint8_t* msg_data)
 {
     switch(id)
     {
-        case MAIN_BUS_VC_STATUS_FRAME_ID:
-             return main_bus_vc_status_pack(msg_data, &can_bus.vc_status, 8);
+        case FORMULA_MAIN_DBC_VC_STATUS_FRAME_ID:
+             return formula_main_dbc_vc_status_pack(msg_data, &can_bus.vc_status, 8);
 
-        case MAIN_BUS_VC_PEDAL_INPUTS_FRAME_ID:
-            return main_bus_vc_pedal_inputs_pack(msg_data, &can_bus.vc_pedal_inputs, 8);
+        case FORMULA_MAIN_DBC_VC_PEDAL_INPUTS_FRAME_ID:
+            return formula_main_dbc_vc_pedal_inputs_pack(msg_data, &can_bus.vc_pedal_inputs, 8);
 
-        case MAIN_BUS_VC_PEDAL_INPUTS_RAW_FRAME_ID:
-            return main_bus_vc_pedal_inputs_raw_pack(msg_data, &can_bus.vc_pedal_inputs_raw, 8);
+        case FORMULA_MAIN_DBC_VC_PEDAL_INPUTS_RAW_FRAME_ID:
+            return formula_main_dbc_vc_pedal_inputs_raw_pack(msg_data, &can_bus.vc_pedal_inputs_raw, 8);
 
-        case MAIN_BUS_VC_DASH_INPUTS_FRAME_ID:
-            return main_bus_vc_dash_inputs_pack(msg_data, &can_bus.vc_dash_inputs, 8);
+        case FORMULA_MAIN_DBC_VC_DASH_INPUTS_FRAME_ID:
+            return formula_main_dbc_vc_dash_inputs_pack(msg_data, &can_bus.vc_dash_inputs, 8);
         
-        case MAIN_BUS_VC_SHUTDOWN_STATUS_FRAME_ID:
-            return main_bus_vc_shutdown_status_pack(msg_data, &can_bus.vc_shutdown_status, 8);
+        case FORMULA_MAIN_DBC_VC_SHUTDOWN_STATUS_FRAME_ID:
+            return formula_main_dbc_vc_shutdown_status_pack(msg_data, &can_bus.vc_shutdown_status, 8);
         
-        case MAIN_BUS_VC_FAULT_VECTOR_FRAME_ID:
-            return main_bus_vc_fault_vector_pack(msg_data, &can_bus.vc_fault_vector, 8);
+        case FORMULA_MAIN_DBC_VC_FAULT_VECTOR_FRAME_ID:
+            return formula_main_dbc_vc_fault_vector_pack(msg_data, &can_bus.vc_fault_vector, 8);
 
-        case MAIN_BUS_VC_RTDS_REQUEST_FRAME_ID:
-            return main_bus_vc_rtds_request_pack(msg_data, &can_bus.vc_request_rtds, 8);
+        case FORMULA_MAIN_DBC_VC_RTDS_REQUEST_FRAME_ID:
+            return formula_main_dbc_vc_rtds_request_pack(msg_data, &can_bus.vc_request_rtds, 8);
 
-        case MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID:
-            return main_bus_m192_command_message_pack(msg_data, &can_bus.mc_command, 8);
+        case FORMULA_MAIN_DBC_M192_COMMAND_MESSAGE_FRAME_ID:
+            return formula_main_dbc_m192_command_message_pack(msg_data, &can_bus.mc_command, 8);
 
         default:
             printf("f29bms: CAN id not suppoted for sending: %d\n", id);
@@ -163,12 +163,12 @@ void CAN_process_recieved_messages(void)
         // IMPORTANT: For any CAN messages to be received, the message ID has to be added to the CAN filter in the CAN Driver init function (HAL_Can_init)
         switch(received_message.id)
         {
-            case MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID:
-                main_bus_m170_internal_states_unpack(&can_bus.mc_state, (uint8_t*)&received_message.data, 8);
+            case FORMULA_MAIN_DBC_M170_INTERNAL_STATES_FRAME_ID:
+                formula_main_dbc_m170_internal_states_unpack(&can_bus.mc_state, (uint8_t*)&received_message.data, 8);
                 break;
             
-            case MAIN_BUS_PBX_STATUS_FRAME_ID:
-                main_bus_pbx_status_unpack(&can_bus.pbx_status, (uint8_t*)&received_message.data, 8);
+            case FORMULA_MAIN_DBC_PBX_STATUS_FRAME_ID:
+                formula_main_dbc_pbx_status_unpack(&can_bus.pbx_status, (uint8_t*)&received_message.data, 8);
                 break;
 
             default:

@@ -13,7 +13,7 @@ BLF_OUT_DIR = pathlib.Path("build/sil_test_blfs/")
 
 class VcHandle:
     def __init__(self):
-        self.can_db = cantools.database.load_file('src/app/main_bus/main_bus.dbc')
+        self.can_db = cantools.database.load_file('libs/formula-main-dbc/formula_main_dbc.dbc')
         self.signals = {}
         self.handle = ctypes.CDLL('build/g++/sil/tests/libVcHandle.so')
         self.handle.get.restype = ctypes.c_float # tell python "get" returns a float
@@ -27,11 +27,11 @@ class VcHandle:
         # dont automatically send mc state messages
         self.holding_mc_state = False
         self.ms_since_last_mc_state = 0
-    
+
     def __del__(self):
         self.handle.deinit()
 
-    
+
     def run_ms(self, ms):
         if self.holding_mc_state:
             for i in range(0, ms):
@@ -57,7 +57,7 @@ class VcHandle:
             filePath.touch()
         print(str(filePath))
         self.handle.begin_logging(ctypes.c_char_p(str(filePath).encode("utf-8")))
-    
+
     def hold_mc_state(self, state, enabled):
         """
         Automatically send a MC internal states message with these parameters every 100ms
@@ -74,7 +74,7 @@ class VcHandle:
         Send a single motor controller internal states message to the VC.
         """
         self.handle.inject_mc_state_msg(state, enabled)
-    
+
     def inject_pbx_status_msg(self, pumps_on):
         """
         Send a single pbx status message to the vc.
@@ -83,11 +83,11 @@ class VcHandle:
 
     def __getitem__(self, key):
         return self.handle.get(ctypes.c_char_p(key.encode("utf-8")))
-    
+
     def __setitem__(self, key, value):
         self.handle.set(ctypes.c_char_p(key.encode("utf-8")), ctypes.c_float(value))
 
-    # Helper functions 
+    # Helper functions
     def acc_press(self, pos):
         """
         Press the accelerator. Assume both sensors are working perfectly.

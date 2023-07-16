@@ -20,7 +20,7 @@ void FaultManager_init(void)
     fault_vector = 0;
 
     // initialize the fault vector CAN message
-    main_bus_vc_fault_vector_unpack(&can_bus.vc_fault_vector, (uint8_t*) &fault_vector, 8);
+    formula_main_dbc_vc_fault_vector_unpack(&can_bus.vc_fault_vector, (uint8_t*) &fault_vector, 8);
 }
 
 // TODO- use mutex around faultvector
@@ -33,10 +33,10 @@ void FaultManager_set_fault_active(FaultCode_e code)
         fault_vector |= BIT(code);
 
         // update the fault vector CAN message data
-        main_bus_vc_fault_vector_unpack(&can_bus.vc_fault_vector, (uint8_t*)&fault_vector, 8);
+        formula_main_dbc_vc_fault_vector_unpack(&can_bus.vc_fault_vector, (uint8_t*)&fault_vector, 8);
 
         // send the fault matrix so the rising edge of the fault is caught by logging
-        CAN_send_message(MAIN_BUS_VC_FAULT_VECTOR_FRAME_ID);
+        CAN_send_message(FORMULA_MAIN_DBC_VC_FAULT_VECTOR_FRAME_ID);
     }
 }
 
@@ -53,7 +53,7 @@ void FaultManager_clear_fault(FaultCode_e code)
     fault_vector = temp_fault_vector;
 
     // update the fault vector CAN message data
-    main_bus_vc_fault_vector_unpack(&can_bus.vc_fault_vector, (uint8_t*)&fault_vector, 8);
+    formula_main_dbc_vc_fault_vector_unpack(&can_bus.vc_fault_vector, (uint8_t*)&fault_vector, 8);
 }
 
 bool FaultManager_is_fault_active(FaultCode_e code)

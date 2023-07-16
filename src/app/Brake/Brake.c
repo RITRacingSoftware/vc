@@ -23,7 +23,7 @@ bool Brake_is_pressed(void)
     printf("voltage: %f\r\n", adc_val, voltage);
 #endif
     // update CAN message
-    can_bus.vc_pedal_inputs_raw.vc_pedal_inputs_raw_brake_voltage = main_bus_vc_pedal_inputs_raw_vc_pedal_inputs_raw_brake_voltage_encode(voltage);
+    can_bus.vc_pedal_inputs_raw.vc_pedal_inputs_raw_brake_voltage = formula_main_dbc_vc_pedal_inputs_raw_vc_pedal_inputs_raw_brake_voltage_encode(voltage);
     
     // this gon flicker
     // Only set a fualt if the brake is irrational for a number of samples in a row

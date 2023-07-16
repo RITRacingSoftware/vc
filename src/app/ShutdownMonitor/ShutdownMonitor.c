@@ -14,17 +14,17 @@ void ShutdownMonitor_init(void)
     can_bus.vc_shutdown_status.vc_shutdown_status_precharge = 1;
 
     // fire off the message so that the initial state is picked up by any consumers
-    CAN_send_message(MAIN_BUS_VC_SHUTDOWN_STATUS_FRAME_ID);
+    CAN_send_message(FORMULA_MAIN_DBC_VC_SHUTDOWN_STATUS_FRAME_ID);
 }
 
 /**
  * Update internal state of shutdown lines, send updated CAN message.
  */
-void ShutdownMonitor_update(struct main_bus_vc_shutdown_status_t* new_status)
+void ShutdownMonitor_update(struct formula_main_dbc_vc_shutdown_status_t* new_status)
 {
     // update message values
     can_bus.vc_shutdown_status = *new_status;
 
     // send updated values
-    CAN_send_message(MAIN_BUS_VC_SHUTDOWN_STATUS_FRAME_ID);
+    CAN_send_message(FORMULA_MAIN_DBC_VC_SHUTDOWN_STATUS_FRAME_ID);
 }

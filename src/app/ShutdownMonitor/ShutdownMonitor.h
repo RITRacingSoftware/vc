@@ -12,6 +12,6 @@ void ShutdownMonitor_init(void);
 /**
  * Update internal state of shutdown lines, send updated CAN message.
  */
-void ShutdownMonitor_update(struct main_bus_vc_shutdown_status_t* new_status);
+void ShutdownMonitor_update(struct formula_main_dbc_vc_shutdown_status_t* new_status);
 
 #endif // SHUTDOWN_MONITOR_H

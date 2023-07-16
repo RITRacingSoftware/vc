@@ -2,7 +2,7 @@
 #define VC_ECU_H
 
 #include "Ecu.h"
-#include "main_bus.h"
+#include "formula_main_dbc.h"
 
 using namespace ecusim;
 
@@ -14,7 +14,7 @@ class VcEcu: public Ecu {
         void set(std::string, float);
         float get(std::string);
     private:
-        main_bus_vc_shutdown_status_t shutdown_status;
+        formula_main_dbc_vc_shutdown_status_t shutdown_status;
         bool can_data_available;
 };
 

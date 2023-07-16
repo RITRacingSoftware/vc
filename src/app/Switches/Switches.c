@@ -59,5 +59,5 @@ void Switches_100Hz(void)
     can_bus.vc_dash_inputs.vc_dash_inputs_switch1 = switch_states[1];
     can_bus.vc_dash_inputs.vc_dash_inputs_switch2 = switch_states[2];
 
-    CAN_send_message(MAIN_BUS_VC_DASH_INPUTS_FRAME_ID);
+    CAN_send_message(FORMULA_MAIN_DBC_VC_DASH_INPUTS_FRAME_ID);
 }

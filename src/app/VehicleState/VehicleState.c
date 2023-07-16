@@ -107,7 +107,7 @@ void VehicleState_100Hz(float torque)
     // allow_torque is accessed via getter by other modules
 
     // Update CAN status message
-    can_bus.vc_status.vc_status_vehicle_state = main_bus_vc_status_vc_status_vehicle_state_encode(state);
+    can_bus.vc_status.vc_status_vehicle_state = formula_main_dbc_vc_status_vc_status_vehicle_state_encode(state);
 }
 
 bool VehicleState_allow_torque(void)

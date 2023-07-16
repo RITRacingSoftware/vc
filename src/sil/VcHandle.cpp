@@ -7,7 +7,7 @@
 #include "CanLogger.h"
 #include "VcEcu.h"
 #include "Simulation.h"
-#include "main_bus.h"
+#include "formula_main_dbc.h"
 
 Simulation* sim;
 VcEcu* vc;
@@ -70,25 +70,25 @@ float get(char* key)
 void inject_mc_state_msg(int state, bool enabled)
 {
     ecusim::CanMsg msg;
-    msg.id = MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID;
+    msg.id = FORMULA_MAIN_DBC_M170_INTERNAL_STATES_FRAME_ID;
     msg.dlc = 8;
     
-    struct main_bus_m170_internal_states_t state_data;
+    struct formula_main_dbc_m170_internal_states_t state_data;
     state_data.d1_vsm_state = state;
     state_data.d6_inverter_enable_state = enabled;
-    main_bus_m170_internal_states_pack((uint8_t*)msg.data, &state_data, 8);
+    formula_main_dbc_m170_internal_states_pack((uint8_t*)msg.data, &state_data, 8);
     vc->injectCan(msg);
 }
 
 void inject_pbx_status_msg(bool pumps_on)
 {
     ecusim::CanMsg msg;
-    msg.id = MAIN_BUS_PBX_STATUS_FRAME_ID;
+    msg.id = FORMULA_MAIN_DBC_PBX_STATUS_FRAME_ID;
     msg.dlc = 8;
 
-    struct main_bus_pbx_status_t pbx_status;
+    struct formula_main_dbc_pbx_status_t pbx_status;
     pbx_status.pbx_status_pump_on = pumps_on;
-    main_bus_pbx_status_pack((uint8_t*)msg.data, &pbx_status, 8);
+    formula_main_dbc_pbx_status_pack((uint8_t*)msg.data, &pbx_status, 8);
     vc->injectCan(msg);
 }
 

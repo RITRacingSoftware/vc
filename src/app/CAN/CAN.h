@@ -1,7 +1,7 @@
 #ifndef CAN_H
 #define CAN_H
 #include <stdbool.h>
-#include "main_bus.h"
+#include "formula_main_dbc.h"
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "semphr.h"
@@ -30,19 +30,19 @@ extern SemaphoreHandle_t can_message_transmit_semaphore;
 typedef struct
 {
     // things the vc sends
-    struct main_bus_vc_status_t vc_status;
-    struct main_bus_vc_pedal_inputs_t vc_pedal_inputs;
-    struct main_bus_vc_pedal_inputs_raw_t vc_pedal_inputs_raw;
-    struct main_bus_vc_dash_inputs_t vc_dash_inputs;
-    struct main_bus_vc_shutdown_status_t vc_shutdown_status;
-    struct main_bus_vc_fault_vector_t vc_fault_vector;
-    struct main_bus_m192_command_message_t mc_command;
-    struct main_bus_vc_hard_fault_indicator_t vc_hard_fault_indicator;
-    struct main_bus_vc_rtds_request_t vc_request_rtds;
+    struct formula_main_dbc_vc_status_t vc_status;
+    struct formula_main_dbc_vc_pedal_inputs_t vc_pedal_inputs;
+    struct formula_main_dbc_vc_pedal_inputs_raw_t vc_pedal_inputs_raw;
+    struct formula_main_dbc_vc_dash_inputs_t vc_dash_inputs;
+    struct formula_main_dbc_vc_shutdown_status_t vc_shutdown_status;
+    struct formula_main_dbc_vc_fault_vector_t vc_fault_vector;
+    struct formula_main_dbc_m192_command_message_t mc_command;
+    struct formula_main_dbc_vc_hard_fault_indicator_t vc_hard_fault_indicator;
+    struct formula_main_dbc_vc_rtds_request_t vc_request_rtds;
 
     // things read by the vc
-    struct main_bus_m170_internal_states_t mc_state;
-    struct main_bus_pbx_status_t pbx_status;
+    struct formula_main_dbc_m170_internal_states_t mc_state;
+    struct formula_main_dbc_pbx_status_t pbx_status;
 } CAN_BUS;
 
 extern CAN_BUS can_bus;

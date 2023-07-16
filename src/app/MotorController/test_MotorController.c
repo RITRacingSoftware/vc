@@ -23,13 +23,13 @@ void setUp(void)
 // helper to avoid using this long function name each time
 float get_commanded_torque(void)
 {
-    return main_bus_m192_command_message_torque_command_decode(can_bus.mc_command.torque_command);
+    return formula_main_dbc_m192_command_message_torque_command_decode(can_bus.mc_command.torque_command);
 }
 
 void test_MotorController_ready_sequence(void)
 {
     // motor controller begins not ready
-    can_bus.mc_state.d1_vsm_state = main_bus_m170_internal_states_d1_vsm_state_encode(2.0);
+    can_bus.mc_state.d1_vsm_state = formula_main_dbc_m170_internal_states_d1_vsm_state_encode(2.0);
 
     // vc shouldnt command torque before MC status messages are seen.
     // Enable bit should be low to unlock MC once it starts up.
@@ -38,7 +38,7 @@ void test_MotorController_ready_sequence(void)
         // no MC status messages received
         CAN_get_count_for_id_ExpectAnyArgsAndReturn(0);
         // should start out sending command messages so that the MC doesn't immediately time out on power on
-        CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+        CAN_send_message_Expect(FORMULA_MAIN_DBC_M192_COMMAND_MESSAGE_FRAME_ID);
         Brake_is_pressed_ExpectAndReturn(false); // dont press brake
         HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, false); // dont press start button
         MotorController_100Hz();
@@ -48,7 +48,7 @@ void test_MotorController_ready_sequence(void)
     // a transition should be seen into the DISABLED state upon receiving a MC status message
     
     CAN_get_count_for_id_ExpectAnyArgsAndReturn(1);
-    CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+    CAN_send_message_Expect(FORMULA_MAIN_DBC_M192_COMMAND_MESSAGE_FRAME_ID);
     Brake_is_pressed_ExpectAndReturn(true); // press brake
     HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
     MotorController_100Hz();
@@ -60,14 +60,14 @@ void test_MotorController_ready_sequence(void)
 
     // run one more iteration
     CAN_get_count_for_id_ExpectAnyArgsAndReturn(1);
-    CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+    CAN_send_message_Expect(FORMULA_MAIN_DBC_M192_COMMAND_MESSAGE_FRAME_ID);
     Brake_is_pressed_ExpectAndReturn(true); // press brake
     HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
     MotorController_100Hz();
 
     // now run again, the enable bit should flip high to enable MC
     CAN_get_count_for_id_ExpectAnyArgsAndReturn(1);
-    CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+    CAN_send_message_Expect(FORMULA_MAIN_DBC_M192_COMMAND_MESSAGE_FRAME_ID);
     Brake_is_pressed_ExpectAndReturn(true); // press brake
     HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
     MotorController_100Hz();
@@ -81,7 +81,7 @@ void test_MotorController_ready_sequence(void)
     // note that it is still not in the ready state at this point
     CAN_get_count_for_id_ExpectAnyArgsAndReturn(2);
     can_bus.mc_state.d6_inverter_enable_state = 1;
-    CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+    CAN_send_message_Expect(FORMULA_MAIN_DBC_M192_COMMAND_MESSAGE_FRAME_ID);
     Brake_is_pressed_ExpectAndReturn(true); // press brake
     HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
     MotorController_100Hz();
@@ -100,7 +100,7 @@ void test_MotorController_ready_sequence(void)
         }
 
         CAN_get_count_for_id_ExpectAnyArgsAndReturn(can_count);
-        CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+        CAN_send_message_Expect(FORMULA_MAIN_DBC_M192_COMMAND_MESSAGE_FRAME_ID);
         Brake_is_pressed_ExpectAndReturn(true); // press brake
     HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
         MotorController_100Hz();
@@ -109,9 +109,9 @@ void test_MotorController_ready_sequence(void)
     }
 
     // indicate the motor controller is ready. Make sure the vc starts requesting torque afterwards.
-    can_bus.mc_state.d1_vsm_state = main_bus_m170_internal_states_d1_vsm_state_encode(5); // 5 is VSM_READY
+    can_bus.mc_state.d1_vsm_state = formula_main_dbc_m170_internal_states_d1_vsm_state_encode(5); // 5 is VSM_READY
     CAN_get_count_for_id_ExpectAnyArgsAndReturn(can_count);
-    CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+    CAN_send_message_Expect(FORMULA_MAIN_DBC_M192_COMMAND_MESSAGE_FRAME_ID);
     Brake_is_pressed_ExpectAndReturn(true); // press brake
     HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
     MotorController_100Hz();
@@ -125,7 +125,7 @@ void test_MotorController_ready_sequence(void)
 void test_MotorController_disconnect(void)
 {
     // setup the motor controller ready condition
-    can_bus.mc_state.d1_vsm_state = main_bus_m170_internal_states_d1_vsm_state_encode(5); // 5 is VSM_READY
+    can_bus.mc_state.d1_vsm_state = formula_main_dbc_m170_internal_states_d1_vsm_state_encode(5); // 5 is VSM_READY
     can_bus.mc_state.d6_inverter_enable_state = 1; // inverter enabled
 
     int can_count = 0;
@@ -134,7 +134,7 @@ void test_MotorController_disconnect(void)
     for (int i = 0; i < 10; i++)
     {
         CAN_get_count_for_id_ExpectAnyArgsAndReturn(can_count++);
-        CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+        CAN_send_message_Expect(FORMULA_MAIN_DBC_M192_COMMAND_MESSAGE_FRAME_ID);
         Brake_is_pressed_ExpectAndReturn(true); // press brake
         HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
         MotorController_100Hz();
@@ -146,7 +146,7 @@ void test_MotorController_disconnect(void)
     for (int i = 0; i < MC_CAN_TIMEOUT_MS/10 + 10; i++)
     {
         CAN_get_count_for_id_ExpectAnyArgsAndReturn(can_count);
-        CAN_send_message_Expect(MAIN_BUS_M192_COMMAND_MESSAGE_FRAME_ID);
+        CAN_send_message_Expect(FORMULA_MAIN_DBC_M192_COMMAND_MESSAGE_FRAME_ID);
         Brake_is_pressed_ExpectAndReturn(true); // press brake
         HAL_Dio_read_ExpectAndReturn(DIOpin_RTD_BUTTON, true); // press start button
         MotorController_100Hz();

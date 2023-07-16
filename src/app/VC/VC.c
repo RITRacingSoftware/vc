@@ -16,7 +16,7 @@
 #include "TorqueLimiter.h"
 #include "VehicleState.h"
 
-#include "main_bus.h"
+#include "formula_main_dbc.h"
 #include "HAL_Dio.h"
 
 // #define VC_DEBUG
@@ -46,8 +46,8 @@ void VC_100Hz(void)
 
     float brake_on = Brake_is_pressed();
 
-    CAN_send_message(MAIN_BUS_VC_PEDAL_INPUTS_FRAME_ID);
-    CAN_send_message(MAIN_BUS_VC_PEDAL_INPUTS_RAW_FRAME_ID);
+    CAN_send_message(FORMULA_MAIN_DBC_VC_PEDAL_INPUTS_FRAME_ID);
+    CAN_send_message(FORMULA_MAIN_DBC_VC_PEDAL_INPUTS_RAW_FRAME_ID);
 
     // perform dynamic rationality checks on pedal inputs
     APPS_100Hz(&accel_pos, brake_on, is_accelerator_rational);
@@ -60,7 +60,7 @@ void VC_100Hz(void)
 
     // Stop sound triggers that are done triggering
     SoundController_100Hz();
-    CAN_send_message(MAIN_BUS_VC_RTDS_REQUEST_FRAME_ID);
+    CAN_send_message(FORMULA_MAIN_DBC_VC_RTDS_REQUEST_FRAME_ID);
 
     // figure out new vehicle state based on changes this iteration
     VehicleState_100Hz(commanded_torque);
@@ -68,7 +68,7 @@ void VC_100Hz(void)
     // calculate the torque to request based on the accelerator pedal input
     commanded_torque = TorqueConverter_pos_to_torque(accel_pos.average);
 
-    can_bus.vc_pedal_inputs.vc_pedal_inputs_torque_requested = main_bus_vc_pedal_inputs_vc_pedal_inputs_torque_requested_encode(commanded_torque);
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_torque_requested = formula_main_dbc_vc_pedal_inputs_vc_pedal_inputs_torque_requested_encode(commanded_torque);
 
     // limit torque to max torque, or 0 if the system is not ready or faulted
     limited_torque = TorqueLimiter_apply_limit(commanded_torque);
@@ -81,8 +81,8 @@ void VC_100Hz(void)
     MotorController_set_torque(limited_torque);
 
     // send periodic status messages
-    CAN_send_message(MAIN_BUS_VC_FAULT_VECTOR_FRAME_ID);
-    CAN_send_message(MAIN_BUS_VC_STATUS_FRAME_ID);
+    CAN_send_message(FORMULA_MAIN_DBC_VC_FAULT_VECTOR_FRAME_ID);
+    CAN_send_message(FORMULA_MAIN_DBC_VC_STATUS_FRAME_ID);
 
     // Blink heartbeat led
     HeartBeatLed_100Hz();
@@ -90,7 +90,7 @@ void VC_100Hz(void)
 
 void VC_1kHz(void)
 {
-    static struct main_bus_vc_shutdown_status_t status;
+    static struct formula_main_dbc_vc_shutdown_status_t status;
     status.vc_shutdown_status_bms_fault = HAL_Dio_read(DIOpin_BMS_FAULT);
     status.vc_shutdown_status_imd_fault = HAL_Dio_read(DIOpin_IMD_FAULT);
     status.vc_shutdown_status_bspd_fault = HAL_Dio_read(DIOpin_BSPD_FAULT);
@@ -99,5 +99,5 @@ void VC_1kHz(void)
     
     ShutdownMonitor_update(&status);
 
-    // CAN_send_message(MAIN_BUS_VC_SHUTDOWN_STATUS_FRAME_ID);
+    // CAN_send_message(FORMULA_MAIN_DBC_VC_SHUTDOWN_STATUS_FRAME_ID);
 }

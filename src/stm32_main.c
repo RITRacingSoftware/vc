@@ -108,7 +108,7 @@ void hardfault_handler_routine(void)
 
     int task_id = 0;
     // need to add an else if here every time a task is added
-    // the id should line up with the DBC enum definition (bottom of main_bus.dbc)
+    // the id should line up with the DBC enum definition (bottom of formula_main_dbc.dbc)
     if (strcmp(task_name, TASK_100Hz_NAME) == 0)
     {
         task_id = 1;
@@ -129,8 +129,8 @@ void hardfault_handler_routine(void)
 
     uint8_t data[8];
     can_bus.vc_hard_fault_indicator.vc_hard_fault_indicator_task = task_id;
-    main_bus_vc_hard_fault_indicator_pack(data, &can_bus.vc_hard_fault_indicator, 8);
-    HAL_Can_send_message(MAIN_BUS_VC_HARD_FAULT_INDICATOR_FRAME_ID, 8, *((uint64_t*)data)); 
+    formula_main_dbc_vc_hard_fault_indicator_pack(data, &can_bus.vc_hard_fault_indicator, 8);
+    HAL_Can_send_message(FORMULA_MAIN_DBC_VC_HARD_FAULT_INDICATOR_FRAME_ID, 8, *((uint64_t*)data)); 
 }
 
 int main(void)
