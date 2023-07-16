@@ -51,7 +51,7 @@ include_paths = [
     STM32_CMSIS_DIR.Dir('Include'),
     FREERTOS_DIR.Dir('Source/include'),
     FREERTOS_DIR.Dir('Source/portable/ThirdParty/GCC/ARM_CM0'),
-    BUILD_DIR.Dir('formula-main-dbc'),
+    BUILD_DIR.Dir('formula-main-dbc'), # We want to link against formula_main_dbc.h
 ]
 
 app_modules = []
@@ -568,7 +568,7 @@ for source_file in stm32_freertos_source:
     file_name = source_file.abspath.split('/')[-1]
     stm32_objs += stm32_c_env.Object(source=source_file, target=BUILD_DIR.Dir('stm32/libs').Dir(LIBS_DIR.rel_path(source_file.dir)).File(f'{file_name}.o'))
 
-stm32_objs += stm32_c_env.Object(source=SRC_DIR.File('stm32_main.c'), target=SRC_DIR.File('main.stm32.o'))
+stm32_objs += stm32_c_env.Object(source=SRC_DIR.File('stm32_main.c'), target=BUILD_DIR.File('main.stm32.o'))
 
 # build the assembly files with the microcontroller startup routines in them
 startup_src = [
