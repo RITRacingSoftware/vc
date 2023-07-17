@@ -68,18 +68,18 @@ static int pack_message(int id, uint8_t* msg_data)
 
         case FORMULA_MAIN_DBC_VC_DASH_INPUTS_FRAME_ID:
             return formula_main_dbc_vc_dash_inputs_pack(msg_data, &can_bus.vc_dash_inputs, 8);
-        
+
         case FORMULA_MAIN_DBC_VC_SHUTDOWN_STATUS_FRAME_ID:
             return formula_main_dbc_vc_shutdown_status_pack(msg_data, &can_bus.vc_shutdown_status, 8);
-        
+
         case FORMULA_MAIN_DBC_VC_FAULT_VECTOR_FRAME_ID:
             return formula_main_dbc_vc_fault_vector_pack(msg_data, &can_bus.vc_fault_vector, 8);
 
         case FORMULA_MAIN_DBC_VC_RTDS_REQUEST_FRAME_ID:
             return formula_main_dbc_vc_rtds_request_pack(msg_data, &can_bus.vc_request_rtds, 8);
 
-        case FORMULA_MAIN_DBC_M192_COMMAND_MESSAGE_FRAME_ID:
-            return formula_main_dbc_m192_command_message_pack(msg_data, &can_bus.mc_command, 8);
+        case FORMULA_MAIN_DBC_MCU_COMMAND_MESSAGE_FRAME_ID:
+            return formula_main_dbc_mcu_command_message_pack(msg_data, &can_bus.mc_command, 8);
 
         default:
             printf("f29bms: CAN id not suppoted for sending: %d\n", id);
@@ -101,11 +101,11 @@ void CAN_send_message(unsigned long int id)
         can_tx_error = !CanQueue_enqueue(&tx_can_message_queue, &thisMessage);
         #else
         can_tx_error = !xQueueSend(tx_can_message_queue, &thisMessage, 0);
-        if (!can_tx_error) 
+        if (!can_tx_error)
         {
             xSemaphoreGive(can_message_transmit_semaphore);
         }
-        #endif   
+        #endif
     }
     else
     {
@@ -163,10 +163,10 @@ void CAN_process_recieved_messages(void)
         // IMPORTANT: For any CAN messages to be received, the message ID has to be added to the CAN filter in the CAN Driver init function (HAL_Can_init)
         switch(received_message.id)
         {
-            case FORMULA_MAIN_DBC_M170_INTERNAL_STATES_FRAME_ID:
-                formula_main_dbc_m170_internal_states_unpack(&can_bus.mc_state, (uint8_t*)&received_message.data, 8);
+            case FORMULA_MAIN_DBC_MCU_INTERNAL_STATES_FRAME_ID:
+                formula_main_dbc_mcu_internal_states_unpack(&can_bus.mc_state, (uint8_t*)&received_message.data, 8);
                 break;
-            
+
             case FORMULA_MAIN_DBC_PBX_STATUS_FRAME_ID:
                 formula_main_dbc_pbx_status_unpack(&can_bus.pbx_status, (uint8_t*)&received_message.data, 8);
                 break;
@@ -198,7 +198,7 @@ void CAN_send_queued_messages(void)
         else
         {
             break;
-        }   
+        }
         num_free_mailboxes--;
     }
 }

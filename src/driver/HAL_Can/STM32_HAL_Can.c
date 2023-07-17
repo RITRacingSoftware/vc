@@ -65,7 +65,7 @@ void HAL_Can_init(void)
     CAN->IER |= 0x3; //Enable interrupts for FIFO0 message pending and transmit mailbox empty
 
     //CAN messages will only be received if the ID is added to the filter
-    HAL_Can_init_id_filter_16bit(FORMULA_MAIN_DBC_M170_INTERNAL_STATES_FRAME_ID, FORMULA_MAIN_DBC_PBX_STATUS_FRAME_ID, 0x00, 0x00); //initializes IDs for filters
+    HAL_Can_init_id_filter_16bit(FORMULA_MAIN_DBC_MCU_INTERNAL_STATES_FRAME_ID, FORMULA_MAIN_DBC_PBX_STATUS_FRAME_ID, 0x00, 0x00); //initializes IDs for filters
 
     //Enable interrupts for recieve
     NVIC_InitTypeDef nvic_init;

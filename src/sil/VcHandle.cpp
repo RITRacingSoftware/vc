@@ -70,13 +70,13 @@ float get(char* key)
 void inject_mc_state_msg(int state, bool enabled)
 {
     ecusim::CanMsg msg;
-    msg.id = FORMULA_MAIN_DBC_M170_INTERNAL_STATES_FRAME_ID;
+    msg.id = FORMULA_MAIN_DBC_MCU_INTERNAL_STATES_FRAME_ID;
     msg.dlc = 8;
     
-    struct formula_main_dbc_m170_internal_states_t state_data;
+    struct formula_main_dbc_mcu_internal_states_t state_data;
     state_data.d1_vsm_state = state;
     state_data.d6_inverter_enable_state = enabled;
-    formula_main_dbc_m170_internal_states_pack((uint8_t*)msg.data, &state_data, 8);
+    formula_main_dbc_mcu_internal_states_pack((uint8_t*)msg.data, &state_data, 8);
     vc->injectCan(msg);
 }
 

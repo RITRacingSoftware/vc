@@ -34,13 +34,13 @@ void MotorController_init(void)
     state = MCstate_DISCONNECTED;
     state_counter_ms = 0;
     commanded_torque = 0;
-    CAN_begin_counting_id(FORMULA_MAIN_DBC_M170_INTERNAL_STATES_FRAME_ID);
+    CAN_begin_counting_id(FORMULA_MAIN_DBC_MCU_INTERNAL_STATES_FRAME_ID);
     last_checkin_ms = MC_CAN_TIMEOUT_MS + 1;
     last_mc_msg_count = 0;
     can_bus.mc_command.inverter_enable = 1;
     can_bus.mc_command.direction_command = 0; // go forward
     can_bus.mc_command.torque_command = 0;
-    can_bus.mc_command.torque_limit_command = formula_main_dbc_m192_command_message_torque_limit_command_encode(ABSOLUTE_MAX_TORQUE_NM);
+    can_bus.mc_command.torque_limit_command = formula_main_dbc_mcu_command_message_torque_limit_command_encode(ABSOLUTE_MAX_TORQUE_NM);
     can_bus.mc_command.inverter_discharge = 1; // enable discharge
     can_bus.mc_command.speed_command = 0; // just in case
     can_bus.mc_command.speed_mode_enable = 0; // no speed mode
@@ -59,7 +59,7 @@ static void new_state(MCstate_e new_s)
 void MotorController_100Hz(void)
 {
     // calculate the time since last receiving a motor control message
-    int new_count = CAN_get_count_for_id(FORMULA_MAIN_DBC_M170_INTERNAL_STATES_FRAME_ID);
+    int new_count = CAN_get_count_for_id(FORMULA_MAIN_DBC_MCU_INTERNAL_STATES_FRAME_ID);
     if (new_count == last_mc_msg_count)
     {
         last_checkin_ms += 10;
@@ -76,7 +76,7 @@ void MotorController_100Hz(void)
         inputs.mc_messages_seen = true;
         inputs.mc_enabled = can_bus.mc_state.d6_inverter_enable_state;
         // states 5 and 6 are ready and running, respectively
-        int mc_state = formula_main_dbc_m170_internal_states_d1_vsm_state_decode(can_bus.mc_state.d1_vsm_state);
+        int mc_state = formula_main_dbc_mcu_internal_states_d1_vsm_state_decode(can_bus.mc_state.d1_vsm_state);
         inputs.mc_state_ready = mc_state == 5 || mc_state == 6;
     }
     else
@@ -192,13 +192,13 @@ void MotorController_100Hz(void)
     // outputs.mc_ready is used by other modules
 
     // update command message with any torque
-    can_bus.mc_command.torque_command =  formula_main_dbc_m192_command_message_torque_command_encode(commanded_torque);
+    can_bus.mc_command.torque_command =  formula_main_dbc_mcu_command_message_torque_command_encode(commanded_torque);
 
     // send command message
-    CAN_send_message(FORMULA_MAIN_DBC_M192_COMMAND_MESSAGE_FRAME_ID);
+    CAN_send_message(FORMULA_MAIN_DBC_MCU_COMMAND_MESSAGE_FRAME_ID);
 
     // update status CAN message
-    can_bus.vc_status.vc_status_m_cstate = formula_main_dbc_vc_status_vc_status_m_cstate_encode(state);
+    can_bus.vc_status.vc_status_mc_state = formula_main_dbc_vc_status_vc_status_mc_state_encode(state);
 }
 
 /**

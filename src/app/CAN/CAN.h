@@ -36,12 +36,12 @@ typedef struct
     struct formula_main_dbc_vc_dash_inputs_t vc_dash_inputs;
     struct formula_main_dbc_vc_shutdown_status_t vc_shutdown_status;
     struct formula_main_dbc_vc_fault_vector_t vc_fault_vector;
-    struct formula_main_dbc_m192_command_message_t mc_command;
+    struct formula_main_dbc_mcu_command_message_t mc_command;
     struct formula_main_dbc_vc_hard_fault_indicator_t vc_hard_fault_indicator;
     struct formula_main_dbc_vc_rtds_request_t vc_request_rtds;
 
     // things read by the vc
-    struct formula_main_dbc_m170_internal_states_t mc_state;
+    struct formula_main_dbc_mcu_internal_states_t mc_state;
     struct formula_main_dbc_pbx_status_t pbx_status;
 } CAN_BUS;
 
