@@ -5,9 +5,9 @@ from VcHandle import vc, BLF_OUT_DIR
 def test_mc_lost(vc):
     # run for a bit and make sure we start out with no faults
     vc.run_ms(10000)
-    assert vc.signals['VcFaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
-    assert vc.signals['VcFaultVector_APPS_SENSOR_DISAGREEMENT'] == 0
-    assert vc.signals['VcFaultVector_APPS_DOUBLE_PEDAL'] == 0
+    assert vc.signals['VC_FaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
+    assert vc.signals['VC_FaultVector_APPS_SENSOR_DISAGREEMENT'] == 0
+    assert vc.signals['VC_FaultVector_APPS_DOUBLE_PEDAL'] == 0
 
     # run until the VC starts commanding torque
     vc.hold_mc_state(state=5, enabled=1)
@@ -43,9 +43,9 @@ def test_pedal_breakage(vc):
 
     # run for a bit and make sure we start out with no faults
     vc.run_ms(10000)
-    assert vc.signals['VcFaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
-    assert vc.signals['VcFaultVector_APPS_SENSOR_DISAGREEMENT'] == 0
-    assert vc.signals['VcFaultVector_APPS_DOUBLE_PEDAL'] == 0
+    assert vc.signals['VC_FaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
+    assert vc.signals['VC_FaultVector_APPS_SENSOR_DISAGREEMENT'] == 0
+    assert vc.signals['VC_FaultVector_APPS_DOUBLE_PEDAL'] == 0
 
     # run until the VC starts commanding torque
     vc.hold_mc_state(state=5, enabled=1)
@@ -75,11 +75,11 @@ def test_pedal_breakage(vc):
     vc.run_ms(1000)
     print(vc.signals['Torque_Command'])
     assert vc.signals['Torque_Command'] == 0
-    
+
     # make sure the correct fault was thrown
-    assert vc.signals['VcFaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
-    assert vc.signals['VcFaultVector_APPS_SENSOR_DISAGREEMENT'] == 1
-    assert vc.signals['VcFaultVector_APPS_DOUBLE_PEDAL'] == 0
+    assert vc.signals['VC_FaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
+    assert vc.signals['VC_FaultVector_APPS_SENSOR_DISAGREEMENT'] == 1
+    assert vc.signals['VC_FaultVector_APPS_DOUBLE_PEDAL'] == 0
 
 
 def test_double_pedal(vc):
@@ -87,9 +87,9 @@ def test_double_pedal(vc):
 
     # run for a bit and make sure we start out with no faults
     vc.run_ms(10000)
-    assert vc.signals['VcFaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
-    assert vc.signals['VcFaultVector_APPS_SENSOR_DISAGREEMENT'] == 0
-    assert vc.signals['VcFaultVector_APPS_DOUBLE_PEDAL'] == 0
+    assert vc.signals['VC_FaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
+    assert vc.signals['VC_FaultVector_APPS_SENSOR_DISAGREEMENT'] == 0
+    assert vc.signals['VC_FaultVector_APPS_DOUBLE_PEDAL'] == 0
 
     # run until the VC starts commanding torque
     vc.hold_mc_state(state=5, enabled=1)
@@ -103,9 +103,9 @@ def test_double_pedal(vc):
     vc.acc_press(50)
     vc.run_ms(20)
 
-    assert vc.signals['VcFaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
-    assert vc.signals['VcFaultVector_APPS_SENSOR_DISAGREEMENT'] == 0
-    assert vc.signals['VcFaultVector_APPS_DOUBLE_PEDAL'] == 0
+    assert vc.signals['VC_FaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
+    assert vc.signals['VC_FaultVector_APPS_SENSOR_DISAGREEMENT'] == 0
+    assert vc.signals['VC_FaultVector_APPS_DOUBLE_PEDAL'] == 0
     assert vc.signals['Torque_Command'] > 0
 
     # run a bit like dat
@@ -127,8 +127,8 @@ def test_double_pedal(vc):
 
     vc.run_ms(100)
     assert vc.signals['Torque_Command'] == 0
-    
+
     # make sure the correct fault was thrown
-    assert vc.signals['VcFaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
-    assert vc.signals['VcFaultVector_APPS_SENSOR_DISAGREEMENT'] == 0
-    assert vc.signals['VcFaultVector_APPS_DOUBLE_PEDAL'] == 1
+    assert vc.signals['VC_FaultVector_BRAKE_SENSOR_IRRATIONAL'] == 0
+    assert vc.signals['VC_FaultVector_APPS_SENSOR_DISAGREEMENT'] == 0
+    assert vc.signals['VC_FaultVector_APPS_DOUBLE_PEDAL'] == 1
