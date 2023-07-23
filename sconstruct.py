@@ -51,7 +51,7 @@ include_paths = [
     STM32_CMSIS_DIR.Dir('Include'),
     FREERTOS_DIR.Dir('Source/include'),
     FREERTOS_DIR.Dir('Source/portable/ThirdParty/GCC/ARM_CM0'),
-    BUILD_DIR.Dir('formula-main-dbc'), # We want to link against formula_main_dbc.h
+    BUILD_DIR.Dir('common/formula-main-dbc'), # We want to link against formula_main_dbc.h
 ]
 
 app_modules = []
@@ -170,11 +170,11 @@ dbc_env = Environment(
     tools=[TOOL_DBC_CODE_GENERATE]
 )
 
-DBC_BUILD_DIR = BUILD_DIR.Dir("formula-main-dbc", create=True);
+DBC_GEN_DIR = BUILD_DIR.Dir("common/formula-main-dbc", create=True);
 
 dbc_src = dbc_env.GenerateDbcSource(
     source=LIBS_DIR.Dir('formula-main-dbc').File('formula_main_dbc.dbc'),
-    target=[DBC_BUILD_DIR.File('formula_main_dbc.c'), DBC_BUILD_DIR.File('formula_main_dbc.h')]
+    target=[DBC_GEN_DIR.File('formula_main_dbc.c'), DBC_GEN_DIR.File('formula_main_dbc.h')]
 )
 
 Alias('dbc-gen', dbc_src)
@@ -538,6 +538,8 @@ Now onto STM32 compilation stuff.
 The following code compiles application, common, and drive modules for the stm32.
 """
 
+STM32_BUILD_DIR = BUILD_DIR.Dir("stm32", create=True)
+
 # compile all modules into stm32 objects
 
 # Compile stm32 provided hardware libraries
@@ -551,7 +553,7 @@ for module_name, module_dir in app_modules + common_modules + driver_modules:
     else:
         source_file = module_dir.File(f'{module_name}.c')
 
-    build_dir = BUILD_DIR.Dir('stm32').Dir(SRC_DIR.rel_path(module_dir))
+    build_dir = STM32_BUILD_DIR.Dir(SRC_DIR.rel_path(module_dir))
     stm32_objs.append(stm32_c_env.Object(
         source=[source_file],
         target=build_dir.File(f'{module_name}.o')
@@ -566,12 +568,12 @@ stm32_freertos_source.append(FREERTOS_DIR.File('Source/portable/ThirdParty/GCC/A
 
 for source_file in stm32_freertos_source:
     file_name = source_file.abspath.split('/')[-1]
-    stm32_objs += stm32_c_env.Object(source=source_file, target=BUILD_DIR.Dir('stm32/libs').Dir(LIBS_DIR.rel_path(source_file.dir)).File(f'{file_name}.o'))
+    stm32_objs += stm32_c_env.Object(source=source_file, target=STM32_BUILD_DIR.Dir('libs').Dir(LIBS_DIR.rel_path(source_file.dir)).File(f'{file_name}.o'))
 
-stm32_objs += stm32_c_env.Object(source=SRC_DIR.File('stm32_main.c'), target=BUILD_DIR.File('main.stm32.o'))
+stm32_objs += stm32_c_env.Object(source=SRC_DIR.File('stm32_main.c'), target=STM32_BUILD_DIR.File('main.stm32.o'))
 
 # Compile formula_main_dbc.c
-stm32_objs += stm32_c_env.Object(source=DBC_BUILD_DIR.File('formula_main_dbc.c'), target=BUILD_DIR.Dir('stm32/libs/formula-main-dbc').File('formula_main_dbc.o'))
+stm32_objs += stm32_c_env.Object(source=DBC_GEN_DIR.File('formula_main_dbc.c'), target=STM32_BUILD_DIR.Dir('libs/formula-main-dbc').File('formula_main_dbc.o'))
 
 # build the assembly files with the microcontroller startup routines in them
 startup_src = [
@@ -582,7 +584,7 @@ for src in startup_src:
     file_name = src.abspath.split('/')[-1]
     stm32_objs += stm32_c_env.Object(
         source=src,
-        target=BUILD_DIR.Dir('stm32/libs').Dir(LIBS_DIR.rel_path(src.dir)).File(f'{file_name}.o')
+        target=STM32_BUILD_DIR.Dir('libs').Dir(LIBS_DIR.rel_path(src.dir)).File(f'{file_name}.o')
     )
 
 Alias('stm32_objs', stm32_objs)
@@ -590,7 +592,7 @@ Alias('stm32_objs', stm32_objs)
 # stm32 elf generation
 stm32_elf = stm32_c_env.BuildElf(
     source=stm32_objs,
-    target=BUILD_DIR.File('vc.elf')
+    target=STM32_BUILD_DIR.File('vc.elf')
 )
 
 Clean(stm32_elf, BUILD_DIR.File('vc.map'))
@@ -598,7 +600,7 @@ Clean(stm32_elf, BUILD_DIR.File('vc.map'))
 # stm32 hex generation
 vcbin = stm32_c_env.BuildHex(
     source=stm32_elf,
-    target=BUILD_DIR.File('vc.bin')
+    target=STM32_BUILD_DIR.File('vc.bin')
 )
 
 Alias('vc.bin', vcbin)
