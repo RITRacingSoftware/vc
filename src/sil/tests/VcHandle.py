@@ -15,7 +15,7 @@ class VcHandle:
     def __init__(self):
         self.can_db = cantools.database.load_file('libs/formula-main-dbc/formula_main_dbc.dbc')
         self.signals = {}
-        self.handle = ctypes.CDLL('build/g++/sil/tests/libVcHandle.so')
+        self.handle = ctypes.CDLL('build/sim/sil/tests/libVcHandle.so')
         self.handle.get.restype = ctypes.c_float # tell python "get" returns a float
         self.handle.init()
 

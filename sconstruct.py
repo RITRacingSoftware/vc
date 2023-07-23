@@ -170,7 +170,7 @@ dbc_env = Environment(
     tools=[TOOL_DBC_CODE_GENERATE]
 )
 
-DBC_GEN_DIR = BUILD_DIR.Dir("common/formula-main-dbc", create=True);
+DBC_GEN_DIR = BUILD_DIR.Dir("common/formula-main-dbc");
 
 dbc_src = dbc_env.GenerateDbcSource(
     source=LIBS_DIR.Dir('formula-main-dbc').File('formula_main_dbc.dbc'),
@@ -420,15 +420,18 @@ Alias('testrunners', unit_test_execs)
 Simulation module compilation instructions.
 """
 
+SIM_BUILD_DIR = BUILD_DIR.Dir("sim")
+
 # compile all sil modules
 sil_objs = []
 for src_file in Glob(Path(SIL_DIR.abspath) / "*.cpp"):
+    build_dir = SIM_BUILD_DIR.Dir('sil')
+
     obj = linux_cpp_env.Object(
         source=src_file,
         target=build_dir.File(f'{SIL_DIR.rel_path(src_file)}.o')
     )
 
-    build_dir = BUILD_DIR.Dir('g++').Dir('sil')
     sil_objs.append(obj)
 
     # file_name = src_file.abspath.split('/')[-1]
@@ -440,7 +443,7 @@ for src_file in Glob(Path(SIL_DIR.abspath) / "*.cpp"):
 # compile all application modules using g++
 cpp_app_objs = []
 for module_name, module_dir in app_modules:
-    build_dir = BUILD_DIR.Dir('g++').Dir(SRC_DIR.rel_path(module_dir))
+    build_dir = SIM_BUILD_DIR.Dir(SRC_DIR.rel_path(module_dir))
     cpp_app_objs.append(linux_cpp_env.Object(
         source=module_dir.File(f'{module_name}.c'),
         target=build_dir.File(f'{module_name}.o')
@@ -450,7 +453,7 @@ for module_name, module_dir in app_modules:
 # compile all sil driver modules using g++
 cpp_sil_driver_objs = []
 for module_name, module_dir in driver_modules:
-    build_dir = BUILD_DIR.Dir('g++').Dir(SRC_DIR.rel_path(module_dir))
+    build_dir = SIM_BUILD_DIR.Dir(SRC_DIR.rel_path(module_dir))
     cpp_sil_driver_objs.append(linux_cpp_env.Object(
         source=module_dir.File(f'SIL_{module_name}.c'),
         target=build_dir.File(f'SIL_{module_name}.o')
@@ -459,7 +462,7 @@ for module_name, module_dir in driver_modules:
 # compile all common modules using g++
 cpp_common_objs = []
 for module_name, module_dir in common_modules:
-    build_dir = BUILD_DIR.Dir('g++').Dir(SRC_DIR.rel_path(module_dir))
+    build_dir = SIM_BUILD_DIR.Dir(SRC_DIR.rel_path(module_dir))
     cpp_sil_driver_objs.append(linux_cpp_env.Object(
         source=module_dir.File(f'{module_name}.c'),
         target=build_dir.File(f'{module_name}.o')
@@ -473,7 +476,7 @@ ecusim_src_dirs = ecusim['src_dirs']
 
 linux_cpp_env['CPPPATH'] += ecusim_src_dirs
 
-TEST_OUTPUT_DIR = BUILD_DIR.Dir('g++/sil/tests/')
+TEST_OUTPUT_DIR = SIM_BUILD_DIR.Dir('sil/tests/')
 
 # compile smoke test object
 smoke_test_obj = linux_cpp_env.Object(
@@ -481,9 +484,12 @@ smoke_test_obj = linux_cpp_env.Object(
     target=TEST_OUTPUT_DIR.File('smoke_test.o')
 )
 
+# Compile formula_main_dbc.c
+sim_dbc_obj = linux_cpp_env.Object(source=DBC_GEN_DIR.File('formula_main_dbc.c'), target=SIM_BUILD_DIR.Dir('libs/formula-main-dbc').File('formula_main_dbc.o'))
+
 # compile sil main program + link everything together
 smoke_test = linux_cpp_env.Program(
-    source=[smoke_test_obj] + sil_objs + ecusim_objs + cpp_sil_driver_objs + cpp_app_objs,
+    source=[smoke_test_obj] + sil_objs + ecusim_objs + cpp_sil_driver_objs + cpp_app_objs + sim_dbc_obj,
     target=TEST_OUTPUT_DIR.File('smoke_test')
 )
 
@@ -501,7 +507,7 @@ Alias('smoke_test', smoke_test_results)
 # # alternatively, can compile a shared object that can be opened as a python library
 
 py_lib = linux_cpp_env.SharedLibrary(
-    source=sil_objs + ecusim_objs + cpp_sil_driver_objs + cpp_app_objs,
+    source=sil_objs + ecusim_objs + cpp_sil_driver_objs + cpp_app_objs + sim_dbc_obj,
     target=TEST_OUTPUT_DIR.File('libVcHandle.so')
 )
 
@@ -538,7 +544,7 @@ Now onto STM32 compilation stuff.
 The following code compiles application, common, and drive modules for the stm32.
 """
 
-STM32_BUILD_DIR = BUILD_DIR.Dir("stm32", create=True)
+STM32_BUILD_DIR = BUILD_DIR.Dir("stm32")
 
 # compile all modules into stm32 objects
 

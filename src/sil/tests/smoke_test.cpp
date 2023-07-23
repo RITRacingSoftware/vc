@@ -13,7 +13,7 @@ int main(void)
 {
     Simulation sim;
     VcEcu vc;
-    char logFileName[] = "build/smokeTestLogFile.blf";
+    char logFileName[] = "build/sim/smokeTestLogFile.blf";
     CanLogger canLogger(logFileName);
 
     sim.add_ecu(&vc);
