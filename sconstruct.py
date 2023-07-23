@@ -570,6 +570,9 @@ for source_file in stm32_freertos_source:
 
 stm32_objs += stm32_c_env.Object(source=SRC_DIR.File('stm32_main.c'), target=BUILD_DIR.File('main.stm32.o'))
 
+# Compile formula_main_dbc.c
+stm32_objs += stm32_c_env.Object(source=DBC_BUILD_DIR.File('formula_main_dbc.c'), target=BUILD_DIR.Dir('stm32/libs/formula-main-dbc').File('formula_main_dbc.o'))
+
 # build the assembly files with the microcontroller startup routines in them
 startup_src = [
     LIBS_DIR.File('stm32libs/CMSIS/Device/ST/STM32F0xx/Source/Templates/gcc_ride7/startup_stm32f0xx.s'),
