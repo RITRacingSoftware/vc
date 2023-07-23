@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [[ "OSTYPE" == "linux-gnu"* ]]; then
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 	# We are running on linux, need to do users properly
 	docker run \
 		`# Run interactively` \
