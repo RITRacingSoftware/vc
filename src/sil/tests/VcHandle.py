@@ -9,7 +9,7 @@ Python Wrapping of VcHandle.c functions.
 ** Paths here must be relative to vc for builds to work locally and on jenkins.
 """
 
-BLF_OUT_DIR = pathlib.Path("build/sil_test_blfs/")
+BLF_OUT_DIR = pathlib.Path("build/sim/sil_test_blfs/")
 
 class VcHandle:
     def __init__(self):

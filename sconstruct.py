@@ -516,7 +516,7 @@ Alias('vc_handle', py_lib)
 # Now, instructions for running SIL tests
 sil_tests = Glob(Path(SIL_DIR.Dir('tests').abspath) / "test_*.py")
 
-SIL_BLF_DIR = BUILD_DIR.Dir('sil_test_blfs')
+SIL_BLF_DIR = SIM_BUILD_DIR.Dir('sil_test_blfs')
 
 sil_test_results = []
 for test in sil_tests:
