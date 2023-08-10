@@ -4,7 +4,7 @@
 
 [submodule "libs/ecu-sim"]
 	path = libs/ecu-sim
-	url = git@github.com:RITRacingSoftware/ecu-sim.git
+	url = https://github.com/RITRacingSoftware/ecu-sim.git
 [submodule "libs/formula-main-dbc"]
 	path = libs/formula-main-dbc
 	url = https://github.com/RITRacingSoftware/Formula-Main-DBC.git
