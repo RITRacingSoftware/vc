@@ -27,7 +27,7 @@ void HAL_Can_init(void)
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
 
     // setup gpio
-    GPIO_InitTypeDef canGPIOinit; 
+    GPIO_InitTypeDef canGPIOinit;
     canGPIOinit.GPIO_Pin = CAN_PINS;
     canGPIOinit.GPIO_Mode = GPIO_Mode_AF;
     canGPIOinit.GPIO_OType = GPIO_OType_PP;
@@ -38,7 +38,7 @@ void HAL_Can_init(void)
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_4);
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, GPIO_AF_4);
 
-    CAN_DeInit(CAN);  
+    CAN_DeInit(CAN);
     CAN_InitTypeDef canInit;
     CAN_StructInit(&canInit); //Fills in default values.
     canInit.CAN_Mode = CAN_Mode_Normal;
@@ -52,20 +52,20 @@ void HAL_Can_init(void)
     // bxcan and 48mhz clock
     // 1000kbps = car baud rate => CAN_Prescaler = 12
     // 500kbps = charger baud rate => CAN_Prescaler = 6
-    
+
     // 1000kbps
     int prescaler = 3;
- 
+
     canInit.CAN_Prescaler = prescaler;
     canInit.CAN_SJW = CAN_SJW_1tq;
     canInit.CAN_BS1 = CAN_BS1_13tq;
     canInit.CAN_BS2 = CAN_BS2_2tq;
-    
+
     uint8_t ret = CAN_Init(CAN, &canInit);
     CAN->IER |= 0x3; //Enable interrupts for FIFO0 message pending and transmit mailbox empty
 
     //CAN messages will only be received if the ID is added to the filter
-    HAL_Can_init_id_filter_16bit(MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID, MAIN_BUS_PBX_STATUS_FRAME_ID, 0x00, 0x00); //initializes IDs for filters
+    HAL_Can_init_id_filter_16bit(MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID, MAIN_BUS_PBX_STATUS_FRAME_ID, MAIN_BUS_REGEN_CONFIG_COMMAND_FRAME_ID, 0x00); //initializes IDs for filters
 
     //Enable interrupts for recieve
     NVIC_InitTypeDef nvic_init;
@@ -120,7 +120,7 @@ Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data)
     msg.StdId = id;
     msg.ExtId = id;
     if (id > 0x7FF)
-    { 
+    {
         msg.IDE = CAN_Id_Extended;
     }
     else
@@ -137,7 +137,7 @@ Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data)
 
     *((uint64_t*)msg.Data) = data;
 
-    CAN_Transmit(CAN, &msg); 
+    CAN_Transmit(CAN, &msg);
 
     Error_t error;
 
@@ -197,8 +197,8 @@ void HAL_Can_IRQ_handler(void)
         if(!CAN_is_transmit_queue_empty_fromISR())
         {
             BaseType_t ret = pdFALSE;
-            xSemaphoreGiveFromISR(can_message_transmit_semaphore, &ret);  
-            
+            xSemaphoreGiveFromISR(can_message_transmit_semaphore, &ret);
+
             portYIELD_FROM_ISR( ret );
         }
     }

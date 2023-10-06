@@ -43,6 +43,7 @@ typedef struct
     // things read by the vc
     struct main_bus_m170_internal_states_t mc_state;
     struct main_bus_pbx_status_t pbx_status;
+	struct main_bus_regen_config_command_t regen_config;
 } CAN_BUS;
 
 extern CAN_BUS can_bus;

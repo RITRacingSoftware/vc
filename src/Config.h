@@ -6,7 +6,7 @@
  */
 
 // any bits set in this won't get set in the fault vector
-#define DISABLE_FAULT_MASK (0) 
+#define DISABLE_FAULT_MASK (0)
 
 /**
  * Motor Controller Interface
@@ -21,6 +21,11 @@
 
 // If the motor controller isn't unlocked on the first attempt, this is how long to wait before trying again.
 #define UNLOCK_ATTEMPT_TIMEOUT_MS 500
+
+/**
+ * Torque Conversion (pedal position -> torque transfer function)
+ */
+#define MIN_TORQUE_NM -40.0
 
 /**
  * Torque Conversion (pedal position -> torque transfer function)
@@ -99,7 +104,7 @@
 #define APS_A_IRRATIONAL_V 0.12 //Anything below this is considered irrational (open/ not connected)
 
 #define APS_B_SENSOR_V 1.78
-#define APS_B_OFFSET_V 0.14 
+#define APS_B_OFFSET_V 0.14
 #define APS_B_SENSOR_RANGE_V (APS_B_SENSOR_V - APS_B_OFFSET_V)
 #define APS_B_IRRATIONAL_V 0.10 //Anything below this is considered irrational (open/not connected)
 

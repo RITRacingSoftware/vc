@@ -51,6 +51,9 @@ void CAN_init(void)
         id_counts[i].count = 0;
         id_counts[i].id = -1;
     }
+
+	// Default regen to 10 (this value is divided by 10 later)
+	can_bus.regen_config.regen_torque = 100;
 }
 
 static int pack_message(int id, uint8_t* msg_data)
@@ -68,10 +71,10 @@ static int pack_message(int id, uint8_t* msg_data)
 
         case MAIN_BUS_VC_DASH_INPUTS_FRAME_ID:
             return main_bus_vc_dash_inputs_pack(msg_data, &can_bus.vc_dash_inputs, 8);
-        
+
         case MAIN_BUS_VC_SHUTDOWN_STATUS_FRAME_ID:
             return main_bus_vc_shutdown_status_pack(msg_data, &can_bus.vc_shutdown_status, 8);
-        
+
         case MAIN_BUS_VC_FAULT_VECTOR_FRAME_ID:
             return main_bus_vc_fault_vector_pack(msg_data, &can_bus.vc_fault_vector, 8);
 
@@ -101,11 +104,11 @@ void CAN_send_message(unsigned long int id)
         can_tx_error = !CanQueue_enqueue(&tx_can_message_queue, &thisMessage);
         #else
         can_tx_error = !xQueueSend(tx_can_message_queue, &thisMessage, 0);
-        if (!can_tx_error) 
+        if (!can_tx_error)
         {
             xSemaphoreGive(can_message_transmit_semaphore);
         }
-        #endif   
+        #endif
     }
     else
     {
@@ -166,10 +169,14 @@ void CAN_process_recieved_messages(void)
             case MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID:
                 main_bus_m170_internal_states_unpack(&can_bus.mc_state, (uint8_t*)&received_message.data, 8);
                 break;
-            
+
             case MAIN_BUS_PBX_STATUS_FRAME_ID:
                 main_bus_pbx_status_unpack(&can_bus.pbx_status, (uint8_t*)&received_message.data, 8);
                 break;
+
+			case MAIN_BUS_REGEN_CONFIG_COMMAND_FRAME_ID:
+				main_bus_regen_config_command_unpack(&can_bus.regen_config, (uint8_t*)&received_message.data, 8);
+				break;
 
             default:
                 // printf("f29bms: unknown CAN id: %d\n", received_message.id);
@@ -198,7 +205,7 @@ void CAN_send_queued_messages(void)
         else
         {
             break;
-        }   
+        }
         num_free_mailboxes--;
     }
 }

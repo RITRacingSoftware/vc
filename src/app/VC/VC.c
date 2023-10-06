@@ -70,8 +70,13 @@ void VC_100Hz(void)
 
     can_bus.vc_pedal_inputs.vc_pedal_inputs_torque_requested = main_bus_vc_pedal_inputs_vc_pedal_inputs_torque_requested_encode(commanded_torque);
 
+    bool regen_button_pressed = HAL_Dio_read(DIOpin_REGEN_BUTTON);
+	float regen_configured_torque = can_bus.regen_config.regen_torque * 0.1;
+    float regen_requested = regen_button_pressed ? regen_configured_torque : 0.0;
+    float torque_minus_regen = commanded_torque - regen_requested;
+
     // limit torque to max torque, or 0 if the system is not ready or faulted
-    limited_torque = TorqueLimiter_apply_limit(commanded_torque);
+    limited_torque = TorqueLimiter_apply_limit(torque_minus_regen);
 
 #ifdef VC_DEBUG
     printf("Position: %f, Commanded: %f, Limited: %f\r\n", accel_pos.average, commanded_torque, limited_torque);
@@ -96,7 +101,7 @@ void VC_1kHz(void)
     status.vc_shutdown_status_bspd_fault = HAL_Dio_read(DIOpin_BSPD_FAULT);
     status.vc_shutdown_status_bspd_signal_lost = HAL_Dio_read(DIOpin_BSPD_SIGNAL_LOST);
     status.vc_shutdown_status_precharge = HAL_Dio_read(DIOpin_PRECHARGE);
-    
+
     ShutdownMonitor_update(&status);
 
     // CAN_send_message(MAIN_BUS_VC_SHUTDOWN_STATUS_FRAME_ID);

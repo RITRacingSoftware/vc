@@ -9,7 +9,7 @@ float TorqueLimiter_apply_limit(float commanded_torque)
     if (VehicleState_allow_torque())
     {
         // saturate to absolute max
-        return SAT(commanded_torque, 0, MAX_TORQUE_NM);
+        return SAT(commanded_torque, MIN_TORQUE_NM, MAX_TORQUE_NM);
     }
     else
     {

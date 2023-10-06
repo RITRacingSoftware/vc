@@ -1,6 +1,6 @@
 VERSION ""
 
-NS_ : 
+NS_ :
 	NS_DESC_
 	CM_
 	BA_DEF_
@@ -25,6 +25,9 @@ NS_ :
 BS_:
 
 BU_: Bms INV U2C VCU PBX
+
+BO_ 1 RegenConfigCommand: 8 Vector__XXX
+ SG_ RegenTorque : 0|16@1- (0.1,0) [-3276.7|3276.7] "Nm" Vector__XXX
 
 BO_ 173 M173_Modulation_And_Flux_Info: 8 INV
  SG_ D4_Iq_Command : 48|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX
@@ -221,7 +224,7 @@ BO_ 311 VcFaultVector: 8 VCU
  SG_ VcFaultVector_BRAKE_SENSOR_IRRATIONAL: 0|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ VcFaultVector_APPS_SENSOR_DISAGREEMENT: 1|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ VcFaultVector_APPS_DOUBLE_PEDAL: 2|1@1+ (1,0) [0|1] "" Vector__XXX
- 
+
 BO_ 315 VcHardFaultIndicator: 8 Vc
  SG_ VcHardFaultIndicator_task: 0|4@1+ (1,0) [0|15] "" Vector__XXX
 
@@ -540,5 +543,3 @@ VAL_ 192 Direction_Command 0 "CW" 1 "CCW" ;
 VAL_ 192 Inverter_Discharge 0 "Discharge Disable" 1 "Discharge Enable (if EEPROM parameter is set)" ;
 VAL_ 170 D2_Inverter_State 0 "Power up" 1 "Stop" 2 "Open Loop" 3 "Closed Loop" 4 "Internal State" 5 "Internal State" 6 "Internal State" 7 "Internal State" 8 "Idle Run" 9 "Idle Stop" 10 "Internal State" 11 "Intern State" 12 "Internal State" ;
 VAL_ 170 D1_VSM_State 0 "VSM Start State" 1 "Pre-Charge Init state" 2 "pre-charge active state" 3 "pre-charge complete state" 4 "VSM wait state" 5 "VSM ready state" 6 "Motor Running State" 7 "blink fault code state" 14 "Shutdown state for Key Switch Mode 1" 15 "Reset the inverter" ;
-
-

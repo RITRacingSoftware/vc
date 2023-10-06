@@ -18,7 +18,7 @@ DIOconfig configs[DIOpin_NUM] = {
     {DIOpin_SOUND_5, GPIOB, {BIT(8), GPIO_Mode_OUT, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
     {DIOpin_SOUND_6, GPIOB, {BIT(9), GPIO_Mode_OUT, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
     {DIOpin_SWITCH_1, GPIOA, {BIT(6), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
-    {DIOpin_SWITCH_2, GPIOA, {BIT(7), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}}, 
+    {DIOpin_SWITCH_2, GPIOA, {BIT(7), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
     {DIOpin_RTD_BUTTON, GPIOA, {BIT(8), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
     {DIOpin_SWITCH_3, GPIOA, {BIT(9), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
     {DIOpin_BMS_FAULT, GPIOA, {BIT(1), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
@@ -27,6 +27,7 @@ DIOconfig configs[DIOpin_NUM] = {
     {DIOpin_BSPD_SIGNAL_LOST, GPIOC, {BIT(0), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
     {DIOpin_PRECHARGE, GPIOB, {BIT(1), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
     {DIOpin_STATUS_LED, GPIOB, {BIT(12), GPIO_Mode_OUT, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
+    {DIOpin_REGEN_BUTTON, GPIOB, {BIT(15), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
 };
 
 DIOconfig* config_from_id(DIOpin_e id)
@@ -62,7 +63,7 @@ bool HAL_Dio_read(DIOpin_e pin)
 void HAL_Dio_write(DIOpin_e pin, bool val)
 {
     DIOconfig* config = config_from_id(pin);
-    
+
     if (val)
     {
         GPIO_SetBits(config->port, config->init.GPIO_Pin);
