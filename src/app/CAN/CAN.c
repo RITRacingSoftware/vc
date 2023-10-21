@@ -174,6 +174,14 @@ void CAN_process_recieved_messages(void)
                 main_bus_pbx_status_unpack(&can_bus.pbx_status, (uint8_t*)&received_message.data, 8);
                 break;
 
+            case MAIN_BUS_M165_MOTOR_POSITION_INFO_FRAME_ID:
+                main_bus_m165_motor_position_info_unpack(&can_bus.motor_pos, (uint8_t*)&received_message.data, 8);
+                break;
+
+            case MAIN_BUS_BMS_VOLTAGES_FRAME_ID:
+                main_bus_bms_voltages_unpack(&can_bus.bms_voltages, (uint8_t*)&received_message.data, 8);
+                break;
+
 			case MAIN_BUS_REGEN_CONFIG_COMMAND_FRAME_ID:
 				main_bus_regen_config_command_unpack(&can_bus.regen_config, (uint8_t*)&received_message.data, 8);
 				break;
