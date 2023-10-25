@@ -23,8 +23,8 @@ typedef enum {
     // DIOpin_IMD2_INPUT,
     // DIOpin_IMD2_LATCH,
     DIOpin_STATUS_LED,
-    DIOpin_NUM,
     DIOpin_REGEN_BUTTON,
+    DIOpin_NUM,
 } DIOpin_e;
 
 /**

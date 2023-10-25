@@ -178,7 +178,7 @@ void VC_100Hz(void)
     bool regen_button_pressed = HAL_Dio_read(DIOpin_REGEN_BUTTON);
 
     // Don't regen below 5 km/h
-    double wheel_speed = can_bus.motor_pos.d2_motor_speed * RPM_TO_KMPH;
+    double wheel_speed = -can_bus.motor_pos.d2_motor_speed * RPM_TO_KMPH;
     bool wheel_speed_high = wheel_speed > 5.0;
 
     // When button is initially pressed, save highest cell voltage
@@ -193,8 +193,9 @@ void VC_100Hz(void)
     bool cells_low_enough = max_voltage_at_regen_enable <= 4.1;
 
     // Require all 3 criteria to regen
-    bool should_regen = regen_button_pressed & wheel_speed_high & cells_low_enough;
+    bool should_regen = regen_button_pressed && wheel_speed_high && cells_low_enough;
 
+    // If criteria are met, subtract configured torque from commanded
 	float regen_configured_torque = can_bus.regen_config.regen_torque * 0.1;
     float regen_requested = should_regen ? regen_configured_torque : 0.0;
     float torque_minus_regen = commanded_torque - regen_requested;
