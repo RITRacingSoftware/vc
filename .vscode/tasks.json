@@ -1,0 +1,69 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Setup",
+			"type": "shell",
+			"command": "./scripts/setup.sh",
+			"windows": {
+				"command": ".\\scripts\\setup.cmd"
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Build",
+			"type": "shell",
+			"command": "./scripts/run-in-docker.sh ./scripts/build.sh",
+			"windows": {
+				"command": ".\\scripts\\run-in-docker.cmd ./scripts/build.sh"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Unit Tests",
+			"type": "shell",
+			"command": "./scripts/run-in-docker.sh scons -j4 unit_tests",
+			"windows": {
+				"command": ".\\scripts\\run-in-docker.cmd scons -j4 unit_tests"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "SIL Tests",
+			"type": "shell",
+			"command": "./scripts/run-in-docker.sh scons -j4 sil",
+			"windows": {
+				"command": ".\\scripts\\run-in-docker.cmd scons -j4 sil"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		}
+	]
+}

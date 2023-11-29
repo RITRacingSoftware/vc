@@ -1,2 +1,2 @@
 git submodule update --init --recursive
-docker build . -t ssdb
+docker build . -t vc

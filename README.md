@@ -1,24 +1,27 @@
 # RIT Formula SAE Vehicle Controller
 
 ## Requirements
-- [Docker](https://www.docker.com/) is used to build anywhere
 - [Git](https://git-scm.com/) is used to download dependencies
+- [Docker](https://www.docker.com/) is used to build anywhere
+  - [Docker Desktop](https://docs.docker.com/desktop) is recommended on Windows and Mac OS
+- [VS Code](https://code.visualstudio.com) is recommended for editing code.
 
-## Building Everything/Running all tests
-Once docker is installed, use `setup.sh` to build the docker image. This only needs to be done once.
+## Setup
+Once docker is installed and running, click `Terminal -> Run Task -> Setup` to build the docker image. If running from a linux terminal, execute `scripts/setup.sh` from the project's root directory. This only needs to be done once.
 
-From now on, use `enter-docker.sh` to get a shell in the docker container and run `build.sh` to run the firmware build.
+## Compilation
+Click `Terminal -> Run Build Task` to compile the code.
 
 ## Testing
 Two types of tests exist for the codebase: Unit Testing, and Software in the Loop (SIL) testing.
 
-Unit tests validate single modules, using CMock to mock out dependencies.
+Unit tests validate single modules, using CMock to mock out dependencies. To run unit tests, click `Terminal -> Run Task -> Unit Tests`.
 
 SIL tests build vc for linux and run it in a child process.
-Python tests using a sockets interface feed the program input and validate its output.
+Python tests using a sockets interface feed the program input and validate its output. To run SIL tests, click `Terminal -> Run Task -> SIL Tests`.
 
 ## Building Specific Targets
-Use `enter-docker.sh` to get a shell inside the f29bms docker container.
+Click `Terminal -> Run Task -> Enter Container` or execute `scripts/enter-docker.sh` to get a shell inside the docker container.
 
 Specific targets can be built using SCons commands from the docker container shell:
 - `scons vc.bin`
