@@ -174,6 +174,9 @@ void VC_100Hz(void)
 
     can_bus.vc_pedal_inputs.vc_pedal_inputs_torque_requested = main_bus_vc_pedal_inputs_vc_pedal_inputs_torque_requested_encode(commanded_torque);
 
+    // Get front brake pressure in PSI
+    double front_brake_pressure = main_bus_c70_brake_pressures_brake_pressure_front_decode(can_bus.brake_pressures.brake_pressure_front);
+
     // Only regen if button pressed
     bool regen_button_pressed = HAL_Dio_read(DIOpin_REGEN_BUTTON);
 

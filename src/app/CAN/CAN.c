@@ -186,6 +186,10 @@ void CAN_process_recieved_messages(void)
 				main_bus_regen_config_command_unpack(&can_bus.regen_config, (uint8_t*)&received_message.data, 8);
 				break;
 
+            case MAIN_BUS_C70_BRAKE_PRESSURES_FRAME_ID:
+                main_bus_c70_brake_pressures_unpack(&can_bus.brake_pressures, (uint8_t*)&received_message.data, 8);
+                break;
+
             default:
                 // printf("f29bms: unknown CAN id: %d\n", received_message.id);
                 break;

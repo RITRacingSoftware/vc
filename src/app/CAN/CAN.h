@@ -46,6 +46,7 @@ typedef struct
     struct main_bus_m165_motor_position_info_t motor_pos;
     struct main_bus_bms_voltages_t bms_voltages;
 	struct main_bus_regen_config_command_t regen_config;
+    struct main_bus_c70_brake_pressures_t brake_pressures;
 } CAN_BUS;
 
 extern CAN_BUS can_bus;

@@ -29,6 +29,16 @@ BU_: Bms INV U2C VCU PBX
 BO_ 1 RegenConfigCommand: 8 Vector__XXX
  SG_ RegenTorque : 0|16@1- (0.1,0) [-3276.7|3276.7] "Nm" Vector__XXX
 
+BO_ 1791 C70_BrakePressures: 8 C70
+ SG_ BrakePressureFront : 0|16@1- (0.2,1250) [0|2500] "psi" Vector__XXX
+ SG_ BrakePressureRear : 16|16@1- (0.2,1250) [0|2500] "psi" Vector__XXX
+
+BO_ 1790 C70_WheelSpeeds: 8 C70
+ SG_ WheelSpeed_FL : 0|16@1- (1,0) [0|65536] "" C70
+ SG_ WheelSpeed_FR : 16|16@1- (1,0) [0|65536] "" C70
+ SG_ WheelSpeed_RL : 32|16@1- (1,0) [0|65536] "" C70
+ SG_ WheelSpeed_RR : 48|16@1- (1,0) [0|65536] "" C70
+
 BO_ 173 M173_Modulation_And_Flux_Info: 8 INV
  SG_ D4_Iq_Command : 48|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX
  SG_ D3_Id_Command : 32|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX

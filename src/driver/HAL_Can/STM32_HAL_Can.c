@@ -66,7 +66,7 @@ void HAL_Can_init(void)
 
     //CAN messages will only be received if the ID is added to the filter
     HAL_Can_init_id_filter_16bit(MAIN_BUS_M170_INTERNAL_STATES_FRAME_ID, MAIN_BUS_PBX_STATUS_FRAME_ID, MAIN_BUS_M165_MOTOR_POSITION_INFO_FRAME_ID, MAIN_BUS_BMS_VOLTAGES_FRAME_ID); //initializes IDs for filters
-    HAL_Can_init_id_filter_16bit(MAIN_BUS_REGEN_CONFIG_COMMAND_FRAME_ID, 0x00, 0x00, 0x00);
+    HAL_Can_init_id_filter_16bit(MAIN_BUS_REGEN_CONFIG_COMMAND_FRAME_ID, MAIN_BUS_C70_BRAKE_PRESSURES_FRAME_ID, 0x00, 0x00);
 
     //Enable interrupts for recieve
     NVIC_InitTypeDef nvic_init;
