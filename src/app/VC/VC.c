@@ -30,6 +30,7 @@ const static double RPM_TO_KMPH = 0.021066264;
 
 static bool regen_button_last;
 static float max_voltage_at_regen_enable;
+static bool is_motor_fast_regen = false;
 
 void VC_init(void)
 {
@@ -175,16 +176,20 @@ void VC_100Hz(void)
     can_bus.vc_pedal_inputs.vc_pedal_inputs_torque_requested = main_bus_vc_pedal_inputs_vc_pedal_inputs_torque_requested_encode(commanded_torque);
 
     // Get front brake pressure in PSI
+    //lower bound 50-80 upper ~2000
     double front_brake_pressure = main_bus_c70_brake_pressures_brake_pressure_front_decode(can_bus.brake_pressures.brake_pressure_front);
 
     // Only regen if button pressed
     bool regen_button_pressed = HAL_Dio_read(DIOpin_REGEN_BUTTON);
 
-    // Don't regen below 5 km/h
+
     double wheel_speed = -can_bus.motor_pos.d2_motor_speed * RPM_TO_KMPH;
-    bool wheel_speed_high = wheel_speed > 5.0;
+
+    float min_regen_wheel_speed = 10;
+
 
     // When button is initially pressed, save highest cell voltage
+    // kill this maybe?
     if (!regen_button_last && regen_button_pressed) {
         float max_cell_voltage = highest_cell(&can_bus.bms_voltages);
         max_voltage_at_regen_enable = max_cell_voltage;
@@ -195,13 +200,55 @@ void VC_100Hz(void)
     // Read voltage from when button was pressed to prevent nasty oscillations
     bool cells_low_enough = max_voltage_at_regen_enable <= 4.1;
 
-    // Require all 3 criteria to regen
-    bool should_regen = regen_button_pressed && wheel_speed_high && cells_low_enough;
+    //Is the motor fast enough for regen
+   
 
-    // If criteria are met, subtract configured torque from commanded
+    if(!is_motor_fast_regen){
+        if(wheel_speed > min_regen_wheel_speed){
+            is_motor_fast_regen = true;
+        }
+    }
+
+    if(is_motor_fast_regen){
+        if(wheel_speed < min_regen_speed_kph){
+            is_motor_fast_regen = false;
+        }
+    }
+
+    // Require all 3 criteria to regen
+    bool should_regen = regen_button_pressed && cells_low_enough && is_motor_fast_regen;
+
+    /* If criteria are met, subtract configured torque from commanded
 	float regen_configured_torque = can_bus.regen_config.regen_torque * 0.1;
     float regen_requested = should_regen ? regen_configured_torque : 0.0;
-    float torque_minus_regen = commanded_torque - regen_requested;
+    */
+
+    //THe Max torque Limit to ensure the cells charge
+    float upper_torque_limit = 40;
+    //The lowest pressure required for regen 50 might be placeholder?
+    float lower_pressure_limit = 50;
+    //the highest threshold of pressure for the car to regen 2000 might be placeholder?
+    float upper_pressure_limit = 2000;
+    //the convertion rate for brake pressure to torque
+    float torque_psi_convert = upper_torque_limit/upper_pressure_limit;
+    //the torque sent back for regen
+    float regen_requested = 0.0;
+
+    //Check if the break pressure is above the regen limit
+    if(front_brake_pressure > lower_pressure_limit ){
+        if(front_brake_pressure > upper_pressure_limit){
+            regen_requested = upper_torque_limit;
+        }
+        else{
+            regen_requested = (front_brake_pressure - lower_pressure_limit) * torque_psi_convert;
+        }
+    }
+
+    float torque_minus_regen = commanded_torque;
+    //If regen conditons are met, then the torque will have the regen torque subtracted
+    if (should_regen){
+        torque_minus_regen -= regen_requested;
+    }
 
     // limit torque to max torque, or 0 if the system is not ready or faulted
     limited_torque = TorqueLimiter_apply_limit(torque_minus_regen);
