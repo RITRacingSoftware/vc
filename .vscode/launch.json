@@ -1,0 +1,18 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "gdb",
+			"name": "Attach debug",
+			"request": "attach",
+			"executable": "./build/stm32/vc.elf",
+			"target": ":3333",
+			"remote": true,
+			"cwd": "${workspaceRoot}",
+			"gdbpath": "arm-none-eabi-gdb"
+			//"autorun": [
+			//	"target extended-remote localhost:3333"
+			//]
+		}
+	]
+}

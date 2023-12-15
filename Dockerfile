@@ -22,7 +22,8 @@ git \
 cmake \
 doxygen \
 gdb-multiarch \
-graphviz && \
+graphviz \
+openocd && \
 rm -rf /var/lib/apt/lists/*
 
 # Install vector blf libs (https://bitbucket.org/tobylorenz/vector_blf)

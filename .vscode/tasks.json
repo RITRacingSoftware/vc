@@ -64,6 +64,40 @@
 				"panel": "new"
 			},
 			"problemMatcher": []
+		},
+		{
+			"label": "Flash to STM32",
+			"type": "shell",
+			"command": "./scripts/run-in-docker.sh ./scripts/flash.sh \"--privileged\"",
+			"windows": {
+				"command": ".\\scripts\\run-in-docker.cmd ./scripts/flash.sh \"--privileged\""
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Flash + Remote Debug",
+			"type": "shell",
+			"command": "./scripts/run-in-docker.sh ./scripts/flash-debug.sh \"-p 127.0.0.1:3333:3333 --privileged\"",
+			"windows": {
+				"command": ".\\scripts\\run-in-docker.cmd ./scripts/flash-debug.sh \"-p 127.0.0.1:3333:3333 --privileged\""
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
 		}
 	]
 }

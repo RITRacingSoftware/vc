@@ -4,7 +4,11 @@
 - [Git](https://git-scm.com/) is used to download dependencies
 - [Docker](https://www.docker.com/) is used to build anywhere
   - [Docker Desktop](https://docs.docker.com/desktop) is recommended on Windows and Mac OS
+- [Arm GNU Toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
+  - For Windows, select `Windows (mingw-w64-i686) hosted cross toolchains` -> `AArch32 bare-metal target (arm-none-eabi)`
 - [VS Code](https://code.visualstudio.com) is recommended for editing code.
+  - [C/C++ Extension](https://github.com/microsoft/vscode-cpptools)
+  - [Native Debug Extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug)
 
 ## Setup
 Once docker is installed and running, click `Terminal -> Run Task -> Setup` to build the docker image. If running from a linux terminal, execute `scripts/setup.sh` from the project's root directory. This only needs to be done once.
