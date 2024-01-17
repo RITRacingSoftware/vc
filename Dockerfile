@@ -4,9 +4,6 @@ USER root
 
 WORKDIR /vc
 
-# Move everything in the vc folder to the docker container file system
-COPY . /vc/
-
 # disable prompts during apt-get
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -25,6 +22,9 @@ cmake \
 doxygen \
 gdb-multiarch \
 graphviz
+
+# Move everything in the vc folder to the docker container file system
+COPY . /vc/
 
 RUN cd libs/ecu-sim/libs/vector_blf && touch LICENSE.GPL-3.0 && mkdir -p build && cd build && cmake .. && make && make install DESTDIR=.. && make install && /usr/sbin/ldconfig
 
