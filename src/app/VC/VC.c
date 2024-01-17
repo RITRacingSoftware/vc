@@ -185,7 +185,11 @@ void VC_100Hz(void)
 
     double wheel_speed = -can_bus.motor_pos.d2_motor_speed * RPM_TO_KMPH;
 
+    // The upper wheel speed to re-enter regen
     float min_regen_wheel_speed = 10;
+    //the min wheel speed to stop regen
+    float min_regen_wheel_speed_again = 5;
+    
 
 
     // When button is initially pressed, save highest cell voltage
@@ -202,15 +206,16 @@ void VC_100Hz(void)
 
     //Is the motor fast enough for regen
    
-
+    //If the motor is not fast enough, check if the wheel speed is fast enough to enter regen again
     if(!is_motor_fast_regen){
         if(wheel_speed > min_regen_wheel_speed){
             is_motor_fast_regen = true;
         }
     }
 
+    //If the motor is in regen state, check if the wheel speed drops below the minimum regulated value
     if(is_motor_fast_regen){
-        if(wheel_speed < min_regen_speed_kph){
+        if(wheel_speed < min_regen_wheel_speed_again){
             is_motor_fast_regen = false;
         }
     }
@@ -230,7 +235,7 @@ void VC_100Hz(void)
     //the highest threshold of pressure for the car to regen 2000 might be placeholder?
     float upper_pressure_limit = 2000;
     //the convertion rate for brake pressure to torque
-    float torque_psi_convert = upper_torque_limit/upper_pressure_limit;
+    float torque_psi_convert = upper_torque_limit/(upper_pressure_limit-lower_pressure_limit);
     //the torque sent back for regen
     float regen_requested = 0.0;
 
