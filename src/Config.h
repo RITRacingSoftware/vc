@@ -37,6 +37,20 @@
 #define ACC_LOWER_DEADZONE_PERCENT 5.0
 #define ACC_UPPER_DEADZONE_PERCENT 5.0
 
+
+/**
+ * Regen calculations
+*/
+// Minimum speed to regen at, in km/h
+#define REGEN_MIN_SPEED 5.0
+
+// Minimum speed to start regenerating, in km/h
+#define REGEN_ACTIVATE_SPEED 10.0
+
+// Highest cell voltage to allow regen at, in V
+#define REGEN_MAX_VOLTS 4.1
+
+
 /**
  * APPS
  */
