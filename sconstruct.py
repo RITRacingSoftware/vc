@@ -28,8 +28,8 @@ SIL_DIR = SRC_DIR.Dir('sil')
 SIL_TESTS_DIR = SIL_DIR.Dir('tests')
 BUILD_DIR = REPO_ROOT_DIR.Dir('build', create=True)
 LIBS_DIR = REPO_ROOT_DIR.Dir('libs')
-STM32_LIB_DIR = LIBS_DIR.Dir('stm32libs/STM32F0xx_StdPeriph_Driver')
-STM32_CMSIS_DIR = LIBS_DIR.Dir('stm32libs/CMSIS')
+STM32_LIB_DIR = LIBS_DIR.Dir('stm32g4xx_hal_driver')
+STM32_CMSIS_DIR = LIBS_DIR.Dir('cmsis_device_g4')
 FREERTOS_DIR = LIBS_DIR.Dir("FreeRTOS")
 
 LINKER_FILE = REPO_ROOT_DIR.File('STM32G473RETx_FLASH.ld')
@@ -46,8 +46,7 @@ include_paths = [
     LIBS_DIR.Dir('cmock/src'),
     LIBS_DIR.Dir('cmock/vendor/unity/src'),
     LIBS_DIR.Dir('vector_blf/src/'),
-    STM32_LIB_DIR.Dir('inc'),
-    STM32_CMSIS_DIR.Dir('Device/ST/STM32F0xx/Include'),
+    STM32_LIB_DIR.Dir('Inc'),
     STM32_CMSIS_DIR.Dir('Include'),
     FREERTOS_DIR.Dir('Source/include'),
     FREERTOS_DIR.Dir('Source/portable/ThirdParty/GCC/ARM_CM0'),
@@ -583,8 +582,8 @@ stm32_objs += stm32_c_env.Object(source=DBC_GEN_DIR.File('formula_main_dbc.c'), 
 
 # build the assembly files with the microcontroller startup routines in them
 startup_src = [
-    LIBS_DIR.File('stm32libs/CMSIS/Device/ST/STM32F0xx/Source/Templates/gcc_ride7/startup_stm32f0xx.s'),
-    LIBS_DIR.File('stm32libs/CMSIS/Device/ST/STM32F0xx/Source/Templates/system_stm32f0xx.c')
+    STM32_CMSIS_DIR.File('Source/Templates/gcc/startup_stm32g473xx.s'),
+    STM32_CMSIS_DIR.File('Source/Templates/system_stm32g4xx.c')
 ]
 for src in startup_src:
     file_name = src.abspath.split('/')[-1]
