@@ -8,3 +8,9 @@
 [submodule "libs/formula-main-dbc"]
 	path = libs/formula-main-dbc
 	url = https://github.com/RITRacingSoftware/Formula-Main-DBC.git
+[submodule "libs/cmsis_device_g4"]
+	path = libs/cmsis_device_g4
+	url = https://github.com/STMicroelectronics/cmsis_device_g4
+[submodule "libs/stm32g4xx_hal_driver"]
+	path = libs/stm32g4xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32g4xx_hal_driver

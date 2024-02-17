@@ -32,7 +32,7 @@ STM32_LIB_DIR = LIBS_DIR.Dir('stm32libs/STM32F0xx_StdPeriph_Driver')
 STM32_CMSIS_DIR = LIBS_DIR.Dir('stm32libs/CMSIS')
 FREERTOS_DIR = LIBS_DIR.Dir("FreeRTOS")
 
-LINKER_FILE = REPO_ROOT_DIR.File('stm32f091.ld')
+LINKER_FILE = REPO_ROOT_DIR.File('STM32G473RETx_FLASH.ld')
 
 """
 Find the modules, accumulate a list of include paths while we're at it.
@@ -112,13 +112,13 @@ def TOOL_ARM_ELF_HEX(env):
 
     """
     Description of command below:
-    -mcpu=cortex-m0: the cortex-m0 is our microprocessor. This tells the compiler to use its instruction set
+    -mcpu=cortex-m4: the cortex-m4 is our microprocessor. This tells the compiler to use its instruction set
     --specs=nosys.specs: this removes a default spec that tries to compile a wrapper layer of sorts for linux debugging
     (will get error looking for _exit function if removed)
     SOURCE must be a list of strings
     """
     arm_elf_builder = SCons.Builder.Builder(action=[
-        ARM_CC + ' -lm -T stm32f091.ld -mcpu=cortex-m0 -Wl,-Map=${TARGET.dir.abspath}/map.map,-lm --specs=nosys.specs -mthumb ${SOURCES[:].abspath} -o ${TARGET.abspath} -lm'
+        ARM_CC + ' -lm -T' + LINKER_FILE.abspath + '-mcpu=cortex-m4 -Wl,-Map=${TARGET.dir.abspath}/map.map,-lm --specs=nosys.specs -mthumb ${SOURCES[:].abspath} -o ${TARGET.abspath} -lm'
     ])
 
     arm_hex_builder = SCons.Builder.Builder(action=[
@@ -136,10 +136,10 @@ stm32_c_env = Environment(
     AS=ARM_AS,
     LD=ARM_LD,
     CPPPATH=include_paths,
-    CPPDEFINES=['STM32F091', 'USE_STDPERIPH_DRIVER'],
-    CCFLAGS=['-ggdb','-mcpu=cortex-m0', '-mthumb', '-lm'],
+    CPPDEFINES=['STM32G473', 'USE_STDPERIPH_DRIVER'],
+    CCFLAGS=['-ggdb','-mcpu=cortex-m4', '-mthumb', '-lm'],
     ASFLAGS=['-mthumb', '-I{}'.format(STM32_LIB_DIR.Dir('inc').abspath), '-I{}'.format(STM32_CMSIS_DIR.Dir('Include').abspath)],
-    LDFLAGS=['-T{}'.format(LINKER_FILE.abspath), '-mcpu=cortex-m0', '-mthumb', '-Wall', '--specs=nosys.specs', '-lm']
+    LDFLAGS=['-T{}'.format(LINKER_FILE.abspath), '-mcpu=cortex-m4', '-mthumb', '-Wall', '--specs=nosys.specs', '-lm']
 )
 
 # janky
