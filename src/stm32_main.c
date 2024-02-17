@@ -1,3 +1,5 @@
+#include "stm32_main.h"
+
 #include <string.h>
 #include <stdio.h>
 
