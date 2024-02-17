@@ -1,71 +1,111 @@
-#include "stm32f0xx.h"
-#include "stm32f0xx_adc.h"
 #include "HAL_Aio.h"
-#include "stm32f0xx_gpio.h"
-#include "stm32f0xx_rcc.h"
+
 #include "Config.h"
+#include "stm32_main.h"
+
+#include "stm32g4xx_hal_dma.h" // Needed due to an include bug in stm32g4xx_hal_adc.h
+#include "stm32g4xx_hal_adc.h"
+#include "stm32g4xx_hal_gpio.h"
+#include "stm32g4xx_hal_rcc.h"
+
+static ADC_HandleTypeDef adc1;
+static ADC_HandleTypeDef adc2;
 
 void HAL_Aio_init(void)
 {
-    // enable ADC and GPIO peripherals
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
+    // enable ADC and GPIO peripheral clocks
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_ADC12_CLK_ENABLE();
 
-    // configure the GPIO peripheral to allow use of the ADC for the 
+    // configure needed GPIO pins
     GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_InitStructure.Pin = GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5;
+    GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStructure.Pull = GPIO_NOPULL;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    // initialize ADC peripheral
-    ADC_DeInit(ADC1);
-    ADC_InitTypeDef adc_init;
-    ADC_StructInit(&adc_init);
+    // initialize ADC1 peripheral
+    adc1.Instance = ADC1;
+    adc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+    adc1.Init.Resolution = ADC_RESOLUTION_12B;
+    adc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    adc1.Init.GainCompensation = 0;
+    adc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+    adc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+    adc1.Init.LowPowerAutoWait = DISABLE;
+    adc1.Init.ContinuousConvMode = DISABLE;
+    adc1.Init.NbrOfConversion = 1;
+    adc1.Init.DiscontinuousConvMode = DISABLE;
+    adc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+    adc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    adc1.Init.DMAContinuousRequests = DISABLE;
+    adc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+    adc1.Init.OversamplingMode = DISABLE;
+    if (HAL_ADC_Init(&adc1) != HAL_OK) {
+        hardfault_handler_routine();
+    }
 
-    // the default settings are exactly what we want
-    ADC_Init(ADC1, &adc_init);
-
-    // calibrate adc
-    ADC_GetCalibrationFactor(ADC1);
-
-     // Enable the ADC peripheral
-    ADC_Cmd(ADC1, ENABLE);  
+    // initialize ADC2 peripheral
+    adc2.Instance = ADC2;
+    adc2.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+    adc2.Init.Resolution = ADC_RESOLUTION_12B;
+    adc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    adc2.Init.GainCompensation = 0;
+    adc2.Init.ScanConvMode = ADC_SCAN_DISABLE;
+    adc2.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+    adc2.Init.LowPowerAutoWait = DISABLE;
+    adc2.Init.ContinuousConvMode = DISABLE;
+    adc2.Init.NbrOfConversion = 1;
+    adc2.Init.DiscontinuousConvMode = DISABLE;
+    adc2.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+    adc2.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    adc2.Init.DMAContinuousRequests = DISABLE;
+    adc2.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+    adc2.Init.OversamplingMode = DISABLE;
+    if (HAL_ADC_Init(&adc2) != HAL_OK) {
+        hardfault_handler_routine();
+    }
 }
 
 uint16_t HAL_Aio_read(AIOpin_e pin)
 {
-    // Note: Channels 0-15 are adc pins, while 16-18 are internal values (like proc temp, etc.)
+    // Initialize channel
+    ADC_HandleTypeDef adcx;
+    ADC_ChannelConfTypeDef sConfig;
 
-    // determine which channel to read
-    unsigned int channel;
-    switch (pin)
-    {
+    switch (pin) {
         case AIOpin_ACCEL_A:
-            channel = ADC_CHSELR_CHSEL3;
+            adcx = adc1;
+            sConfig.Channel = ADC_CHANNEL_4;
             break;
-        
         case AIOpin_ACCEL_B:
-            channel = ADC_CHSELR_CHSEL4;
+            adcx = adc2;
+            sConfig.Channel = ADC_CHANNEL_17;
             break;
-        
         case AIOpin_BRAKE_PRESSURE:
-            channel = ADC_CHSELR_CHSEL2;
+            adcx = adc2;
+            sConfig.Channel = ADC_CHANNEL_13;
             break;
-
         default:
-            return 0;
+            hardfault_handler_routine();
     }
 
-    // select channel
-    ADC1->CHSELR = channel;
+    sConfig.Rank = ADC_REGULAR_RANK_1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+    sConfig.SingleDiff = ADC_DIFFERENTIAL_ENDED;
+    sConfig.OffsetNumber = ADC_OFFSET_NONE;
+    sConfig.Offset = 0;
 
-    // start conversion
-    ADC_StartOfConversion(ADC1);
+    if (HAL_ADC_ConfigChannel(&adcx, &sConfig) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
 
-    // wait for conversion to end (this is what makes this read synchronous)
-    while(!(ADC1->ISR & ADC_ISR_EOC));
-
-    // read and return the value the adc read
-    return ADC_GetConversionValue(ADC1);
+    // Perform reading
+    HAL_ADC_Start(&adcx);
+    HAL_ADC_PollForConversion(&adcx, HAL_MAX_DELAY);
+    uint16_t val = HAL_ADC_GetValue(&adcx);
+    HAL_ADC_Stop(&adcx);
+    return val;
 }
