@@ -2,8 +2,6 @@ FROM ubuntu:22.04
 
 USER root
 
-WORKDIR /vc
-
 # disable prompts during apt-get
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -25,6 +23,8 @@ gdb-multiarch \
 graphviz \
 openocd && \
 rm -rf /var/lib/apt/lists/*
+
+WORKDIR /vc
 
 # Install vector blf libs (https://bitbucket.org/tobylorenz/vector_blf)
 COPY libs/ecu-sim/libs/vector_blf vector_blf
