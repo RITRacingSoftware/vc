@@ -28,8 +28,9 @@ SIL_DIR = SRC_DIR.Dir('sil')
 SIL_TESTS_DIR = SIL_DIR.Dir('tests')
 BUILD_DIR = REPO_ROOT_DIR.Dir('build', create=True)
 LIBS_DIR = REPO_ROOT_DIR.Dir('libs')
-STM32_LIB_DIR = LIBS_DIR.Dir('stm32g4xx_hal_driver')
-STM32_CMSIS_DIR = LIBS_DIR.Dir('cmsis_device_g4')
+STM32_CUBE_DIR = LIBS_DIR.Dir('STM32CubeG4')
+STM32_LIB_DIR = STM32_CUBE_DIR.Dir('Drivers/STM32G4xx_HAL_Driver')
+STM32_CMSIS_DIR = STM32_CUBE_DIR.Dir('Drivers/CMSIS')
 FREERTOS_DIR = LIBS_DIR.Dir("FreeRTOS-Kernel")
 
 LINKER_FILE = REPO_ROOT_DIR.File('STM32G473RETx_FLASH.ld')
@@ -47,7 +48,8 @@ include_paths = [
     LIBS_DIR.Dir('cmock/vendor/unity/src'),
     LIBS_DIR.Dir('vector_blf/src/'),
     STM32_LIB_DIR.Dir('Inc'),
-    STM32_CMSIS_DIR.Dir('Include'),
+    STM32_CMSIS_DIR.Dir('Core/Include'),
+    STM32_CMSIS_DIR.Dir('Device/ST/STM32G4xx/Include'),
     FREERTOS_DIR.Dir('include'),
     FREERTOS_DIR.Dir('portable/GCC/ARM_CM4F'),
     BUILD_DIR.Dir('common/formula-main-dbc'), # We want to link against formula_main_dbc.h
@@ -135,9 +137,9 @@ stm32_c_env = Environment(
     AS=ARM_AS,
     LD=ARM_LD,
     CPPPATH=include_paths,
-    CPPDEFINES=['STM32G473', 'USE_STDPERIPH_DRIVER'],
+    CPPDEFINES=['STM32G473', 'STM32G473xx'],
     CCFLAGS=['-ggdb','-mcpu=cortex-m4', '-mthumb', '-lm'],
-    ASFLAGS=['-mthumb', '-I{}'.format(STM32_LIB_DIR.Dir('inc').abspath), '-I{}'.format(STM32_CMSIS_DIR.Dir('Include').abspath)],
+    ASFLAGS=['-mthumb'],
     LDFLAGS=['-T{}'.format(LINKER_FILE.abspath), '-mcpu=cortex-m4', '-mthumb', '-Wall', '--specs=nosys.specs', '-lm']
 )
 
