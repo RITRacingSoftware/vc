@@ -30,7 +30,7 @@ BUILD_DIR = REPO_ROOT_DIR.Dir('build', create=True)
 LIBS_DIR = REPO_ROOT_DIR.Dir('libs')
 STM32_LIB_DIR = LIBS_DIR.Dir('stm32g4xx_hal_driver')
 STM32_CMSIS_DIR = LIBS_DIR.Dir('cmsis_device_g4')
-FREERTOS_DIR = LIBS_DIR.Dir("FreeRTOS")
+FREERTOS_DIR = LIBS_DIR.Dir("FreeRTOS-Kernel")
 
 LINKER_FILE = REPO_ROOT_DIR.File('STM32G473RETx_FLASH.ld')
 
@@ -48,8 +48,8 @@ include_paths = [
     LIBS_DIR.Dir('vector_blf/src/'),
     STM32_LIB_DIR.Dir('Inc'),
     STM32_CMSIS_DIR.Dir('Include'),
-    FREERTOS_DIR.Dir('Source/include'),
-    FREERTOS_DIR.Dir('Source/portable/ThirdParty/GCC/ARM_CM0'),
+    FREERTOS_DIR.Dir('include'),
+    FREERTOS_DIR.Dir('portable/GCC/ARM_CM4F'),
     BUILD_DIR.Dir('common/formula-main-dbc'), # We want to link against formula_main_dbc.h
 ]
 
@@ -567,9 +567,9 @@ for module_name, module_dir in app_modules + common_modules + driver_modules:
 
 
 stm32_freertos_source = []
-stm32_freertos_source += Glob(FREERTOS_DIR.Dir('Source').abspath + '/*.c')
-stm32_freertos_source.append(FREERTOS_DIR.File('Source/portable/MemMang/heap_3.c'))
-stm32_freertos_source.append(FREERTOS_DIR.File('Source/portable/ThirdParty/GCC/ARM_CM0/port.c'))
+stm32_freertos_source += Glob(FREERTOS_DIR.abspath + '/*.c')
+stm32_freertos_source.append(FREERTOS_DIR.File('portable/MemMang/heap_4.c'))
+stm32_freertos_source.append(FREERTOS_DIR.File('portable/ThirdParty/GCC/ARM_CM4F/port.c'))
 
 for source_file in stm32_freertos_source:
     file_name = source_file.abspath.split('/')[-1]

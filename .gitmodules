@@ -14,3 +14,6 @@
 [submodule "libs/stm32g4xx_hal_driver"]
 	path = libs/stm32g4xx_hal_driver
 	url = https://github.com/STMicroelectronics/stm32g4xx_hal_driver
+[submodule "libs/FreeRTOS-Kernel"]
+	path = libs/FreeRTOS-Kernel
+	url = https://github.com/FreeRTOS/FreeRTOS-Kernel
