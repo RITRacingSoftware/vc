@@ -19,7 +19,7 @@ DIOconfig configs[DIOpin_NUM] = {
     {DIOpin_SOUND_6, GPIOB, {BIT(9), GPIO_Mode_OUT, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
     {DIOpin_SWITCH_1, GPIOA, {BIT(6), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
     {DIOpin_SWITCH_2, GPIOA, {BIT(7), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}}, 
-    {DIOpin_RTD_BUTTON, GPIOA, {BIT(8), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
+    {DIOpin_RTD_BUTTON, GPIOA, {BIT(15), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
     {DIOpin_SWITCH_3, GPIOA, {BIT(9), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
     {DIOpin_BMS_FAULT, GPIOA, {BIT(1), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
     {DIOpin_IMD_FAULT, GPIOA, {BIT(0), GPIO_Mode_IN, GPIO_Speed_Level_1, GPIO_OType_PP, GPIO_PuPd_NOPULL}},
