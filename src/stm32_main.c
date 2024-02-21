@@ -12,7 +12,6 @@
 // drivers
 #include "HAL_Aio.h"
 #include "HAL_Dio.h"
-// #include "HAL_Uart.h"
 #include "HAL_Can.h"
 #include "HAL_Clock.h"
 
@@ -39,9 +38,6 @@ void task_100Hz(void *pvParameters)
     {
         VC_100Hz();
         // CAN_send_queued_messages();
-        // uint8_t print_buffer4[30];
-        // uint8_t n4 = sprintf(print_buffer4, "100Hz...\n\r");
-        // HAL_Uart_send(print_buffer4, n4);
 
         vTaskDelayUntil(&next_wake_time, TASK_100Hz_PERIOD_MS);
     }

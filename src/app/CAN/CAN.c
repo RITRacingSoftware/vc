@@ -5,7 +5,6 @@
 #include "CAN.h"
 #include "HAL_Can.h"
 #include "Config.h"
-#include "HAL_Uart.h"
 #include "CanQueue.h"
 
 
@@ -153,11 +152,6 @@ void CAN_process_recieved_messages(void)
                 id_counts[i].count++;
             }
         }
-
-        // uint8_t print_buffer1[100];
-        // uint8_t n1 = sprintf(print_buffer1, "ID: %d  Data: %d  %d  %d  %d  %d  %d  %d  %d\n\r", received_message.id, data[0],
-        //      data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
-        // HAL_Uart_send(print_buffer1, n1);
 
         //Unpack message recieved
         // IMPORTANT: For any CAN messages to be received, the message ID has to be added to the CAN filter in the CAN Driver init function (HAL_Can_init)

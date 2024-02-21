@@ -8,7 +8,6 @@
 // #include "HAL_Gpio.h"
 #include "semphr.h"
 #include "queue.h"
-#include "HAL_Uart.h"
 #include "HAL_Dio.h"
 #include <stdbool.h>
 #include <stdio.h>
