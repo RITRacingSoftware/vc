@@ -31,6 +31,7 @@ LIBS_DIR = REPO_ROOT_DIR.Dir('libs')
 STM32_CUBE_DIR = LIBS_DIR.Dir('STM32CubeG4')
 STM32_LIB_DIR = STM32_CUBE_DIR.Dir('Drivers/STM32G4xx_HAL_Driver')
 STM32_CMSIS_DIR = STM32_CUBE_DIR.Dir('Drivers/CMSIS')
+STM32_CMSIS_DEV_DIR = STM32_CMSIS_DIR.Dir('Device/ST/STM32G4xx')
 FREERTOS_DIR = LIBS_DIR.Dir("FreeRTOS-Kernel")
 
 LINKER_FILE = REPO_ROOT_DIR.File('STM32G473RETx_FLASH.ld')
@@ -49,7 +50,7 @@ include_paths = [
     LIBS_DIR.Dir('vector_blf/src/'),
     STM32_LIB_DIR.Dir('Inc'),
     STM32_CMSIS_DIR.Dir('Core/Include'),
-    STM32_CMSIS_DIR.Dir('Device/ST/STM32G4xx/Include'),
+    STM32_CMSIS_DEV_DIR.Dir('Include'),
     FREERTOS_DIR.Dir('include'),
     FREERTOS_DIR.Dir('portable/GCC/ARM_CM4F'),
     BUILD_DIR.Dir('common/formula-main-dbc'), # We want to link against formula_main_dbc.h
@@ -114,12 +115,14 @@ def TOOL_ARM_ELF_HEX(env):
     """
     Description of command below:
     -mcpu=cortex-m4: the cortex-m4 is our microprocessor. This tells the compiler to use its instruction set
+    -mfpu=fpv4-sp-d16: our microprocessor has a floating point unit, use it
+    -mfloat-abi=hard: ^
     --specs=nosys.specs: this removes a default spec that tries to compile a wrapper layer of sorts for linux debugging
     (will get error looking for _exit function if removed)
     SOURCE must be a list of strings
     """
     arm_elf_builder = SCons.Builder.Builder(action=[
-        ARM_CC + ' -lm -T' + LINKER_FILE.abspath + '-mcpu=cortex-m4 -Wl,-Map=${TARGET.dir.abspath}/map.map,-lm --specs=nosys.specs -mthumb ${SOURCES[:].abspath} -o ${TARGET.abspath} -lm'
+        ARM_CC + ' -lm -T' + LINKER_FILE.abspath + ' -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -Wl,-Map=${TARGET.dir.abspath}/map.map,-lm --specs=nosys.specs -mthumb ${SOURCES[:].abspath} -o ${TARGET.abspath} -lm'
     ])
 
     arm_hex_builder = SCons.Builder.Builder(action=[
@@ -138,9 +141,9 @@ stm32_c_env = Environment(
     LD=ARM_LD,
     CPPPATH=include_paths,
     CPPDEFINES=['STM32G473', 'STM32G473xx'],
-    CCFLAGS=['-ggdb','-mcpu=cortex-m4', '-mthumb', '-lm'],
+    CCFLAGS=['-ggdb','-mcpu=cortex-m4', '-mfpu=fpv4-sp-d16', '-mfloat-abi=hard', '-mthumb', '-lm'],
     ASFLAGS=['-mthumb'],
-    LDFLAGS=['-T{}'.format(LINKER_FILE.abspath), '-mcpu=cortex-m4', '-mthumb', '-Wall', '--specs=nosys.specs', '-lm']
+    LDFLAGS=['-T{}'.format(LINKER_FILE.abspath), '-mcpu=cortex-m4', '-mfpu=fpv4-sp-d16', '-mfloat-abi=hard', '-mthumb', '-Wall', '--specs=nosys.specs', '-lm']
 )
 
 # janky
@@ -549,11 +552,8 @@ STM32_BUILD_DIR = BUILD_DIR.Dir("stm32")
 
 # compile all modules into stm32 objects
 
-# Compile stm32 provided hardware libraries
+# compile our code
 stm32_objs = []
-for source in Glob(os.path.join(STM32_LIB_DIR.Dir('src').abspath, '*.c')):
-    stm32_objs += stm32_c_env.Object(source)
-
 for module_name, module_dir in app_modules + common_modules + driver_modules:
     if (module_name, module_dir) in driver_modules:
         source_file = module_dir.File(f'STM32_{module_name}.c')
@@ -566,12 +566,16 @@ for module_name, module_dir in app_modules + common_modules + driver_modules:
         target=build_dir.File(f'{module_name}.o')
     ))
 
+# compile stm32 hal drivers
+for source in Glob(os.path.join(STM32_LIB_DIR.Dir('Src').abspath, '*.c')):
+    file_name = source.abspath.split('/')[-1]
+    stm32_objs += stm32_c_env.Object(source=source, target=STM32_BUILD_DIR.Dir('libs').Dir(LIBS_DIR.rel_path(source.dir)).File(f'{file_name}.o'))
 
-
+# compile freertos sources
 stm32_freertos_source = []
 stm32_freertos_source += Glob(FREERTOS_DIR.abspath + '/*.c')
 stm32_freertos_source.append(FREERTOS_DIR.File('portable/MemMang/heap_4.c'))
-stm32_freertos_source.append(FREERTOS_DIR.File('portable/ThirdParty/GCC/ARM_CM4F/port.c'))
+stm32_freertos_source.append(FREERTOS_DIR.File('portable/GCC/ARM_CM4F/port.c'))
 
 for source_file in stm32_freertos_source:
     file_name = source_file.abspath.split('/')[-1]
@@ -584,8 +588,8 @@ stm32_objs += stm32_c_env.Object(source=DBC_GEN_DIR.File('formula_main_dbc.c'), 
 
 # build the assembly files with the microcontroller startup routines in them
 startup_src = [
-    STM32_CMSIS_DIR.File('Source/Templates/gcc/startup_stm32g473xx.s'),
-    STM32_CMSIS_DIR.File('Source/Templates/system_stm32g4xx.c')
+    STM32_CMSIS_DEV_DIR.File('Source/Templates/gcc/startup_stm32g473xx.s'),
+    STM32_CMSIS_DEV_DIR.File('Source/Templates/system_stm32g4xx.c')
 ]
 for src in startup_src:
     file_name = src.abspath.split('/')[-1]

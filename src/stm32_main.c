@@ -95,6 +95,8 @@ void task_can_tx(void *pvParameters)
     }
 }
 
+// Called on driver failure
+
 void hardfault_handler_routine(void)
 {
     // kill torque
@@ -131,6 +133,13 @@ void hardfault_handler_routine(void)
     HAL_Can_send_message(FORMULA_MAIN_DBC_VC_HARD_FAULT_INDICATOR_FRAME_ID, 8, *((uint64_t*)data)); 
 }
 
+// Called when stack overflows from rtos
+// Not needed in header, since included in FreeRTOS-Kernel/include/task.h
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName)
+{
+    hardfault_handler_routine();
+}
+
 int main(void)
 {
     can_message_recieved_semaphore = xSemaphoreCreateBinary();
@@ -142,7 +151,6 @@ int main(void)
 
     // initialize all drivers
     HAL_Clock_init();
-    // HAL_Uart_init(); //UART pins configured as AIO, UART won't work after HAL_Aio_init
     HAL_Can_init();
     HAL_Aio_init();
     HAL_Dio_init();
