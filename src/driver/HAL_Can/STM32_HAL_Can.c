@@ -1,5 +1,5 @@
 #include "HAL_Can.h"
-#include "stm32f0xx.h"
+/*#include "stm32f0xx.h"
 #include "stm32f0xx_gpio.h"
 #include "stm32f0xx_can.h"
 #include "stm32f0xx_misc.h"
@@ -14,12 +14,12 @@
 
 #define CAN_PINS (GPIO_Pin_11 | GPIO_Pin_12)
 
-static uint8_t num_filters = 0;
+static uint8_t num_filters = 0;*/
 
 // Must initialize gpio first to read charger line
 void HAL_Can_init(void)
 {
-    num_filters = 0;
+    /*num_filters = 0;
 
     // enable GPIOA and CAN peripherals
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN, ENABLE);
@@ -72,12 +72,12 @@ void HAL_Can_init(void)
     nvic_init.NVIC_IRQChannelPriority = 2;
     nvic_init.NVIC_IRQChannelCmd = ENABLE;
     NVIC_EnableIRQ(CEC_CAN_IRQn);
-    CAN_FIFORelease(CAN, CAN_FIFO0);
+    CAN_FIFORelease(CAN, CAN_FIFO0);*/
 }
 
 void HAL_Can_init_id_filter_32bit(uint32_t id)
 {
-    if(num_filters < 14)
+    /*if(num_filters < 14)
     {
         CAN_FilterInitTypeDef filter;
         filter.CAN_FilterIdHigh = (uint16_t) ((id & 0xFFFF0000) >> 16);
@@ -91,12 +91,12 @@ void HAL_Can_init_id_filter_32bit(uint32_t id)
         filter.CAN_FilterActivation = ENABLE;
          CAN_FilterInit(&filter);
         num_filters++;
-    }
+    }*/
 }
 
 void HAL_Can_init_id_filter_16bit(uint16_t id1, uint16_t id2, uint16_t id3, uint16_t id4)
 {
-    if(num_filters < 14)
+    /*if(num_filters < 14)
     {
         CAN_FilterInitTypeDef filter;
         filter.CAN_FilterIdHigh = id1 << 5;
@@ -110,12 +110,12 @@ void HAL_Can_init_id_filter_16bit(uint16_t id1, uint16_t id2, uint16_t id3, uint
         filter.CAN_FilterActivation = ENABLE;
         CAN_FilterInit(&filter);
         num_filters++;
-    }
+    }*/
 }
 
 Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data)
 {
-    CanTxMsg msg;
+    /*CanTxMsg msg;
     msg.StdId = id;
     msg.ExtId = id;
     if (id > 0x7FF)
@@ -151,12 +151,15 @@ Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data)
         error.active = true;
     }
 
+    return error;*/
+    Error_t error;
+    error.active = false;
     return error;
 }
 
 uint8_t HAL_number_of_empty_mailboxes(void)
 {
-    int emptyMailboxes = 0;
+    /*int emptyMailboxes = 0;
     if( CAN->TSR & (CAN_TSR_TME0))
     {
         emptyMailboxes++;
@@ -169,12 +172,13 @@ uint8_t HAL_number_of_empty_mailboxes(void)
     {
         emptyMailboxes++;
     }
-    return emptyMailboxes;
+    return emptyMailboxes;*/
+    return 1;
 }
 
 void HAL_Can_IRQ_handler(void)
 {
-    if(CAN_GetITStatus(CAN, CAN_IT_FMP0) == SET)
+    /*if(CAN_GetITStatus(CAN, CAN_IT_FMP0) == SET)
     {
         //Get next message
         CanRxMsg RxMsg;
@@ -200,5 +204,5 @@ void HAL_Can_IRQ_handler(void)
             
             portYIELD_FROM_ISR( ret );
         }
-    }
+    }*/
 }
