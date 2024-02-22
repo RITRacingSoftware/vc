@@ -1,13 +1,18 @@
 #include "stm32_main.h"
 
+// Standard library
 #include <string.h>
 #include <stdio.h>
+
+// STM32Cube stuff
+#include "stm32g4xx_hal.h"
 
 // FreeRTOS stuff
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+#include "projdefs.h"
 
 // drivers
 #include "HAL_Aio.h"
@@ -159,34 +164,48 @@ int main(void)
     VC_init();
 
     // initialize tasks
-    xTaskCreate(task_100Hz, 
+    int err = xTaskCreate(task_100Hz, 
         TASK_100Hz_NAME, 
         TASK_100Hz_STACK_SIZE_B,
         NULL,
         TASK_100Hz_PRIORITY,
         NULL);
+    if (err != pdPASS) {
+        hardfault_handler_routine();
+    }
 
-    xTaskCreate(task_1kHz, 
+    err = xTaskCreate(task_1kHz, 
         TASK_1kHz_NAME, 
         TASK_1kHz_STACK_SIZE_B,
         NULL,
         TASK_1kHz_PRIORITY,
         NULL);
+    if (err != pdPASS) {
+        hardfault_handler_routine();
+    }
 
-    xTaskCreate(task_can_rx, 
+    err = xTaskCreate(task_can_rx, 
         TASK_CAN_RX_NAME, 
         TASK_CAN_RX_STACK_SIZE_B,
         NULL,
         TASK_CAN_RX_PRIORITY,
         NULL);
+    if (err != pdPASS) {
+        hardfault_handler_routine();
+    }
 
-    xTaskCreate(task_can_tx, 
+    err = xTaskCreate(task_can_tx, 
         TASK_CAN_TX_NAME, 
         TASK_CAN_TX_STACK_SIZE_B,
         NULL,
         TASK_CAN_TX_PRIORITY,
         NULL);
+    if (err != pdPASS) {
+        hardfault_handler_routine();
+    }
    
+    NVIC_SetPriorityGrouping(4);
+
     // hand control over to FreeRTOS
     vTaskStartScheduler();
 

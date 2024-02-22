@@ -4,4 +4,4 @@ set -x
 
 ELF=./build/stm32/vc.elf
 
-openocd -f ./openocd.cfg -c "program ${ELF} verify reset exit"
+openocd -f ./openocd.cfg -c "program ${ELF} verify" -c "reset" -c "exit"
