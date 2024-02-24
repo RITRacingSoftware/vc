@@ -154,11 +154,14 @@ int main(void)
     xSemaphoreGive(can_message_transmit_semaphore);
     xSemaphoreTake(can_message_transmit_semaphore, SEPHAMORE_WAIT);
 
+    // Wait for gdb to attach
+    for (int i = 0; i < 1000000; i++) {}
+
     // initialize all drivers
     HAL_Clock_init();
+    HAL_Dio_init();
     HAL_Can_init();
     HAL_Aio_init();
-    HAL_Dio_init();
 
     // initialize all application modules
     VC_init();

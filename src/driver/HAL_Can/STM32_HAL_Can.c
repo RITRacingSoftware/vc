@@ -1,208 +1,197 @@
 #include "HAL_Can.h"
-/*#include "stm32f0xx.h"
-#include "stm32f0xx_gpio.h"
-#include "stm32f0xx_can.h"
-#include "stm32f0xx_misc.h"
+
+// Standard library
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <string.h>
-#include "CAN.h"
-// #include "HAL_Gpio.h"
+
+// Cube drivers
+#include "stm32g4xx_hal_fdcan.h"
+#include "stm32g4xx_hal_gpio.h"
+#include "stm32g4xx_hal_gpio_ex.h"
+#include "stm32g4xx_hal_rcc.h"
+
+// FreeRTOS
 #include "semphr.h"
 #include "queue.h"
-#include "HAL_Dio.h"
-#include <stdbool.h>
-#include <stdio.h>
 
-#define CAN_PINS (GPIO_Pin_11 | GPIO_Pin_12)
+// Application code
+#include "stm32_main.h"
+#include "CAN.h"
 
-static uint8_t num_filters = 0;*/
+
+#define CAN_PINS (GPIO_PIN_12 | GPIO_PIN_13)
+
+static uint8_t num_filters = 0;
+
+static FDCAN_HandleTypeDef can_main;
+static FDCAN_HandleTypeDef can_sensor;
 
 // Must initialize gpio first to read charger line
 void HAL_Can_init(void)
 {
-    /*num_filters = 0;
+    // Initialize pins
+    GPIO_InitTypeDef gpio = {CAN_PINS, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF9_FDCAN2};
+    HAL_GPIO_Init(GPIOB, &gpio);
 
-    // enable GPIOA and CAN peripherals
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN, ENABLE);
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
-
-    // setup gpio
-    GPIO_InitTypeDef canGPIOinit; 
-    canGPIOinit.GPIO_Pin = CAN_PINS;
-    canGPIOinit.GPIO_Mode = GPIO_Mode_AF;
-    canGPIOinit.GPIO_OType = GPIO_OType_PP;
-    canGPIOinit.GPIO_Speed = GPIO_Speed_50MHz;
-    canGPIOinit.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOA, &canGPIOinit);
-    // use pins A11 and A12 for CAN tx/rx (different pins can be used as CAN)
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_4);
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, GPIO_AF_4);
-
-    CAN_DeInit(CAN);  
-    CAN_InitTypeDef canInit;
-    CAN_StructInit(&canInit); //Fills in default values.
-    canInit.CAN_Mode = CAN_Mode_Normal;
-    canInit.CAN_TTCM = DISABLE;
-    canInit.CAN_ABOM = DISABLE;
-    canInit.CAN_AWUM = DISABLE;
-    canInit.CAN_NART = DISABLE;
-    canInit.CAN_RFLM = DISABLE;
-    canInit.CAN_TXFP = DISABLE;
-    // http://www.bittiming.can-wiki.info/
-    // bxcan and 48mhz clock
-    // 1000kbps = car baud rate => CAN_Prescaler = 12
-    // 500kbps = charger baud rate => CAN_Prescaler = 6
-    
-    // 1000kbps
-    int prescaler = 3;
- 
-    canInit.CAN_Prescaler = prescaler;
-    canInit.CAN_SJW = CAN_SJW_1tq;
-    canInit.CAN_BS1 = CAN_BS1_13tq;
-    canInit.CAN_BS2 = CAN_BS2_2tq;
-    
-    uint8_t ret = CAN_Init(CAN, &canInit);
-    CAN->IER |= 0x3; //Enable interrupts for FIFO0 message pending and transmit mailbox empty
-
-    //CAN messages will only be received if the ID is added to the filter
-    HAL_Can_init_id_filter_16bit(FORMULA_MAIN_DBC_MCU_INTERNAL_STATES_FRAME_ID, FORMULA_MAIN_DBC_PBX_STATUS_FRAME_ID, 0x00, 0x00); //initializes IDs for filters
-
-    //Enable interrupts for recieve
-    NVIC_InitTypeDef nvic_init;
-    nvic_init.NVIC_IRQChannel = CEC_CAN_IRQn;
-    nvic_init.NVIC_IRQChannelPriority = 2;
-    nvic_init.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_EnableIRQ(CEC_CAN_IRQn);
-    CAN_FIFORelease(CAN, CAN_FIFO0);*/
-}
-
-void HAL_Can_init_id_filter_32bit(uint32_t id)
-{
-    /*if(num_filters < 14)
+    // Initialize clocks
+    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_FDCAN;
+    PeriphClkInit.FdcanClockSelection = RCC_FDCANCLKSOURCE_PCLK1;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
     {
-        CAN_FilterInitTypeDef filter;
-        filter.CAN_FilterIdHigh = (uint16_t) ((id & 0xFFFF0000) >> 16);
-        filter.CAN_FilterIdLow = (uint16_t) (id & 0xFFFF);
-        filter.CAN_FilterMaskIdHigh = 0xFFFF;
-        filter.CAN_FilterMaskIdLow = 0xFFFF;
-        filter.CAN_FilterFIFOAssignment = CAN_Filter_FIFO0;
-        filter.CAN_FilterNumber = num_filters;
-        filter.CAN_FilterMode = CAN_FilterMode_IdList;
-        filter.CAN_FilterScale = CAN_FilterScale_32bit;
-        filter.CAN_FilterActivation = ENABLE;
-         CAN_FilterInit(&filter);
-        num_filters++;
-    }*/
-}
+        hardfault_handler_routine();
+    }
+    __HAL_RCC_FDCAN_CLK_ENABLE();
 
-void HAL_Can_init_id_filter_16bit(uint16_t id1, uint16_t id2, uint16_t id3, uint16_t id4)
-{
-    /*if(num_filters < 14)
+    // Initialize CAN interfaces
+    can_main.Instance = FDCAN2;
+    can_main.Init.ClockDivider = FDCAN_CLOCK_DIV1;
+    can_main.Init.FrameFormat = FDCAN_FRAME_CLASSIC;
+    can_main.Init.Mode = FDCAN_MODE_NORMAL;
+    can_main.Init.AutoRetransmission = DISABLE;
+    can_main.Init.TransmitPause = DISABLE;
+    can_main.Init.ProtocolException = DISABLE;
+    can_main.Init.NominalPrescaler = 8;
+    can_main.Init.NominalSyncJumpWidth = 1;
+    can_main.Init.NominalTimeSeg1 = 12;
+    can_main.Init.NominalTimeSeg2 = 2;
+    can_main.Init.DataPrescaler = 1;
+    can_main.Init.DataSyncJumpWidth = 1;
+    can_main.Init.DataTimeSeg1 = 1;
+    can_main.Init.DataTimeSeg2 = 1;
+    can_main.Init.StdFiltersNbr = 0;
+    can_main.Init.ExtFiltersNbr = 0;
+    can_main.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
+    if (HAL_FDCAN_Init(&can_main) != HAL_OK)
     {
-        CAN_FilterInitTypeDef filter;
-        filter.CAN_FilterIdHigh = id1 << 5;
-        filter.CAN_FilterIdLow = id2 << 5;
-        filter.CAN_FilterMaskIdHigh = id3 << 5;
-        filter.CAN_FilterMaskIdLow = id4 << 5;
-        filter.CAN_FilterFIFOAssignment = CAN_Filter_FIFO0;
-        filter.CAN_FilterNumber = num_filters;
-        filter.CAN_FilterMode = CAN_FilterMode_IdList;
-        filter.CAN_FilterScale = CAN_FilterScale_16bit;
-        filter.CAN_FilterActivation = ENABLE;
-        CAN_FilterInit(&filter);
-        num_filters++;
+        hardfault_handler_routine();
+    }
+
+    can_sensor.Instance = FDCAN1;
+    can_sensor.Init.ClockDivider = FDCAN_CLOCK_DIV1;
+    can_sensor.Init.FrameFormat = FDCAN_FRAME_CLASSIC;
+    can_sensor.Init.Mode = FDCAN_MODE_NORMAL;
+    can_sensor.Init.AutoRetransmission = DISABLE;
+    can_sensor.Init.TransmitPause = DISABLE;
+    can_sensor.Init.ProtocolException = DISABLE;
+    can_sensor.Init.NominalPrescaler = 24;
+    can_sensor.Init.NominalSyncJumpWidth = 1;
+    can_sensor.Init.NominalTimeSeg1 = 2;
+    can_sensor.Init.NominalTimeSeg2 = 2;
+    can_sensor.Init.DataPrescaler = 1;
+    can_sensor.Init.DataSyncJumpWidth = 1;
+    can_sensor.Init.DataTimeSeg1 = 1;
+    can_sensor.Init.DataTimeSeg2 = 1;
+    can_sensor.Init.StdFiltersNbr = 0;
+    can_sensor.Init.ExtFiltersNbr = 0;
+    can_sensor.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
+    if (HAL_FDCAN_Init(&can_sensor) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
+
+    /*// Configure receive interrupts
+    if (HAL_FDCAN_ConfigInterruptLines(&can_main, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, FDCAN_INTERRUPT_LINE0) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
+    if (HAL_FDCAN_ConfigInterruptLines(&can_sensor, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, FDCAN_INTERRUPT_LINE1) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
+    if (HAL_FDCAN_ActivateNotification(&can_main, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
+    if (HAL_FDCAN_ActivateNotification(&can_sensor, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) != HAL_OK)
+    {
+        hardfault_handler_routine();
     }*/
+
+    // Start can interfaces
+    if (HAL_FDCAN_Start(&can_main) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
+    if (HAL_FDCAN_Start(&can_sensor) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
 }
 
 Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data)
 {
-    /*CanTxMsg msg;
-    msg.StdId = id;
-    msg.ExtId = id;
-    if (id > 0x7FF)
-    { 
-        msg.IDE = CAN_Id_Extended;
-    }
-    else
-    {
-        msg.IDE = CAN_Id_Standard;
-    }
-    msg.RTR = CAN_RTR_Data; //Not sure about this
-    msg.DLC = dlc;
+    FDCAN_TxHeaderTypeDef header = {0};
+    header.Identifier = id;
+    header.IdType = FDCAN_STANDARD_ID;
+    header.TxFrameType = FDCAN_DATA_FRAME;
+    header.DataLength = dlc;
+    header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+    header.BitRateSwitch = FDCAN_BRS_OFF;
+    header.FDFormat = FDCAN_CLASSIC_CAN;
+    header.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+    header.MessageMarker = 0;
 
-    if (dlc < 0)
-        dlc = 0;
-    else if (dlc > 8)
-        dlc = 8;
-
-    *((uint64_t*)msg.Data) = data;
-
-    CAN_Transmit(CAN, &msg); 
-
-    Error_t error;
-
-    int code = CAN_GetLastErrorCode(CAN);
-
-    if (code == CAN_ErrorCode_NoErr)
-    {
-        error.active = false;
-    }
-    else
-    {
-        error.active = true;
-    }
-
-    return error;*/
-    Error_t error;
-    error.active = false;
-    return error;
+    HAL_StatusTypeDef err =  HAL_FDCAN_AddMessageToTxFifoQ(&can_main, &header, (uint8_t*) &data);
 }
+
+/*void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+{
+    if((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
+    {
+        FDCAN_RxHeaderTypeDef header;
+        uint8_t data[16];
+
+        // Retrieve Rx messages from RX FIFO0
+        if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, data) != HAL_OK)
+        {
+            hardfault_handler_routine();
+        }
+    }
+}
+
+void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs)
+{
+    if((RxFifo1ITs & FDCAN_IT_RX_FIFO1_NEW_MESSAGE) != 0)
+    {
+        FDCAN_RxHeaderTypeDef header;
+        uint8_t data[16];
+
+        // Retrieve Rx messages from RX FIFO1
+        if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &header, data) != HAL_OK)
+        {
+            hardfault_handler_routine();
+        }
+    }
+}*/
+
+
+
+
+
+
+
+
+void HAL_Can_init_id_filter_32bit(uint32_t id)
+{
+
+}
+
+void HAL_Can_init_id_filter_16bit(uint16_t id1, uint16_t id2, uint16_t id3, uint16_t id4)
+{
+    
+}
+
+
 
 uint8_t HAL_number_of_empty_mailboxes(void)
 {
-    /*int emptyMailboxes = 0;
-    if( CAN->TSR & (CAN_TSR_TME0))
-    {
-        emptyMailboxes++;
-    }
-    if( CAN->TSR & (CAN_TSR_TME1))
-    {
-        emptyMailboxes++;
-    }
-    if( CAN->TSR & (CAN_TSR_TME2))
-    {
-        emptyMailboxes++;
-    }
-    return emptyMailboxes;*/
-    return 1;
+    
 }
 
 void HAL_Can_IRQ_handler(void)
 {
-    /*if(CAN_GetITStatus(CAN, CAN_IT_FMP0) == SET)
-    {
-        //Get next message
-        CanRxMsg RxMsg;
-        CAN_Receive(CAN, CAN_FIFO0, &RxMsg);
-
-        //Add message to queue
-        CAN_add_message_rx_queue(RxMsg.StdId, RxMsg.DLC, RxMsg.Data);
-
-        //Unhook can function through sephamore
-        BaseType_t ret = pdFALSE;
-        xSemaphoreGiveFromISR(can_message_recieved_semaphore, &ret);
-
-        portYIELD_FROM_ISR( ret );
-    }
-    if(CAN_GetITStatus(CAN, CAN_IT_TME) == SET)
-    {
-        CAN_ClearITPendingBit(CAN, CAN_IT_TME);
-
-        if(!CAN_is_transmit_queue_empty_fromISR())
-        {
-            BaseType_t ret = pdFALSE;
-            xSemaphoreGiveFromISR(can_message_transmit_semaphore, &ret);  
-            
-            portYIELD_FROM_ISR( ret );
-        }
-    }*/
+    
 }
