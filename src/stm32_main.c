@@ -27,7 +27,6 @@
 #include "SoundController.h"
 
 #define SEPHAMORE_WAIT 0
-SemaphoreHandle_t can_message_recieved_semaphore;
 SemaphoreHandle_t can_message_transmit_semaphore;
 
 #define TASK_100Hz_NAME "task_100Hz"
@@ -75,11 +74,7 @@ void task_can_rx(void *pvParameters)
     // TickType_t next_wake_time = xTaskGetTickCount();
     for (;;)
     {
-        if(xSemaphoreTake(can_message_recieved_semaphore, portMAX_DELAY) == pdTRUE)
-        {
-            // uint8_t print_buffer3[30];
-            CAN_process_recieved_messages();
-        }
+        CAN_process_recieved_messages();
     }
 }
 
@@ -147,9 +142,6 @@ void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName)
 
 int main(void)
 {
-    can_message_recieved_semaphore = xSemaphoreCreateBinary();
-    xSemaphoreGive(can_message_recieved_semaphore);
-    xSemaphoreTake(can_message_recieved_semaphore, SEPHAMORE_WAIT);
     can_message_transmit_semaphore = xSemaphoreCreateBinary();
     xSemaphoreGive(can_message_transmit_semaphore);
     xSemaphoreTake(can_message_transmit_semaphore, SEPHAMORE_WAIT);
@@ -207,7 +199,7 @@ int main(void)
         hardfault_handler_routine();
     }
    
-    NVIC_SetPriorityGrouping(4);
+    NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
 
     // hand control over to FreeRTOS
     vTaskStartScheduler();

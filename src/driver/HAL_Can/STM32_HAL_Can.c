@@ -132,7 +132,7 @@ void HAL_Can_init(void)
     }
 
     // Set up RX interrupts
-    HAL_NVIC_SetPriority(FDCAN2_IT0_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(FDCAN2_IT0_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(FDCAN2_IT0_IRQn);
 
     // Register callbacks
