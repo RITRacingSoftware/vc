@@ -7,6 +7,8 @@
 #include <string.h>
 
 // Cube drivers
+#include "stm32g4xx_hal_conf.h"
+#include "stm32g4xx_hal_cortex.h"
 #include "stm32g4xx_hal_fdcan.h"
 #include "stm32g4xx_hal_gpio.h"
 #include "stm32g4xx_hal_gpio_ex.h"
@@ -27,6 +29,29 @@ static uint8_t num_filters = 0;
 
 static FDCAN_HandleTypeDef can_main;
 static FDCAN_HandleTypeDef can_sensor;
+
+
+// Pipe interrupt back to cube code
+void FDCAN2_IT0_IRQHandler(void) {
+    HAL_FDCAN_IRQHandler(&can_main);
+}
+
+static void main_bus_rx_handler(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+{
+    if((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
+    {
+        FDCAN_RxHeaderTypeDef header;
+        uint8_t data[8];
+
+        // Retrieve Rx messages from RX FIFO0
+        if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, data) != HAL_OK)
+        {
+            hardfault_handler_routine();
+        }
+
+        CAN_add_message_rx_queue(header.Identifier, header.DataLength, data);
+    }
+}
 
 // Must initialize gpio first to read charger line
 void HAL_Can_init(void)
@@ -64,6 +89,7 @@ void HAL_Can_init(void)
     can_main.Init.StdFiltersNbr = 0;
     can_main.Init.ExtFiltersNbr = 0;
     can_main.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
+    //can_main.RxFifo0Callback = main_bus_rx_handler;
     if (HAL_FDCAN_Init(&can_main) != HAL_OK)
     {
         hardfault_handler_routine();
@@ -92,23 +118,28 @@ void HAL_Can_init(void)
         hardfault_handler_routine();
     }
 
-    /*// Configure receive interrupts
-    if (HAL_FDCAN_ConfigInterruptLines(&can_main, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, FDCAN_INTERRUPT_LINE0) != HAL_OK)
+    // Allow all standard frames
+    FDCAN_FilterTypeDef filter;
+    filter.IdType = FDCAN_STANDARD_ID;
+    filter.FilterIndex = 0;
+    filter.FilterType = FDCAN_FILTER_RANGE;
+    filter.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+    filter.FilterID1 = 0x000;
+    filter.FilterID2 = 0x7FF;
+    if (HAL_FDCAN_ConfigFilter(&can_main, &filter) != HAL_OK)
     {
         hardfault_handler_routine();
     }
-    if (HAL_FDCAN_ConfigInterruptLines(&can_sensor, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, FDCAN_INTERRUPT_LINE1) != HAL_OK)
-    {
+
+    // Set up RX interrupts
+    HAL_NVIC_SetPriority(FDCAN2_IT0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(FDCAN2_IT0_IRQn);
+
+    // Register callbacks
+    if (HAL_FDCAN_RegisterRxFifo0Callback(&can_main, main_bus_rx_handler) != HAL_OK) {
         hardfault_handler_routine();
     }
-    if (HAL_FDCAN_ActivateNotification(&can_main, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
-    {
-        hardfault_handler_routine();
-    }
-    if (HAL_FDCAN_ActivateNotification(&can_sensor, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) != HAL_OK)
-    {
-        hardfault_handler_routine();
-    }*/
+
 
     // Start can interfaces
     if (HAL_FDCAN_Start(&can_main) != HAL_OK)
@@ -119,6 +150,17 @@ void HAL_Can_init(void)
     {
         hardfault_handler_routine();
     }
+
+    // Send new messages to registered callback
+    if (HAL_FDCAN_ActivateNotification(&can_main, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
+
+    /*if (HAL_FDCAN_ActivateNotification(&can_sensor, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }*/
 }
 
 Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data)
@@ -137,22 +179,9 @@ Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data)
     HAL_StatusTypeDef err =  HAL_FDCAN_AddMessageToTxFifoQ(&can_main, &header, (uint8_t*) &data);
 }
 
-/*void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
-{
-    if((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
-    {
-        FDCAN_RxHeaderTypeDef header;
-        uint8_t data[16];
 
-        // Retrieve Rx messages from RX FIFO0
-        if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, data) != HAL_OK)
-        {
-            hardfault_handler_routine();
-        }
-    }
-}
 
-void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs)
+/*void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs)
 {
     if((RxFifo1ITs & FDCAN_IT_RX_FIFO1_NEW_MESSAGE) != 0)
     {

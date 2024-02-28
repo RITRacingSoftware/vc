@@ -36,9 +36,5 @@ Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data); //Changed to 
  */
 uint8_t HAL_number_of_empty_mailboxes(void);
 
-/**
- * CAN recieve and transmit interrupt handler
- */
-void HAL_Can_IRQ_handler(void);
 
 #endif // HAL_CAN_H
