@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "stm32_main.h"
 #include "CAN.h"
 #include "HAL_Can.h"
 #include "Config.h"
@@ -217,6 +218,9 @@ void CAN_add_message_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data)
 #else
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     xQueueSendFromISR(rx_can_message_queue, &rx_msg, &xHigherPriorityTaskWoken);
+    if (xHigherPriorityTaskWoken == pdTRUE) {
+        hardfault_handler_routine();
+    }
 #endif
 }
 

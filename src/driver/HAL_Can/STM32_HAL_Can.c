@@ -50,6 +50,10 @@ static void main_bus_rx_handler(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs
         }
 
         CAN_add_message_rx_queue(header.Identifier, header.DataLength, data);
+
+        BaseType_t ret = pdFALSE;
+        xSemaphoreGiveFromISR(can_message_recieved_semaphore, &ret);
+        portYIELD_FROM_ISR( ret );
     }
 }
 

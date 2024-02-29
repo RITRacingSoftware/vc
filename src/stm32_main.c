@@ -1,6 +1,7 @@
 #include "stm32_main.h"
 
 // Standard library
+#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -27,6 +28,7 @@
 #include "SoundController.h"
 
 #define SEPHAMORE_WAIT 0
+SemaphoreHandle_t can_message_recieved_semaphore;
 SemaphoreHandle_t can_message_transmit_semaphore;
 
 #define TASK_100Hz_NAME "task_100Hz"
@@ -74,7 +76,10 @@ void task_can_rx(void *pvParameters)
     // TickType_t next_wake_time = xTaskGetTickCount();
     for (;;)
     {
-        CAN_process_recieved_messages();
+        if(xSemaphoreTake(can_message_recieved_semaphore, portMAX_DELAY) == pdTRUE)
+        {
+            CAN_process_recieved_messages();
+        }
     }
 }
 
@@ -131,6 +136,8 @@ void hardfault_handler_routine(void)
     can_bus.vc_hard_fault_indicator.vc_hard_fault_indicator_task = task_id;
     formula_main_dbc_vc_hard_fault_indicator_pack(data, &can_bus.vc_hard_fault_indicator, 8);
     HAL_Can_send_message(FORMULA_MAIN_DBC_VC_HARD_FAULT_INDICATOR_FRAME_ID, 8, *((uint64_t*)data)); 
+
+    while (true) {}
 }
 
 // Called when stack overflows from rtos
@@ -142,6 +149,9 @@ void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName)
 
 int main(void)
 {
+    can_message_recieved_semaphore = xSemaphoreCreateBinary();
+    xSemaphoreGive(can_message_recieved_semaphore);
+    xSemaphoreTake(can_message_recieved_semaphore, SEPHAMORE_WAIT);
     can_message_transmit_semaphore = xSemaphoreCreateBinary();
     xSemaphoreGive(can_message_transmit_semaphore);
     xSemaphoreTake(can_message_transmit_semaphore, SEPHAMORE_WAIT);
