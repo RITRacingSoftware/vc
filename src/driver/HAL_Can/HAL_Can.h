@@ -7,7 +7,6 @@
 #include "semphr.h"
 
 #ifndef VC_SIL
-extern SemaphoreHandle_t can_message_recieved_semaphore;
 extern SemaphoreHandle_t can_message_transmit_semaphore;
 #endif
 

@@ -92,7 +92,7 @@ void CAN_1Hz(void);
 /**
  * Processes recevied can messages
  */
-void CAN_process_recieved_messages(void);
+void CAN_process_recieved_messages_task(void);
 
 /**
  * Fills empty transmit mailboxes with CAN messages from the queue

@@ -128,14 +128,15 @@ bool CAN_get_rx_error(void)
     return can_rx_error;
 }
 
-void CAN_process_recieved_messages(void)
+// This method loops until we fail to retrieve a message. Since we will wait forever, this should never happen
+void CAN_process_recieved_messages_task(void)
 {
     CanMessage_s received_message;
 // Get all can messages received
 #ifdef VC_SIL
     while (CanQueue_dequeue(&rx_can_message_queue, &received_message))
 #else
-    while (xQueueReceive(rx_can_message_queue, &received_message, TICKS_TO_WAIT_QUEUE_CAN_MESSAGE) == pdTRUE)
+    while (xQueueReceive(rx_can_message_queue, &received_message, portMAX_DELAY) == pdTRUE)
 #endif
     {
         uint8_t data[8];
@@ -218,9 +219,7 @@ void CAN_add_message_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data)
 #else
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     xQueueSendFromISR(rx_can_message_queue, &rx_msg, &xHigherPriorityTaskWoken);
-    if (xHigherPriorityTaskWoken == pdTRUE) {
-        hardfault_handler_routine();
-    }
+    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 #endif
 }
 
