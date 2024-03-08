@@ -149,6 +149,8 @@ int main(void)
     // Wait for gdb to attach
     for (int i = 0; i < 1000000; i++) {}
 
+    HAL_Init();
+
     // initialize all drivers
     HAL_Clock_init();
     HAL_Dio_init();
