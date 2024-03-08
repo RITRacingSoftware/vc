@@ -37,7 +37,7 @@ void FDCAN2_IT0_IRQHandler(void) {
     HAL_FDCAN_IRQHandler(&can_main);
 }
 void FDCAN1_IT0_IRQHandler(void) {
-    HAL_FDCAN_IRQHandler(&can_main);
+    HAL_FDCAN_IRQHandler(&can_sensor);
 }
 
 static void main_bus_rx_handler(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
