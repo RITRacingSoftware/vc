@@ -186,7 +186,8 @@ void CAN_send_queued_messages(void)
         if (xQueueReceive(tx_can_message_queue, &dequeued_message, TICKS_TO_WAIT_QUEUE_CAN_MESSAGE) == pdTRUE) // Get next message to send if there is one
 #endif
         {
-            HAL_Can_send_message(dequeued_message.id, dequeued_message.dlc, dequeued_message.data);
+            //HAL_Can_send_message_main(dequeued_message.id, dequeued_message.dlc, dequeued_message.data);
+            HAL_Can_send_message_sensor(dequeued_message.id, dequeued_message.dlc, dequeued_message.data);
         }
         else
         {

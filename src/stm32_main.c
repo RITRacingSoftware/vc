@@ -128,7 +128,7 @@ void hardfault_handler_routine(void)
     uint8_t data[8];
     can_bus.vc_hard_fault_indicator.vc_hard_fault_indicator_task = task_id;
     formula_main_dbc_vc_hard_fault_indicator_pack(data, &can_bus.vc_hard_fault_indicator, 8);
-    HAL_Can_send_message(FORMULA_MAIN_DBC_VC_HARD_FAULT_INDICATOR_FRAME_ID, 8, *((uint64_t*)data)); 
+    HAL_Can_send_message_main(FORMULA_MAIN_DBC_VC_HARD_FAULT_INDICATOR_FRAME_ID, 8, *((uint64_t*)data)); 
 
     while (true) {}
 }

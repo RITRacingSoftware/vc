@@ -26,9 +26,14 @@ void HAL_Can_init_id_filter_32bit(uint32_t id);
 void HAL_Can_init_id_filter_16bit(uint16_t id1, uint16_t id2, uint16_t id3, uint16_t id4);
 
 /**
- * Transmits the CAN message
+ * Transmits a CAN message over the main bus
  */
-Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data); //Changed to void return from Error_t
+Error_t HAL_Can_send_message_main(uint32_t id, int dlc, uint64_t data);
+
+/**
+ * Transmits a CAN message over the sensor bus
+ */
+Error_t HAL_Can_send_message_sensor(uint32_t id, int dlc, uint64_t data);
 
 /**
  * Returns the number of empty transmit mailboxes (max of three)

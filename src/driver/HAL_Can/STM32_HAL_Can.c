@@ -23,7 +23,8 @@
 #include "CAN.h"
 
 
-#define CAN_PINS (GPIO_PIN_12 | GPIO_PIN_13)
+#define CAN_MAIN_PINS (GPIO_PIN_12 | GPIO_PIN_13)
+#define CAN_SENSOR_PINS (GPIO_PIN_11 | GPIO_PIN_12)
 
 static uint8_t num_filters = 0;
 
@@ -31,8 +32,11 @@ static FDCAN_HandleTypeDef can_main;
 static FDCAN_HandleTypeDef can_sensor;
 
 
-// Pipe interrupt back to cube code
+// Pipe interrupts back to cube code
 void FDCAN2_IT0_IRQHandler(void) {
+    HAL_FDCAN_IRQHandler(&can_main);
+}
+void FDCAN1_IT0_IRQHandler(void) {
     HAL_FDCAN_IRQHandler(&can_main);
 }
 
@@ -53,12 +57,31 @@ static void main_bus_rx_handler(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs
     }
 }
 
+static void sensor_bus_rx_handler(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+{
+    if((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
+    {
+        FDCAN_RxHeaderTypeDef header;
+        uint8_t data[8];
+
+        // Retrieve Rx messages from RX FIFO0
+        if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, data) != HAL_OK)
+        {
+            hardfault_handler_routine();
+        }
+
+        //CAN_add_message_rx_queue(header.Identifier, header.DataLength, data);
+    }
+}
+
 // Must initialize gpio first to read charger line
 void HAL_Can_init(void)
 {
     // Initialize pins
-    GPIO_InitTypeDef gpio = {CAN_PINS, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF9_FDCAN2};
-    HAL_GPIO_Init(GPIOB, &gpio);
+    GPIO_InitTypeDef gpio1 = {CAN_MAIN_PINS, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF9_FDCAN2};
+    HAL_GPIO_Init(GPIOB, &gpio1);
+    GPIO_InitTypeDef gpio2 = {CAN_SENSOR_PINS, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF9_FDCAN1};
+    HAL_GPIO_Init(GPIOA, &gpio2);
 
     // Initialize clocks
     RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
@@ -89,7 +112,6 @@ void HAL_Can_init(void)
     can_main.Init.StdFiltersNbr = 0;
     can_main.Init.ExtFiltersNbr = 0;
     can_main.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
-    //can_main.RxFifo0Callback = main_bus_rx_handler;
     if (HAL_FDCAN_Init(&can_main) != HAL_OK)
     {
         hardfault_handler_routine();
@@ -102,9 +124,9 @@ void HAL_Can_init(void)
     can_sensor.Init.AutoRetransmission = DISABLE;
     can_sensor.Init.TransmitPause = DISABLE;
     can_sensor.Init.ProtocolException = DISABLE;
-    can_sensor.Init.NominalPrescaler = 24;
+    can_sensor.Init.NominalPrescaler = 8;
     can_sensor.Init.NominalSyncJumpWidth = 1;
-    can_sensor.Init.NominalTimeSeg1 = 2;
+    can_sensor.Init.NominalTimeSeg1 = 12;
     can_sensor.Init.NominalTimeSeg2 = 2;
     can_sensor.Init.DataPrescaler = 1;
     can_sensor.Init.DataSyncJumpWidth = 1;
@@ -130,13 +152,22 @@ void HAL_Can_init(void)
     {
         hardfault_handler_routine();
     }
+    if (HAL_FDCAN_ConfigFilter(&can_sensor, &filter) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
 
     // Set up RX interrupts
-    HAL_NVIC_SetPriority(FDCAN2_IT0_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(FDCAN2_IT0_IRQn, 5, 0); // Main bus has slightly higher priority than sensor bus
     HAL_NVIC_EnableIRQ(FDCAN2_IT0_IRQn);
+    HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 5, 1);
+    HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
 
     // Register callbacks
     if (HAL_FDCAN_RegisterRxFifo0Callback(&can_main, main_bus_rx_handler) != HAL_OK) {
+        hardfault_handler_routine();
+    }
+    if (HAL_FDCAN_RegisterRxFifo0Callback(&can_sensor, sensor_bus_rx_handler) != HAL_OK) {
         hardfault_handler_routine();
     }
 
@@ -156,14 +187,13 @@ void HAL_Can_init(void)
     {
         hardfault_handler_routine();
     }
-
-    /*if (HAL_FDCAN_ActivateNotification(&can_sensor, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) != HAL_OK)
+    if (HAL_FDCAN_ActivateNotification(&can_sensor, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
     {
         hardfault_handler_routine();
-    }*/
+    }
 }
 
-Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data)
+Error_t HAL_Can_send_message_main(uint32_t id, int dlc, uint64_t data)
 {
     FDCAN_TxHeaderTypeDef header = {0};
     header.Identifier = id;
@@ -179,22 +209,22 @@ Error_t HAL_Can_send_message(uint32_t id, int dlc, uint64_t data)
     HAL_StatusTypeDef err =  HAL_FDCAN_AddMessageToTxFifoQ(&can_main, &header, (uint8_t*) &data);
 }
 
-
-
-/*void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs)
+Error_t HAL_Can_send_message_sensor(uint32_t id, int dlc, uint64_t data)
 {
-    if((RxFifo1ITs & FDCAN_IT_RX_FIFO1_NEW_MESSAGE) != 0)
-    {
-        FDCAN_RxHeaderTypeDef header;
-        uint8_t data[16];
+    FDCAN_TxHeaderTypeDef header = {0};
+    header.Identifier = id;
+    header.IdType = FDCAN_STANDARD_ID;
+    header.TxFrameType = FDCAN_DATA_FRAME;
+    header.DataLength = dlc;
+    header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+    header.BitRateSwitch = FDCAN_BRS_OFF;
+    header.FDFormat = FDCAN_CLASSIC_CAN;
+    header.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+    header.MessageMarker = 0;
 
-        // Retrieve Rx messages from RX FIFO1
-        if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &header, data) != HAL_OK)
-        {
-            hardfault_handler_routine();
-        }
-    }
-}*/
+    HAL_StatusTypeDef err =  HAL_FDCAN_AddMessageToTxFifoQ(&can_sensor, &header, (uint8_t*) &data);
+}
+
 
 
 
@@ -216,11 +246,6 @@ void HAL_Can_init_id_filter_16bit(uint16_t id1, uint16_t id2, uint16_t id3, uint
 
 
 uint8_t HAL_number_of_empty_mailboxes(void)
-{
-    
-}
-
-void HAL_Can_IRQ_handler(void)
 {
     
 }
