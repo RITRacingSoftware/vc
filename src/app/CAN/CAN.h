@@ -90,9 +90,14 @@ void CAN_100Hz(void);
 void CAN_1Hz(void);
 
 /**
- * Processes recevied can messages
+ * Processes recevied can messages on main bus
  */
-void CAN_process_recieved_messages_task(void);
+void CAN_process_main_recieved_messages_task(void);
+
+/**
+ * Processes recevied can messages on sensor bus
+ */
+void CAN_process_sensor_recieved_messages_task(void);
 
 /**
  * Fills empty transmit mailboxes with CAN messages from the queue
@@ -105,8 +110,13 @@ void CAN_send_queued_messages(void);
 bool CAN_is_transmit_queue_empty_fromISR(void);
 
 /**
- * Adds a received CAN message to the receive queue
+ * Adds a received CAN message to the main bus receive queue
  */
-void CAN_add_message_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data);
+void CAN_add_message_main_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data);
+
+/**
+ * Adds a received CAN message to the sensor bus receive queue
+ */
+void CAN_add_message_sensor_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data);
 
 #endif // CAN_H

@@ -18,11 +18,13 @@ CAN_BUS can_bus;
 
 // use the freertos queue unless we are in SIL where freertos is not in use.
 #ifdef VC_SIL
-static CanQueue_s tx_can_message_queue;
-static CanQueue_s rx_can_message_queue;
+static CanQueue_s tx_main_can_message_queue;
+static CanQueue_s rx_main_can_message_queue;
+static CanQueue_s rx_sensor_can_message_queue;
 #else
-static QueueHandle_t tx_can_message_queue;
-static QueueHandle_t rx_can_message_queue;
+static QueueHandle_t tx_main_can_message_queue;
+static QueueHandle_t rx_main_can_message_queue;
+static QueueHandle_t rx_sensor_can_message_queue;
 #endif
 
 typedef struct
@@ -37,11 +39,13 @@ static int next_id;
 void CAN_init(void)
 {
 #ifdef VC_SIL
-    CanQueue_init(&tx_can_message_queue);
-    CanQueue_init(&rx_can_message_queue);
+    CanQueue_init(&tx_main_can_message_queue);
+    CanQueue_init(&rx_main_can_message_queue);
+    CanQueue_init(&rx_sensor_can_message_queue);
 #else
-    tx_can_message_queue = xQueueCreate(CAN_TX_QUEUE_LEN, sizeof(CanMessage_s));
-    rx_can_message_queue = xQueueCreate(CAN_RX_QUEUE_LEN, sizeof(CanMessage_s));
+    tx_main_can_message_queue = xQueueCreate(CAN_TX_QUEUE_LEN, sizeof(CanMessage_s));
+    rx_main_can_message_queue = xQueueCreate(CAN_RX_QUEUE_LEN, sizeof(CanMessage_s));
+    rx_sensor_can_message_queue = xQueueCreate(CAN_RX_QUEUE_LEN, sizeof(CanMessage_s));
 #endif
 
     can_tx_error = false;
@@ -98,9 +102,9 @@ void CAN_send_message(unsigned long int id)
     {
         CanMessage_s thisMessage = {(int)id, 8, msg_data};
 #ifdef VC_SIL
-        can_tx_error = !CanQueue_enqueue(&tx_can_message_queue, &thisMessage);
+        can_tx_error = !CanQueue_enqueue(&tx_main_can_message_queue, &thisMessage);
 #else
-        can_tx_error = !xQueueSend(tx_can_message_queue, &thisMessage, 0);
+        can_tx_error = !xQueueSend(tx_main_can_message_queue, &thisMessage, 0);
         if (!can_tx_error)
         {
             xSemaphoreGive(can_message_transmit_semaphore);
@@ -129,14 +133,14 @@ bool CAN_get_rx_error(void)
 }
 
 // This method loops until we fail to retrieve a message. Since we will wait forever, this should never happen
-void CAN_process_recieved_messages_task(void)
+void CAN_process_main_recieved_messages_task(void)
 {
     CanMessage_s received_message;
 // Get all can messages received
 #ifdef VC_SIL
-    while (CanQueue_dequeue(&rx_can_message_queue, &received_message))
+    while (CanQueue_dequeue(&rx_main_can_message_queue, &received_message))
 #else
-    while (xQueueReceive(rx_can_message_queue, &received_message, portMAX_DELAY) == pdTRUE)
+    while (xQueueReceive(rx_main_can_message_queue, &received_message, portMAX_DELAY) == pdTRUE)
 #endif
     {
         uint8_t data[8];
@@ -173,6 +177,27 @@ void CAN_process_recieved_messages_task(void)
     }
 }
 
+// This method loops until we fail to retrieve a message. Since we will wait forever, this should never happen
+void CAN_process_sensor_recieved_messages_task(void)
+{
+    CanMessage_s received_message;
+// Get all can messages received
+#ifdef VC_SIL
+    while (CanQueue_dequeue(&rx_sensor_can_message_queue, &received_message))
+#else
+    while (xQueueReceive(rx_sensor_can_message_queue, &received_message, portMAX_DELAY) == pdTRUE)
+#endif
+    {
+        uint8_t data[8];
+        for (int i = 0; i < 8; i++)
+        {
+            data[i] = (received_message.data >> (i * 8)) & 0xff;
+        }
+
+        // TODO: Use received messages
+    }
+}
+
 void CAN_send_queued_messages(void)
 {
     // Check how many mailboxes are free, and put a new message in each empty mailbox, if there are any messages
@@ -181,13 +206,12 @@ void CAN_send_queued_messages(void)
     while (num_free_mailboxes > 0) // Fill all empty mailboxes with messages
     {
 #ifdef VC_SIL
-        if (CanQueue_dequeue(&tx_can_message_queue, &dequeued_message))
+        if (CanQueue_dequeue(&tx_main_can_message_queue, &dequeued_message))
 #else
-        if (xQueueReceive(tx_can_message_queue, &dequeued_message, TICKS_TO_WAIT_QUEUE_CAN_MESSAGE) == pdTRUE) // Get next message to send if there is one
+        if (xQueueReceive(tx_main_can_message_queue, &dequeued_message, TICKS_TO_WAIT_QUEUE_CAN_MESSAGE) == pdTRUE) // Get next message to send if there is one
 #endif
         {
-            //HAL_Can_send_message_main(dequeued_message.id, dequeued_message.dlc, dequeued_message.data);
-            HAL_Can_send_message_sensor(dequeued_message.id, dequeued_message.dlc, dequeued_message.data);
+            HAL_Can_send_message_main(dequeued_message.id, dequeued_message.dlc, dequeued_message.data);
         }
         else
         {
@@ -200,13 +224,13 @@ void CAN_send_queued_messages(void)
 bool CAN_is_transmit_queue_empty_fromISR(void)
 {
 #ifdef VC_SIL
-    return tx_can_message_queue.count > 0;
+    return tx_main_can_message_queue.count > 0;
 #else
-    return xQueueIsQueueEmptyFromISR(tx_can_message_queue) == pdTRUE;
+    return xQueueIsQueueEmptyFromISR(tx_main_can_message_queue) == pdTRUE;
 #endif
 }
 
-void CAN_add_message_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data)
+void CAN_add_message_main_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data)
 {
     uint64_t msg_data = 0;
     memcpy(&msg_data, data, sizeof(msg_data));
@@ -216,10 +240,28 @@ void CAN_add_message_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data)
     rx_msg.id = id;
     rx_msg.dlc = dlc;
 #ifdef VC_SIL
-    CanQueue_enqueue(&rx_can_message_queue, &rx_msg);
+    CanQueue_enqueue(&rx_main_can_message_queue, &rx_msg);
 #else
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xQueueSendFromISR(rx_can_message_queue, &rx_msg, &xHigherPriorityTaskWoken);
+    xQueueSendFromISR(rx_main_can_message_queue, &rx_msg, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+#endif
+}
+
+void CAN_add_message_sensor_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data)
+{
+    uint64_t msg_data = 0;
+    memcpy(&msg_data, data, sizeof(msg_data));
+
+    CanMessage_s rx_msg;
+    rx_msg.data = msg_data;
+    rx_msg.id = id;
+    rx_msg.dlc = dlc;
+#ifdef VC_SIL
+    CanQueue_enqueue(&rx_sensor_can_message_queue, &rx_msg);
+#else
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xQueueSendFromISR(rx_sensor_can_message_queue, &rx_msg, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 #endif
 }

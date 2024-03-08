@@ -53,7 +53,7 @@ static void main_bus_rx_handler(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs
             hardfault_handler_routine();
         }
 
-        CAN_add_message_rx_queue(header.Identifier, header.DataLength, data);
+        CAN_add_message_main_rx_queue(header.Identifier, header.DataLength, data);
     }
 }
 
@@ -70,7 +70,7 @@ static void sensor_bus_rx_handler(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0I
             hardfault_handler_routine();
         }
 
-        //CAN_add_message_rx_queue(header.Identifier, header.DataLength, data);
+        CAN_add_message_sensor_rx_queue(header.Identifier, header.DataLength, data);
     }
 }
 

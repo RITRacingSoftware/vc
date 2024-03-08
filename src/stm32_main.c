@@ -65,16 +65,28 @@ void task_1kHz(void *pvParameters)
     }
 }
 
-#define TASK_CAN_RX_NAME "task_CAN_RX"
-#define TASK_CAN_RX_PRIORITY (tskIDLE_PRIORITY + 4)
-#define TASK_CAN_RX_STACK_SIZE_B (500) 
+#define TASK_CAN_MAIN_RX_NAME "task_CAN_MAIN_RX"
+#define TASK_CAN_MAIN_RX_PRIORITY (tskIDLE_PRIORITY + 4)
+#define TASK_CAN_MAIN_RX_STACK_SIZE_B (500) 
 
-void task_can_rx(void *pvParameters)
+void task_can_main_rx(void *pvParameters)
 {
     (void) pvParameters;
-    CAN_process_recieved_messages_task(); // This should never exit
+    CAN_process_main_recieved_messages_task(); // This should never exit
     hardfault_handler_routine();
 }
+
+#define TASK_CAN_SENSOR_RX_NAME "task_CAN_SENSOR_RX"
+#define TASK_CAN_SENSOR_RX_PRIORITY (tskIDLE_PRIORITY + 5)
+#define TASK_CAN_SENSOR_RX_STACK_SIZE_B (500) 
+
+void task_can_sensor_rx(void *pvParameters)
+{
+    (void) pvParameters;
+    CAN_process_sensor_recieved_messages_task(); // This should never exit
+    hardfault_handler_routine();
+}
+
 
 #define TASK_CAN_TX_NAME "task_CAN_TX"
 #define TASK_CAN_TX_PRIORITY (tskIDLE_PRIORITY + 4)
@@ -115,13 +127,17 @@ void hardfault_handler_routine(void)
     {
         task_id = 2;
     }
-    else if (strcmp(task_name, TASK_CAN_RX_NAME) == 0)
+    else if (strcmp(task_name, TASK_CAN_MAIN_RX_NAME) == 0)
     {
         task_id = 3;
     }
-    else if (strcmp(task_name, TASK_CAN_TX_NAME) == 0)
+    else if (strcmp(task_name, TASK_CAN_SENSOR_RX_NAME) == 0)
     {
         task_id = 4;
+    }
+    else if (strcmp(task_name, TASK_CAN_TX_NAME) == 0)
+    {
+        task_id = 5;
     }
     
 
@@ -181,11 +197,21 @@ int main(void)
         hardfault_handler_routine();
     }
 
-    err = xTaskCreate(task_can_rx, 
-        TASK_CAN_RX_NAME, 
-        TASK_CAN_RX_STACK_SIZE_B,
+    err = xTaskCreate(task_can_main_rx, 
+        TASK_CAN_MAIN_RX_NAME, 
+        TASK_CAN_MAIN_RX_STACK_SIZE_B,
         NULL,
-        TASK_CAN_RX_PRIORITY,
+        TASK_CAN_MAIN_RX_PRIORITY,
+        NULL);
+    if (err != pdPASS) {
+        hardfault_handler_routine();
+    }
+
+    err = xTaskCreate(task_can_sensor_rx, 
+        TASK_CAN_SENSOR_RX_NAME, 
+        TASK_CAN_SENSOR_RX_STACK_SIZE_B,
+        NULL,
+        TASK_CAN_SENSOR_RX_PRIORITY,
         NULL);
     if (err != pdPASS) {
         hardfault_handler_routine();
