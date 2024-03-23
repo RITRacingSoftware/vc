@@ -26,11 +26,18 @@
 #define CAN_MAIN_PINS (GPIO_PIN_12 | GPIO_PIN_13)
 #define CAN_SENSOR_PINS (GPIO_PIN_11 | GPIO_PIN_12)
 
-static uint8_t num_filters = 0;
+#define MAX_MAIN_STANDARD_FILTERS 28
+#define MAX_MAIN_EXTENDED_FILTERS 8
+#define MAX_SENSOR_STANDARD_FILTERS 28
+#define MAX_SENSOR_EXTENDED_FILTERS 8
 
 static FDCAN_HandleTypeDef can_main;
 static FDCAN_HandleTypeDef can_sensor;
 
+static uint8_t num_main_standard_filters = 0;
+static uint8_t num_main_extended_filters = 0;
+static uint8_t num_sensor_standard_filters = 0;
+static uint8_t num_sensor_extended_filters = 0;
 
 // Pipe interrupts back to cube code
 void FDCAN2_IT0_IRQHandler(void) {
@@ -109,8 +116,8 @@ void HAL_Can_init(void)
     can_main.Init.DataSyncJumpWidth = 1;
     can_main.Init.DataTimeSeg1 = 1;
     can_main.Init.DataTimeSeg2 = 1;
-    can_main.Init.StdFiltersNbr = 0;
-    can_main.Init.ExtFiltersNbr = 0;
+    can_main.Init.StdFiltersNbr = MAX_MAIN_STANDARD_FILTERS;
+    can_main.Init.ExtFiltersNbr = MAX_MAIN_EXTENDED_FILTERS;
     can_main.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
     if (HAL_FDCAN_Init(&can_main) != HAL_OK)
     {
@@ -132,27 +139,10 @@ void HAL_Can_init(void)
     can_sensor.Init.DataSyncJumpWidth = 1;
     can_sensor.Init.DataTimeSeg1 = 1;
     can_sensor.Init.DataTimeSeg2 = 1;
-    can_sensor.Init.StdFiltersNbr = 0;
-    can_sensor.Init.ExtFiltersNbr = 0;
+    can_sensor.Init.StdFiltersNbr = MAX_SENSOR_STANDARD_FILTERS;
+    can_sensor.Init.ExtFiltersNbr = MAX_SENSOR_EXTENDED_FILTERS;
     can_sensor.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
     if (HAL_FDCAN_Init(&can_sensor) != HAL_OK)
-    {
-        hardfault_handler_routine();
-    }
-
-    // Allow all standard frames
-    FDCAN_FilterTypeDef filter;
-    filter.IdType = FDCAN_STANDARD_ID;
-    filter.FilterIndex = 0;
-    filter.FilterType = FDCAN_FILTER_RANGE;
-    filter.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-    filter.FilterID1 = 0x000;
-    filter.FilterID2 = 0x7FF;
-    if (HAL_FDCAN_ConfigFilter(&can_main, &filter) != HAL_OK)
-    {
-        hardfault_handler_routine();
-    }
-    if (HAL_FDCAN_ConfigFilter(&can_sensor, &filter) != HAL_OK)
     {
         hardfault_handler_routine();
     }
@@ -170,6 +160,14 @@ void HAL_Can_init(void)
     if (HAL_FDCAN_RegisterRxFifo0Callback(&can_sensor, sensor_bus_rx_handler) != HAL_OK) {
         hardfault_handler_routine();
     }
+
+    // Initialize filters
+    // Default discard unless a filter allows
+    if (HAL_FDCAN_ConfigGlobalFilter(&can_main, FDCAN_REJECT, FDCAN_REJECT, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE) != HAL_OK) {
+        hardfault_handler_routine();
+    }
+    HAL_Can_add_filter_main_standard(FORMULA_MAIN_DBC_MCU_INTERNAL_STATES_FRAME_ID, FORMULA_MAIN_DBC_PBX_STATUS_FRAME_ID);
+    
 
 
     // Start can interfaces
@@ -225,27 +223,87 @@ Error_t HAL_Can_send_message_sensor(uint32_t id, int dlc, uint64_t data)
     HAL_StatusTypeDef err =  HAL_FDCAN_AddMessageToTxFifoQ(&can_sensor, &header, (uint8_t*) &data);
 }
 
-
-
-
-
-
-
-
-
-void HAL_Can_init_id_filter_32bit(uint32_t id)
+void HAL_Can_add_filter_main_standard(uint16_t id1, uint16_t id2)
 {
+    if (num_main_standard_filters + 1 >= MAX_MAIN_STANDARD_FILTERS) {
+        // All filters used
+        hardfault_handler_routine();
+    }
 
+    FDCAN_FilterTypeDef filter;
+    filter.IdType = FDCAN_STANDARD_ID;
+    filter.FilterIndex = (num_main_standard_filters++);
+    filter.FilterType = FDCAN_FILTER_DUAL;
+    filter.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+    filter.FilterID1 = id1;
+    filter.FilterID2 = id2;
+    if (HAL_FDCAN_ConfigFilter(&can_main, &filter) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
 }
 
-void HAL_Can_init_id_filter_16bit(uint16_t id1, uint16_t id2, uint16_t id3, uint16_t id4)
+void HAL_Can_add_filter_main_extended(uint32_t id1, uint32_t id2)
 {
-    
+    if (num_main_extended_filters + 1 >= MAX_MAIN_EXTENDED_FILTERS) {
+        // All filters used
+        hardfault_handler_routine();
+    }
+
+    FDCAN_FilterTypeDef filter;
+    filter.IdType = FDCAN_EXTENDED_ID;
+    filter.FilterIndex = (num_main_extended_filters++);
+    filter.FilterType = FDCAN_FILTER_DUAL;
+    filter.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+    filter.FilterID1 = id1;
+    filter.FilterID2 = id2;
+    if (HAL_FDCAN_ConfigFilter(&can_main, &filter) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
 }
 
+void HAL_Can_add_filter_sensor_standard(uint16_t id1, uint16_t id2)
+{
+    if (num_sensor_standard_filters + 1 >= MAX_SENSOR_STANDARD_FILTERS) {
+        // All filters used
+        hardfault_handler_routine();
+    }
 
+    FDCAN_FilterTypeDef filter;
+    filter.IdType = FDCAN_STANDARD_ID;
+    filter.FilterIndex = (num_sensor_standard_filters++);
+    filter.FilterType = FDCAN_FILTER_DUAL;
+    filter.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+    filter.FilterID1 = id1;
+    filter.FilterID2 = id2;
+    if (HAL_FDCAN_ConfigFilter(&can_sensor, &filter) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
+}
+
+void HAL_Can_add_filter_sensor_extended(uint32_t id1, uint32_t id2)
+{
+    if (num_sensor_extended_filters + 1 >= MAX_SENSOR_EXTENDED_FILTERS) {
+        // All filters used
+        hardfault_handler_routine();
+    }
+
+    FDCAN_FilterTypeDef filter;
+    filter.IdType = FDCAN_EXTENDED_ID;
+    filter.FilterIndex = (num_sensor_extended_filters++);
+    filter.FilterType = FDCAN_FILTER_DUAL;
+    filter.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+    filter.FilterID1 = id1;
+    filter.FilterID2 = id2;
+    if (HAL_FDCAN_ConfigFilter(&can_sensor, &filter) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
+}
 
 uint8_t HAL_number_of_empty_mailboxes(void)
 {
-    
+    return HAL_FDCAN_GetTxFifoFreeLevel(&can_main);
 }

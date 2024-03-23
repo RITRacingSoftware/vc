@@ -159,7 +159,9 @@ void CAN_process_main_recieved_messages_task(void)
         }
 
         // Unpack message recieved
-        //  IMPORTANT: For any CAN messages to be received, the message ID has to be added to the CAN filter in the CAN Driver init function (HAL_Can_init)
+        // IMPORTANT: For any CAN messages to be received,
+        //  the message ID has to be added to the CAN filter initialization
+        //  in STM32_HAL_Can.c:HAL_Can_init
         switch (received_message.id)
         {
         case FORMULA_MAIN_DBC_MCU_INTERNAL_STATES_FRAME_ID:
@@ -171,7 +173,7 @@ void CAN_process_main_recieved_messages_task(void)
             break;
 
         default:
-            // printf("f29bms: unknown CAN id: %d\n", received_message.id);
+            // printf("bms: unknown CAN id: %d\n", received_message.id);
             break;
         }
     }
