@@ -6,3 +6,5 @@ build/*
 *mocks*
 *.blf
 *__pycache__*
+.vscode
+!.vscode/launch.json
