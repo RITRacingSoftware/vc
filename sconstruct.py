@@ -609,9 +609,9 @@ stm32_elf = stm32_c_env.BuildElf(
 Clean(stm32_elf, BUILD_DIR.File('vc.map'))
 
 # stm32 hex generation
-vcbin = stm32_c_env.BuildHex(
+vc_bin = stm32_c_env.BuildHex(
     source=stm32_elf,
     target=STM32_BUILD_DIR.File('vc.bin')
 )
 
-Alias('vc.bin', vcbin)
+Alias('vc-bin', vc_bin)
