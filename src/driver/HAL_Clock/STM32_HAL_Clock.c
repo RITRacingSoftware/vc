@@ -46,4 +46,17 @@ void HAL_Clock_init(void)
 	{
 		hardfault_handler_routine();
 	}
+
+	// Initialize peripheral clocks
+    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC12 | RCC_PERIPHCLK_FDCAN;
+    PeriphClkInit.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
+	PeriphClkInit.FdcanClockSelection = RCC_FDCANCLKSOURCE_PCLK1;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_ADC12_CLK_ENABLE();
+	__HAL_RCC_FDCAN_CLK_ENABLE();
 }

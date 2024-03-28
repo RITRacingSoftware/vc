@@ -90,16 +90,6 @@ void HAL_Can_init(void)
     GPIO_InitTypeDef gpio2 = {CAN_SENSOR_PINS, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF9_FDCAN1};
     HAL_GPIO_Init(GPIOA, &gpio2);
 
-    // Initialize clocks
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_FDCAN;
-    PeriphClkInit.FdcanClockSelection = RCC_FDCANCLKSOURCE_PCLK1;
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-    {
-        hardfault_handler_routine();
-    }
-    __HAL_RCC_FDCAN_CLK_ENABLE();
-
     // Initialize CAN interfaces
     can_main.Instance = FDCAN2;
     can_main.Init.ClockDivider = FDCAN_CLOCK_DIV1;

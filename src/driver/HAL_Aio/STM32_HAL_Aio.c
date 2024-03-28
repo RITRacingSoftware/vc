@@ -5,6 +5,7 @@
 
 #include "stm32g4xx_hal_dma.h" // Needed due to an include bug in stm32g4xx_hal_adc.h
 #include "stm32g4xx_hal_adc.h"
+#include "stm32g4xx_hal_adc_ex.h"
 #include "stm32g4xx_hal_gpio.h"
 #include "stm32g4xx_hal_rcc.h"
 
@@ -13,13 +14,9 @@ static ADC_HandleTypeDef adc2;
 
 void HAL_Aio_init(void)
 {
-    // enable ADC and GPIO peripheral clocks
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_ADC12_CLK_ENABLE();
-
     // configure needed GPIO pins
     GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Pin = GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5;
+    GPIO_InitStructure.Pin = GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4;
     GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
     GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_LOW;
@@ -66,6 +63,14 @@ void HAL_Aio_init(void)
     if (HAL_ADC_Init(&adc2) != HAL_OK) {
         hardfault_handler_routine();
     }
+
+    if (HAL_ADCEx_Calibration_Start(&adc1, ADC_SINGLE_ENDED) != HAL_OK) {
+        hardfault_handler_routine();
+    }
+
+    if (HAL_ADCEx_Calibration_Start(&adc2, ADC_SINGLE_ENDED) != HAL_OK) {
+        hardfault_handler_routine();
+    }
 }
 
 uint16_t HAL_Aio_read(AIOpin_e pin)
@@ -76,24 +81,24 @@ uint16_t HAL_Aio_read(AIOpin_e pin)
 
     switch (pin) {
         case AIOpin_ACCEL_A:
-            adcx = adc1;
-            sConfig.Channel = ADC_CHANNEL_4;
-            break;
-        case AIOpin_ACCEL_B:
             adcx = adc2;
             sConfig.Channel = ADC_CHANNEL_17;
             break;
+        case AIOpin_ACCEL_B:
+            adcx = adc1;
+            sConfig.Channel = ADC_CHANNEL_4;
+            break;
         case AIOpin_BRAKE_PRESSURE:
-            adcx = adc2;
-            sConfig.Channel = ADC_CHANNEL_13;
+            adcx = adc1;
+            sConfig.Channel = ADC_CHANNEL_3;
             break;
         default:
             hardfault_handler_routine();
     }
 
     sConfig.Rank = ADC_REGULAR_RANK_1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
-    sConfig.SingleDiff = ADC_DIFFERENTIAL_ENDED;
+    sConfig.SamplingTime = ADC_SAMPLETIME_24CYCLES_5;
+    sConfig.SingleDiff = ADC_SINGLE_ENDED;
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
     sConfig.Offset = 0;
 
