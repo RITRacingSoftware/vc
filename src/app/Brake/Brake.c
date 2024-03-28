@@ -26,13 +26,13 @@ bool Brake_is_pressed(void)
     can_bus.vc_pedal_inputs_raw.vc_pedal_inputs_raw_brake_voltage = formula_main_dbc_vc_pedal_inputs_raw_vc_pedal_inputs_raw_brake_voltage_encode(voltage);
     
     // this gon flicker
-    // Only set a fualt if the brake is irrational for a number of samples in a row
-    uint8_t irrational_count = 0;
-    if (FLOAT_LT(voltage, BPS_MIN_V, VOLTAGE_TOL))
+    // Only set a fualt if the brake is iurrational for a number of samples in a row
+    int8_t irrational_count = 0;
+    if (FLOAT_LT(voltage, BPS_IRRATIONAL_LOW_V, VOLTAGE_TOL))
     {
         irrational_count += 1;
     }
-    else if(FLOAT_GT(voltage, BPS_IRRATIONAL_V, VOLTAGE_TOL))
+    else if(FLOAT_GT(voltage, BPS_IRRATIONAL_HIGH_V, VOLTAGE_TOL))
     {
         irrational_count += 1;
     }
@@ -54,5 +54,7 @@ bool Brake_is_pressed(void)
         FaultManager_clear_fault(FaultCode_BRAKE_SENSOR_IRRATIONAL);
     }
 
-    return FLOAT_GT(voltage, BRAKE_PRESSED_V, VOLTAGE_TOL);
+    float brake_psi = ((float) voltage - BPS_MIN_V) * BPS_MAX_PRESSURE_PSI / (BPS_MAX_V - BPS_MIN_V);
+
+    return FLOAT_GT(brake_psi, BRAKE_PRESSED_PSI, VOLTAGE_TOL);
 }
