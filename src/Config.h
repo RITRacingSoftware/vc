@@ -102,6 +102,7 @@
 /**
  * Brake Pressure Sensor
  */
+#define BPS_VOLTAGE_SCALER 1.5 // We have a voltage divider reducing the voltage to 2/3
 #define BPS_MIN_V 0.5
 #define BPS_MAX_V 4.5 // the sensor still only goes to 4.5v, if it reads up here itll be irrational
 #define BPS_MAX_PRESSURE_PSI 5076.32
@@ -112,7 +113,7 @@
 #define MAX_BRAKE_IRRATIONAL_COUNT 3
 
 // Pressure indicating the driver has intentionally applied force to the brake pedal.
-#define BRAKE_PRESSED_PSI 55
+#define BRAKE_PRESSED_PSI 150
 
 
 #endif // VC_CONFIG_H scons sim

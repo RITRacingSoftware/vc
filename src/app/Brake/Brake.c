@@ -17,7 +17,7 @@ bool Brake_is_pressed(void)
     
     // convert the analog input line to sensor voltage
     // This is different than the adc input (3v3) but is scaled down to 3v3 so this should work
-    float voltage = ((float) adc_val / ADC_MAX_VAL) * BPS_MAX_V;
+    float voltage = ((float) adc_val / ADC_MAX_VAL) * ADC_MAX_VOLTAGE * BPS_VOLTAGE_SCALER;
 
 #ifdef BRAKE_DEBUG
     printf("voltage: %f\r\n", adc_val, voltage);
@@ -55,6 +55,7 @@ bool Brake_is_pressed(void)
     }
 
     float brake_psi = ((float) voltage - BPS_MIN_V) * BPS_MAX_PRESSURE_PSI / (BPS_MAX_V - BPS_MIN_V);
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_brake_pressure = formula_main_dbc_vc_pedal_inputs_vc_pedal_inputs_brake_pressure_encode(brake_psi);
 
     return FLOAT_GT(brake_psi, BRAKE_PRESSED_PSI, VOLTAGE_TOL);
 }

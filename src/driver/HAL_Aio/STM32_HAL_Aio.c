@@ -59,6 +59,8 @@ uint16_t HAL_Aio_read(AIOpin_e pin)
 
     // select channel
     ADC1->CHSELR = channel;
+    // Set sampling time
+    ADC1->SMPR = 2;
 
     // start conversion
     ADC_StartOfConversion(ADC1);
