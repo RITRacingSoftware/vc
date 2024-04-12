@@ -43,11 +43,11 @@ bool Accelerator_read_positions(AccelPos_s* accel_pos)
     can_bus.vc_pedal_inputs.vc_pedal_inputs_accel_position_avg = formula_main_dbc_vc_pedal_inputs_vc_pedal_inputs_accel_position_avg_encode(accel_pos->average);
 
     // Check if open and being pulled low below rational range
-    if((APS_A_IRRATIONAL_V > 0.01) && (voltage_a < APS_A_IRRATIONAL_V))
+    if((APS_A_IRRATIONAL_LOW_V > 0.01) && (voltage_a < APS_A_IRRATIONAL_LOW_V))
     {
         return false;
     }
-    if((APS_B_IRRATIONAL_V > 0.01) && (voltage_b < APS_B_IRRATIONAL_V))
+    if((APS_B_IRRATIONAL_LOW_V > 0.01) && (voltage_b < APS_B_IRRATIONAL_LOW_V))
     {
         return false;
     }
