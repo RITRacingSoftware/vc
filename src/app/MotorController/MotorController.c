@@ -38,7 +38,7 @@ void MotorController_init(void)
     last_checkin_ms = MC_CAN_TIMEOUT_MS + 1;
     last_mc_msg_count = 0;
     can_bus.mc_command.inverter_enable = 1;
-    can_bus.mc_command.direction_command = 0; // go forward
+    can_bus.mc_command.direction_command = 1; // go forward
     can_bus.mc_command.torque_command = 0;
     can_bus.mc_command.torque_limit_command = formula_main_dbc_mcu_command_message_torque_limit_command_encode(ABSOLUTE_MAX_TORQUE_NM);
     can_bus.mc_command.inverter_discharge = 1; // enable discharge
