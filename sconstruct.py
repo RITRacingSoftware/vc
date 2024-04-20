@@ -122,7 +122,7 @@ def TOOL_ARM_ELF_HEX(env):
     SOURCE must be a list of strings
     """
     arm_elf_builder = SCons.Builder.Builder(action=[
-        ARM_CC + ' -lm -T' + LINKER_FILE.abspath + ' -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -Wl,-Map=${TARGET.dir.abspath}/map.map,-lm --specs=nosys.specs -mthumb ${SOURCES[:].abspath} -o ${TARGET.abspath} -lm'
+        ARM_CC + ' ${LDFLAGS} -Wl,-Map=${TARGET.dir.abspath}/map.map ${SOURCES[:].abspath} -o ${TARGET.abspath} ${LDFLAGS_END}'
     ])
 
     arm_hex_builder = SCons.Builder.Builder(action=[
@@ -141,9 +141,10 @@ stm32_c_env = Environment(
     LD=ARM_LD,
     CPPPATH=include_paths,
     CPPDEFINES=['STM32G473', 'STM32G473xx'],
-    CCFLAGS=['-ggdb','-mcpu=cortex-m4', '-mfpu=fpv4-sp-d16', '-mfloat-abi=hard', '-mthumb', '-lm'],
+    CCFLAGS=['-ggdb','-mcpu=cortex-m4', '-mfpu=fpv4-sp-d16', '-mfloat-abi=hard', '-mthumb', '-ffunction-sections', '-fdata-sections'],
     ASFLAGS=['-mthumb'],
-    LDFLAGS=['-T{}'.format(LINKER_FILE.abspath), '-mcpu=cortex-m4', '-mfpu=fpv4-sp-d16', '-mfloat-abi=hard', '-mthumb', '-Wall', '--specs=nosys.specs', '-lm']
+    LDFLAGS=['-T{}'.format(LINKER_FILE.abspath), '-mcpu=cortex-m4', '-mfpu=fpv4-sp-d16', '-mfloat-abi=hard', '-mthumb', '-Wall', '--specs=nosys.specs', '-Wl,--gc-sections'],
+    LDFLAGS_END=['-lm']
 )
 
 # janky
