@@ -27,9 +27,6 @@
 #include "MotorController.h"
 #include "SoundController.h"
 
-#define SEPHAMORE_WAIT 0
-SemaphoreHandle_t can_message_transmit_semaphore;
-
 #define TASK_100Hz_NAME "task_100Hz"
 #define TASK_100Hz_PRIORITY (tskIDLE_PRIORITY + 1)
 #define TASK_100Hz_PERIOD_MS (10)
@@ -98,10 +95,7 @@ void task_can_tx(void *pvParameters)
     // TickType_t next_wake_time = xTaskGetTickCount();
     for (;;)
     {
-        if(xSemaphoreTake(can_message_transmit_semaphore, portMAX_DELAY) == pdTRUE)
-        {
-            CAN_send_queued_messages();
-        }
+        CAN_send_queued_messages_task(); // This should never exit
     }
 }
 
@@ -158,10 +152,6 @@ void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName)
 
 int main(void)
 {
-    can_message_transmit_semaphore = xSemaphoreCreateBinary();
-    xSemaphoreGive(can_message_transmit_semaphore);
-    xSemaphoreTake(can_message_transmit_semaphore, SEPHAMORE_WAIT);
-
     // Wait for gdb to attach
     for (int i = 0; i < 1000000; i++) {}
 

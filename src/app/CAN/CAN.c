@@ -25,6 +25,7 @@ static CanQueue_s rx_sensor_can_message_queue;
 static QueueHandle_t tx_main_can_message_queue;
 static QueueHandle_t rx_main_can_message_queue;
 static QueueHandle_t rx_sensor_can_message_queue;
+static SemaphoreHandle_t tx_fifo_semaphore; // Tracks if the TX buffer is occupied or not
 #endif
 
 typedef struct
@@ -46,6 +47,8 @@ void CAN_init(void)
     tx_main_can_message_queue = xQueueCreate(CAN_TX_QUEUE_LEN, sizeof(CanMessage_s));
     rx_main_can_message_queue = xQueueCreate(CAN_RX_QUEUE_LEN, sizeof(CanMessage_s));
     rx_sensor_can_message_queue = xQueueCreate(CAN_RX_QUEUE_LEN, sizeof(CanMessage_s));
+    tx_fifo_semaphore = xSemaphoreCreateBinary();
+    xSemaphoreGive(tx_fifo_semaphore);
 #endif
 
     can_tx_error = false;
@@ -104,11 +107,7 @@ void CAN_send_message(unsigned long int id)
 #ifdef VC_SIL
         can_tx_error = !CanQueue_enqueue(&tx_main_can_message_queue, &thisMessage);
 #else
-        can_tx_error = !xQueueSend(tx_main_can_message_queue, &thisMessage, 0);
-        if (!can_tx_error)
-        {
-            xSemaphoreGive(can_message_transmit_semaphore);
-        }
+        int status = xQueueSend(tx_main_can_message_queue, &thisMessage, 0);
 #endif
     }
     else
@@ -200,27 +199,23 @@ void CAN_process_sensor_recieved_messages_task(void)
     }
 }
 
-void CAN_send_queued_messages(void)
+void CAN_send_queued_messages_task(void)
 {
-    // Check how many mailboxes are free, and put a new message in each empty mailbox, if there are any messages
-    uint8_t num_free_mailboxes = HAL_number_of_empty_mailboxes();
     CanMessage_s dequeued_message;
-    while (num_free_mailboxes > 0) // Fill all empty mailboxes with messages
-    {
-#ifdef VC_SIL
-        if (CanQueue_dequeue(&tx_main_can_message_queue, &dequeued_message))
-#else
-        if (xQueueReceive(tx_main_can_message_queue, &dequeued_message, TICKS_TO_WAIT_QUEUE_CAN_MESSAGE) == pdTRUE) // Get next message to send if there is one
-#endif
-        {
-            HAL_Can_send_message_main(dequeued_message.id, dequeued_message.dlc, dequeued_message.data);
+    while (xQueueReceive(tx_main_can_message_queue, &dequeued_message, portMAX_DELAY) == pdTRUE) {
+        xSemaphoreTake(tx_fifo_semaphore, portMAX_DELAY);
+
+        if (!HAL_Can_send_message_main(dequeued_message.id, dequeued_message.dlc, dequeued_message.data)) {
+            // Error!
+            int a = 0;
         }
-        else
-        {
-            break;
-        }
-        num_free_mailboxes--;
     }
+}
+
+void CAN_tx_avail_callback() {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR(tx_fifo_semaphore, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 bool CAN_is_transmit_queue_empty_fromISR(void)

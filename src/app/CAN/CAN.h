@@ -21,7 +21,7 @@ typedef struct
 
 // semaphore only available in freertos, which isnt used for SIL
 #ifndef VC_SIL
-extern SemaphoreHandle_t can_message_transmit_semaphore;
+// extern SemaphoreHandle_t can_message_transmit_semaphore;
 #endif
 
 /// Storage structure for current state of CAN bus.
@@ -102,7 +102,7 @@ void CAN_process_sensor_recieved_messages_task(void);
 /**
  * Fills empty transmit mailboxes with CAN messages from the queue
  */
-void CAN_send_queued_messages(void);
+void CAN_send_queued_messages_task(void);
 
 /**
  * Returns whether the transmit queue is empty. Must only be called from an ISR
@@ -118,5 +118,10 @@ void CAN_add_message_main_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data);
  * Adds a received CAN message to the sensor bus receive queue
  */
 void CAN_add_message_sensor_rx_queue(uint32_t id, uint8_t dlc, uint8_t *data);
+
+/**
+ * Gets called when the TX fifo gains space for new messages
+*/
+void CAN_tx_avail_callback();
 
 #endif // CAN_H

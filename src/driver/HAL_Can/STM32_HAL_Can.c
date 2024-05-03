@@ -81,6 +81,12 @@ static void sensor_bus_rx_handler(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0I
     }
 }
 
+// This is called after a message is sent successfully
+static void main_bus_tx_fifo_handler(FDCAN_HandleTypeDef *hfdcan, uint32_t BufferIndexes)
+{
+    CAN_tx_avail_callback();
+}
+
 // Must initialize gpio first to read charger line
 void HAL_Can_init(void)
 {
@@ -95,20 +101,20 @@ void HAL_Can_init(void)
     can_main.Init.ClockDivider = FDCAN_CLOCK_DIV1;
     can_main.Init.FrameFormat = FDCAN_FRAME_CLASSIC;
     can_main.Init.Mode = FDCAN_MODE_NORMAL;
-    can_main.Init.AutoRetransmission = DISABLE;
+    can_main.Init.AutoRetransmission = ENABLE;
     can_main.Init.TransmitPause = DISABLE;
-    can_main.Init.ProtocolException = DISABLE;
+    can_main.Init.ProtocolException = ENABLE;
     can_main.Init.NominalPrescaler = 8;
     can_main.Init.NominalSyncJumpWidth = 1;
     can_main.Init.NominalTimeSeg1 = 12;
     can_main.Init.NominalTimeSeg2 = 2;
-    can_main.Init.DataPrescaler = 1;
+    can_main.Init.DataPrescaler = 1; // Data timing fields unused for classic CAN
     can_main.Init.DataSyncJumpWidth = 1;
     can_main.Init.DataTimeSeg1 = 1;
     can_main.Init.DataTimeSeg2 = 1;
     can_main.Init.StdFiltersNbr = MAX_MAIN_STANDARD_FILTERS;
     can_main.Init.ExtFiltersNbr = MAX_MAIN_EXTENDED_FILTERS;
-    can_main.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
+    can_main.Init.TxFifoQueueMode = FDCAN_TX_QUEUE_OPERATION;
     if (HAL_FDCAN_Init(&can_main) != HAL_OK)
     {
         hardfault_handler_routine();
@@ -150,6 +156,9 @@ void HAL_Can_init(void)
     if (HAL_FDCAN_RegisterRxFifo0Callback(&can_sensor, sensor_bus_rx_handler) != HAL_OK) {
         hardfault_handler_routine();
     }
+    if (HAL_FDCAN_RegisterTxBufferCompleteCallback(&can_main, main_bus_tx_fifo_handler) != HAL_OK) {
+        hardfault_handler_routine();
+    }
 
     // Initialize filters
     // Default discard unless a filter allows
@@ -170,7 +179,7 @@ void HAL_Can_init(void)
         hardfault_handler_routine();
     }
 
-    // Send new messages to registered callback
+    // Send new messages to registered callbacks
     if (HAL_FDCAN_ActivateNotification(&can_main, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
     {
         hardfault_handler_routine();
@@ -179,9 +188,14 @@ void HAL_Can_init(void)
     {
         hardfault_handler_routine();
     }
+    if (HAL_FDCAN_ActivateNotification(&can_main, FDCAN_IT_TX_COMPLETE, FDCAN_TX_BUFFER0 | FDCAN_TX_BUFFER1 | FDCAN_TX_BUFFER2) != HAL_OK)
+    {
+        hardfault_handler_routine();
+    }
 }
 
-Error_t HAL_Can_send_message_main(uint32_t id, int dlc, uint64_t data)
+// Returns true on success
+bool HAL_Can_send_message_main(uint32_t id, int dlc, uint64_t data)
 {
     FDCAN_TxHeaderTypeDef header = {0};
     header.Identifier = id;
@@ -191,10 +205,12 @@ Error_t HAL_Can_send_message_main(uint32_t id, int dlc, uint64_t data)
     header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
     header.BitRateSwitch = FDCAN_BRS_OFF;
     header.FDFormat = FDCAN_CLASSIC_CAN;
-    header.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+    header.TxEventFifoControl = FDCAN_STORE_TX_EVENTS;
     header.MessageMarker = 0;
 
-    HAL_StatusTypeDef err =  HAL_FDCAN_AddMessageToTxFifoQ(&can_main, &header, (uint8_t*) &data);
+    HAL_StatusTypeDef err = HAL_FDCAN_AddMessageToTxFifoQ(&can_main, &header, (uint8_t*) &data);
+
+    return (err == HAL_OK);
 }
 
 Error_t HAL_Can_send_message_sensor(uint32_t id, int dlc, uint64_t data)
@@ -291,9 +307,4 @@ void HAL_Can_add_filter_sensor_extended(uint32_t id1, uint32_t id2)
     {
         hardfault_handler_routine();
     }
-}
-
-uint8_t HAL_number_of_empty_mailboxes(void)
-{
-    return HAL_FDCAN_GetTxFifoFreeLevel(&can_main);
 }
