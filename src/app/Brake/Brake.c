@@ -10,6 +10,11 @@
 
 // #define BRAKE_DEBUG
 
+// Calculated for a time constant of ~50ms
+// https://en.wikipedia.org/wiki/Exponential_smoothing#Time_constant
+#define BRAKE_PSI_AVG_FACTOR 0.18
+static float brake_psi_avg = 0;
+
 bool Brake_is_pressed(void)
 {
     // read the analog input line
@@ -55,7 +60,9 @@ bool Brake_is_pressed(void)
     }
 
     float brake_psi = ((float) voltage - BPS_MIN_V) * BPS_MAX_PRESSURE_PSI / (BPS_MAX_V - BPS_MIN_V);
-    can_bus.vc_pedal_inputs.vc_pedal_inputs_brake_pressure = formula_main_dbc_vc_pedal_inputs_vc_pedal_inputs_brake_pressure_encode(brake_psi);
+    brake_psi_avg = BRAKE_PSI_AVG_FACTOR * brake_psi + (1-BRAKE_PSI_AVG_FACTOR) * brake_psi_avg;
 
-    return FLOAT_GT(brake_psi, BRAKE_PRESSED_PSI, VOLTAGE_TOL);
+    can_bus.vc_pedal_inputs.vc_pedal_inputs_brake_pressure = formula_main_dbc_vc_pedal_inputs_vc_pedal_inputs_brake_pressure_encode(brake_psi_avg);
+
+    return brake_psi_avg >= BRAKE_PRESSED_PSI;
 }
